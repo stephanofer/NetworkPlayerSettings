@@ -1,0 +1,23 @@
+file-version: 1
+
+database:
+  host: "127.0.0.1"
+  port: 3306
+  database: "hera_network"
+  username: "root"
+  password: ""
+  table-prefix: "nps_"
+  pool:
+    maximum-pool-size: 5
+    minimum-idle: 1
+  migrations:
+    enabled: true
+
+settings:
+  default-language: "en"
+  detect-client-locale: true
+  cache-cleanup-on-quit: true
+
+placeholderapi:
+  enabled: true
+  cache-ttl-millis: 250

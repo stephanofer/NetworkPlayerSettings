@@ -1,0 +1,7 @@
+/.gradle/
+/.idea/
+/build/
+
+# Nested repos that should stay out of the root repo
+/zMenu/
+/zAuctionHouse/

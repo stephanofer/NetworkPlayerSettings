@@ -1,0 +1,48 @@
+file-version: 1
+
+name: "#0c1719Select your language"
+size: 27
+
+items:
+  spanish:
+    type: NPS_LANGUAGE
+    language: es
+    is-permanent: true
+    slot: 11
+    item:
+      material: RED_BANNER
+      name: "#ff6666%selected_marker%Español"
+      lore:
+        - "#8c8c8cPreferencia#8c8c8c: #ff6666es"
+        - "#8c8c8cEstado#8c8c8c: #92ffff%selected_state%"
+        - ""
+        - "#8c8c8c• #2CCED2Click #92ffffpara usar español"
+
+  automatic:
+    type: NPS_LANGUAGE
+    language: auto
+    is-permanent: true
+    slot: 13
+    item:
+      material: COMPASS
+      name: "#f5d76e%selected_marker%Automático / Auto"
+      lore:
+        - "#8c8c8cPreferencia#8c8c8c: #f5d76eauto"
+        - "#8c8c8cIdioma efectivo#8c8c8c: #92ffff%effective_language%"
+        - "#8c8c8cEstado#8c8c8c: #92ffff%selected_state%"
+        - ""
+        - "#8c8c8c• #2CCED2Click #92ffffpara usar el idioma del cliente"
+
+  english:
+    type: NPS_LANGUAGE
+    language: en
+    is-permanent: true
+    slot: 15
+    item:
+      material: BLUE_BANNER
+      name: "#66a3ff%selected_marker%English"
+      lore:
+        - "#8c8c8cPreference#8c8c8c: #66a3ffen"
+        - "#8c8c8cState#8c8c8c: #92ffff%selected_state%"
+        - ""
+        - "#8c8c8c• #2CCED2Click #92ffffto use English"
