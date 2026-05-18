@@ -1,0 +1,9 @@
+countries:
+  XX:
+    name: Unknown
+    head-texture-base64: "eyJ0ZXh0dXJlcyI6e319"
+    aliases: [unknown]
+  AR:
+    name: Argentina
+    head-texture-base64: "eyJ0ZXh0dXJlcyI6e319"
+    aliases: [argentina, south-america]

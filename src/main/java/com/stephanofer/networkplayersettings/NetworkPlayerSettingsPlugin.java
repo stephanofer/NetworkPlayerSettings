@@ -8,7 +8,10 @@ import com.stephanofer.networkplatform.menus.MenuModule;
 import com.stephanofer.networkplatform.menus.MenuModuleConfig;
 import com.stephanofer.networkplatform.menus.MenuService;
 import com.stephanofer.networkplatform.paper.NetworkPlatform;
+import com.stephanofer.networkplayersettings.api.NetworkAssetService;
 import com.stephanofer.networkplayersettings.api.PlayerSettingsService;
+import com.stephanofer.networkplayersettings.asset.CountryAssetLoader;
+import com.stephanofer.networkplayersettings.asset.NetworkAssetBootstrap;
 import com.stephanofer.networkplayersettings.command.GlobalSettingsCommand;
 import com.stephanofer.networkplayersettings.config.PluginConfig;
 import com.stephanofer.networkplayersettings.country.GeoIpCountryResolver;
@@ -33,6 +36,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     private PlaceholderService placeholderService;
     private PluginConfig config;
     private PluginMessages messages;
+    private NetworkAssetService networkAssetService;
     private GeoIpCountryResolver countryResolver;
     private DefaultPlayerSettingsService settingsService;
 
@@ -45,6 +49,8 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
         );
         this.config = this.platform.configs().file(PluginConfig.TEMPLATE, PluginConfig.class).snapshot();
         this.messages = new PluginMessages();
+        this.networkAssetService = new NetworkAssetBootstrap(new CountryAssetLoader(() -> getResource("assets/countries.yml")))
+            .initialize(getDataFolder().toPath(), getServer().getServicesManager(), this);
 
         this.databaseService = DatabaseModule.install(this.platform, this.config.database().toDatabaseConfig());
         this.menuService = MenuModule.install(this.platform, new MenuModuleConfig(false, "patterns", "inventories", "dialogs"));
