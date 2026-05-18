@@ -37,6 +37,10 @@ public final class PlayerSettingsReadyEvent extends Event {
         return this.resolvedLanguage;
     }
 
+    public String countryCode() {
+        return this.snapshot.countryCode();
+    }
+
     @Override
     public HandlerList getHandlers() {
         return HANDLERS;

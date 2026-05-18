@@ -4,7 +4,9 @@ import java.util.Arrays;
 
 public enum SettingKey {
     LANGUAGE("language", true, true, LanguagePreference.AUTO.storageValue()),
-    DETECTED_LOCALE("detected_locale", true, false, "");
+    DETECTED_LOCALE("detected_locale", true, false, ""),
+    DETECTED_COUNTRY("detected_country", true, false, CountryFlag.UNKNOWN_CODE),
+    COUNTRY_OVERRIDE("country_override", true, false, "");
 
     private final String storageKey;
     private final boolean persisted;

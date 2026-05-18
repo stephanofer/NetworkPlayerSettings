@@ -17,6 +17,8 @@ public final class PlayerSettingsSnapshot {
         final EnumMap<SettingKey, String> copy = new EnumMap<>(SettingKey.class);
         copy.put(SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
         copy.put(SettingKey.DETECTED_LOCALE, "");
+        copy.put(SettingKey.DETECTED_COUNTRY, CountryFlag.UNKNOWN_CODE);
+        copy.put(SettingKey.COUNTRY_OVERRIDE, "");
         values.forEach((key, value) -> copy.put(
             Objects.requireNonNull(key, "key"),
             value == null ? "" : value.trim()
@@ -27,7 +29,9 @@ public final class PlayerSettingsSnapshot {
     public static PlayerSettingsSnapshot defaults(final UUID playerId) {
         return new PlayerSettingsSnapshot(playerId, Map.of(
             SettingKey.LANGUAGE, SettingKey.LANGUAGE.defaultValue(),
-            SettingKey.DETECTED_LOCALE, SettingKey.DETECTED_LOCALE.defaultValue()
+            SettingKey.DETECTED_LOCALE, SettingKey.DETECTED_LOCALE.defaultValue(),
+            SettingKey.DETECTED_COUNTRY, SettingKey.DETECTED_COUNTRY.defaultValue(),
+            SettingKey.COUNTRY_OVERRIDE, SettingKey.COUNTRY_OVERRIDE.defaultValue()
         ));
     }
 
@@ -53,6 +57,21 @@ public final class PlayerSettingsSnapshot {
 
     public Optional<String> detectedLocale() {
         return setting(SettingKey.DETECTED_LOCALE);
+    }
+
+    public String detectedCountryCode() {
+        return CountryFlag.normalizeCode(valueOrDefault(SettingKey.DETECTED_COUNTRY));
+    }
+
+    public Optional<String> countryOverride() {
+        return setting(SettingKey.COUNTRY_OVERRIDE)
+            .filter(CountryFlag::isIsoAlpha2)
+            .map(CountryFlag::normalizeCode)
+            .filter(code -> !CountryFlag.UNKNOWN_CODE.equals(code));
+    }
+
+    public String countryCode() {
+        return countryOverride().orElseGet(this::detectedCountryCode);
     }
 
     public PlayerSettingsSnapshot withSetting(final SettingKey key, final String value) {

@@ -82,19 +82,25 @@ public final class SqlPlayerSettingsRepository implements PlayerSettingsReposito
 
     private RepositoryLoadResult loadOrCreate(final Connection connection, final UUID playerId) throws Exception {
         final EnumMap<SettingKey, String> values = readValues(connection, playerId);
-        if (!values.isEmpty()) {
-            boolean createdDefault = false;
-            if (!values.containsKey(SettingKey.LANGUAGE)) {
-                upsert(connection, playerId, SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
-                values.put(SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
-                createdDefault = true;
-            }
-            return new RepositoryLoadResult(new PlayerSettingsSnapshot(playerId, values), createdDefault);
+        boolean createdDefault = values.isEmpty();
+        createdDefault |= ensureDefault(connection, playerId, values, SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
+        return new RepositoryLoadResult(new PlayerSettingsSnapshot(playerId, values), createdDefault);
+    }
+
+    private boolean ensureDefault(
+        final Connection connection,
+        final UUID playerId,
+        final EnumMap<SettingKey, String> values,
+        final SettingKey key,
+        final String defaultValue
+    ) throws Exception {
+        if (values.containsKey(key)) {
+            return false;
         }
 
-        upsert(connection, playerId, SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
-        values.put(SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
-        return new RepositoryLoadResult(new PlayerSettingsSnapshot(playerId, values), true);
+        upsert(connection, playerId, key, defaultValue);
+        values.put(key, defaultValue);
+        return true;
     }
 
     private EnumMap<SettingKey, String> readValues(final Connection connection, final UUID playerId) throws Exception {

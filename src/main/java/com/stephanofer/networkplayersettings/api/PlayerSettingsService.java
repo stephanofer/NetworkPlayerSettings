@@ -17,7 +17,13 @@ public interface PlayerSettingsService {
 
     LanguagePreference languagePreference(UUID playerId);
 
+    String countryCode(UUID playerId);
+
     CompletableFuture<Void> setLanguage(UUID playerId, LanguagePreference preference);
+
+    CompletableFuture<Void> setCountryOverride(UUID playerId, String countryCode);
+
+    CompletableFuture<Void> clearCountryOverride(UUID playerId);
 
     CompletableFuture<Void> setSetting(UUID playerId, SettingKey key, String value);
 

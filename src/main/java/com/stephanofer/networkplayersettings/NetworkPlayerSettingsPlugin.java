@@ -11,6 +11,7 @@ import com.stephanofer.networkplatform.paper.NetworkPlatform;
 import com.stephanofer.networkplayersettings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.command.GlobalSettingsCommand;
 import com.stephanofer.networkplayersettings.config.PluginConfig;
+import com.stephanofer.networkplayersettings.country.GeoIpCountryResolver;
 import com.stephanofer.networkplayersettings.i18n.PluginMessages;
 import com.stephanofer.networkplayersettings.language.LanguageResolver;
 import com.stephanofer.networkplayersettings.listener.PlayerConnectionListener;
@@ -19,6 +20,7 @@ import com.stephanofer.networkplayersettings.placeholder.PlayerSettingsPlacehold
 import com.stephanofer.networkplayersettings.repository.PlayerSettingsRepository;
 import com.stephanofer.networkplayersettings.repository.SqlPlayerSettingsRepository;
 import com.stephanofer.networkplayersettings.service.DefaultPlayerSettingsService;
+import java.nio.file.Path;
 import java.time.Duration;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -31,6 +33,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     private PlaceholderService placeholderService;
     private PluginConfig config;
     private PluginMessages messages;
+    private GeoIpCountryResolver countryResolver;
     private DefaultPlayerSettingsService settingsService;
 
     @Override
@@ -47,11 +50,14 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
         this.menuService = MenuModule.install(this.platform, new MenuModuleConfig(false, "patterns", "inventories", "dialogs"));
         this.placeholderService = PlaceholderModule.install(this.platform);
 
+        this.countryResolver = openCountryResolver();
+
         final PlayerSettingsRepository repository = new SqlPlayerSettingsRepository(this.databaseService);
         this.settingsService = new DefaultPlayerSettingsService(
             repository,
             new LanguageResolver(this.config.settings().defaultLanguage()),
             this.config,
+            this.countryResolver,
             getLogger()
         );
 
@@ -79,9 +85,25 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
         if (getServer() != null) {
             getServer().getServicesManager().unregisterAll(this);
         }
+        if (this.countryResolver != null) {
+            this.countryResolver.close();
+        }
         if (this.platform != null) {
             this.platform.shutdown();
         }
+    }
+
+    private GeoIpCountryResolver openCountryResolver() {
+        if (!this.config.geoip().enabled()) {
+            getLogger().info("GeoIP country detection disabled by config.");
+            return GeoIpCountryResolver.disabled(getLogger());
+        }
+
+        final Path configuredPath = Path.of(this.config.geoip().databasePath());
+        final Path databasePath = configuredPath.isAbsolute()
+            ? configuredPath
+            : getDataFolder().toPath().resolve(configuredPath);
+        return GeoIpCountryResolver.open(databasePath, getLogger());
     }
 
     public DefaultPlayerSettingsService settingsService() {

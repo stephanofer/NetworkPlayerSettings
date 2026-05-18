@@ -16,6 +16,7 @@ dependencies {
     implementation("com.stephanofer:network-platform-database:1.0.0-SNAPSHOT")
     implementation("com.stephanofer:network-platform-hooks:1.0.0-SNAPSHOT")
     implementation("com.stephanofer:network-platform-menus:1.0.0-SNAPSHOT")
+    implementation("com.maxmind.geoip2:geoip2:5.1.0")
 }
 
 java {
@@ -36,6 +37,10 @@ tasks {
         relocate(
             "com.stephanofer.networkplatform",
             "com.stephanofer.networkplayersettings.libs.networkplatform"
+        )
+        relocate(
+            "com.maxmind",
+            "com.stephanofer.networkplayersettings.libs.maxmind"
         )
     }
 

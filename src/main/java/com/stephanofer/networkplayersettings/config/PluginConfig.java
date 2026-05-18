@@ -9,6 +9,7 @@ import java.util.List;
 public record PluginConfig(
     DatabaseSection database,
     SettingsSection settings,
+    GeoIpSection geoip,
     CommandSection command,
     PlaceholderSection placeholderapi
 ) {
@@ -35,6 +36,10 @@ public record PluginConfig(
                 document.getBoolean("settings.detect-client-locale", true),
                 document.getBoolean("settings.cache-cleanup-on-quit", true),
                 document.getLong("settings.language-change-cooldown-millis", 750L)
+            ),
+            new GeoIpSection(
+                document.getBoolean("geoip.enabled", true),
+                document.getString("geoip.database-path", "GeoLite2-Country.mmdb")
             ),
             new CommandSection(
                 document.getString("command.name", "globalsettings"),
@@ -83,6 +88,19 @@ public record PluginConfig(
         boolean cacheCleanupOnQuit,
         long languageChangeCooldownMillis
     ) {
+    }
+
+    public record GeoIpSection(
+        boolean enabled,
+        String databasePath
+    ) {
+        public GeoIpSection {
+            if (databasePath == null || databasePath.isBlank()) {
+                databasePath = "GeoLite2-Country.mmdb";
+            } else {
+                databasePath = databasePath.trim();
+            }
+        }
     }
 
     public record CommandSection(

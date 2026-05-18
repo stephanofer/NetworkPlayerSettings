@@ -51,6 +51,12 @@ public final class PlayerSettingsPlaceholderRegistrar {
                     final Language language = this.settingsService.resolvedLanguage(onlinePlayer);
                     return language.displayName(language);
                 })
+                .cachedPlaceholder("country", this.cacheTtl, (player, params) -> {
+                    if (player == null) {
+                        return "XX";
+                    }
+                    return this.settingsService.countryCode(player.getUniqueId());
+                })
                 .build()
         );
     }
