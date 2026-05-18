@@ -5,3 +5,5 @@
 # Nested repos that should stay out of the root repo
 /zMenu/
 /zAuctionHouse/
+# Local Pi runtime state
+.atl/

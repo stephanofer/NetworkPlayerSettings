@@ -1,6 +1,7 @@
 package com.stephanofer.networkplayersettings.listener;
 
 import com.stephanofer.networkplayersettings.config.PluginConfig;
+import com.stephanofer.networkplayersettings.menu.LanguageButton;
 import com.stephanofer.networkplayersettings.service.DefaultPlayerSettingsService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,6 +37,7 @@ public final class PlayerConnectionListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(final PlayerQuitEvent event) {
+        LanguageButton.clearCooldown(event.getPlayer().getUniqueId());
         this.settingsService.evict(event.getPlayer().getUniqueId(), this.config.settings().cacheCleanupOnQuit());
     }
 }

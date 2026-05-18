@@ -1,7 +1,5 @@
 package com.stephanofer.networkplayersettings.menu;
 
-import com.stephanofer.networkplatform.menus.MenuKey;
-import com.stephanofer.networkplatform.menus.OpenOptions;
 import com.stephanofer.networkplayersettings.NetworkPlayerSettingsPlugin;
 import com.stephanofer.networkplayersettings.api.Language;
 import com.stephanofer.networkplayersettings.api.LanguagePreference;
@@ -10,6 +8,8 @@ import fr.maxlego08.menu.api.button.Button;
 import fr.maxlego08.menu.api.engine.InventoryEngine;
 import fr.maxlego08.menu.api.utils.Placeholders;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -19,7 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public final class LanguageButton extends Button {
 
-    private static final MenuKey LANGUAGE_MENU = MenuKey.of("language");
+    private static final ConcurrentHashMap<UUID, Long> COOLDOWN_UNTIL = new ConcurrentHashMap<>();
 
     private final NetworkPlayerSettingsPlugin plugin;
     private final LanguagePreference preference;
@@ -38,6 +38,31 @@ public final class LanguageButton extends Button {
         final Placeholders placeholders
     ) {
         super.onClick(player, event, inventory, slot, placeholders);
+        final PlayerSettingsSnapshot snapshot = this.plugin.settingsService().getCachedOrDefault(player.getUniqueId());
+        if (snapshot.languagePreference() == this.preference) {
+            final Language viewerLanguage = this.plugin.settingsService().resolvedLanguage(player);
+            player.sendRichMessage(this.plugin.messages().get(
+                viewerLanguage,
+                "settings.language.already-selected",
+                currentSelectionDisplayName(viewerLanguage)
+            ));
+            return;
+        }
+
+        final long cooldownMillis = Math.max(0L, this.plugin.config().settings().languageChangeCooldownMillis());
+        final long now = System.currentTimeMillis();
+        final long cooldownUntil = COOLDOWN_UNTIL.getOrDefault(player.getUniqueId(), 0L);
+        if (cooldownUntil > now) {
+            final Language viewerLanguage = this.plugin.settingsService().resolvedLanguage(player);
+            final long seconds = Math.max(1L, (cooldownUntil - now + 999L) / 1000L);
+            player.sendRichMessage(this.plugin.messages().get(viewerLanguage, "settings.language.cooldown", seconds));
+            return;
+        }
+
+        if (cooldownMillis > 0L) {
+            COOLDOWN_UNTIL.put(player.getUniqueId(), now + cooldownMillis);
+        }
+
         this.plugin.settingsService().setLanguage(player.getUniqueId(), this.preference);
         final Language viewerLanguage = this.plugin.settingsService().resolvedLanguage(player);
         final Language selectedLanguage = switch (this.preference) {
@@ -50,7 +75,6 @@ public final class LanguageButton extends Button {
             "settings.language.updated",
             selectedLanguage.displayName(viewerLanguage)
         ));
-        this.plugin.menuService().open(player, LANGUAGE_MENU, OpenOptions.page(inventory.getPage()).withoutHistory());
     }
 
     @Override
@@ -103,5 +127,17 @@ public final class LanguageButton extends Button {
 
     private boolean isSelected(final Player player) {
         return this.plugin.settingsService().getCachedOrDefault(player.getUniqueId()).languagePreference() == this.preference;
+    }
+
+    private String currentSelectionDisplayName(final Language viewerLanguage) {
+        return switch (this.preference) {
+            case AUTO -> this.plugin.messages().get(viewerLanguage, "settings.language.auto-name");
+            case SPANISH -> Language.SPANISH.displayName(viewerLanguage);
+            case ENGLISH -> Language.ENGLISH.displayName(viewerLanguage);
+        };
+    }
+
+    public static void clearCooldown(final UUID playerId) {
+        COOLDOWN_UNTIL.remove(playerId);
     }
 }

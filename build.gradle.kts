@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.63-stable")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.64-stable")
     implementation("com.stephanofer:network-platform-paper:1.0.0-SNAPSHOT")
     implementation("com.stephanofer:network-platform-database:1.0.0-SNAPSHOT")
     implementation("com.stephanofer:network-platform-hooks:1.0.0-SNAPSHOT")

@@ -17,6 +17,16 @@ settings:
   default-language: "en"
   detect-client-locale: true
   cache-cleanup-on-quit: true
+  language-change-cooldown-millis: 750
+
+command:
+  name: "globalsettings"
+  aliases:
+    - "settings"
+    - "prefs"
+  open:
+    type: "menu"
+    key: "language"
 
 placeholderapi:
   enabled: true

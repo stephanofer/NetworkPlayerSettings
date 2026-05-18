@@ -132,6 +132,9 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     public CompletableFuture<Void> setLanguage(final UUID playerId, final LanguagePreference preference) {
         Objects.requireNonNull(preference, "preference");
         final PlayerSettingsSnapshot previous = getCachedOrDefault(playerId);
+        if (previous.languagePreference() == preference) {
+            return CompletableFuture.completedFuture(null);
+        }
         final String locale = currentLocale(playerId, previous);
         final Language oldResolved = resolveLanguage(previous, locale);
         final PlayerSettingsSnapshot updated = previous.withSetting(SettingKey.LANGUAGE, preference.storageValue());
@@ -199,11 +202,6 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
 
         final PlayerSettingsSnapshot updated = previous.withSetting(SettingKey.DETECTED_LOCALE, locale);
         this.cache.put(playerId, updated);
-        this.repository.upsertAsync(playerId, SettingKey.DETECTED_LOCALE, locale)
-            .exceptionally(throwable -> {
-                this.logger.log(Level.SEVERE, "Failed to persist detected locale for " + playerId, throwable);
-                return null;
-            });
         return updated;
     }
 

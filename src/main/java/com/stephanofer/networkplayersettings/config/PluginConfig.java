@@ -4,10 +4,12 @@ import com.stephanofer.networkplatform.database.DatabaseConfig;
 import com.stephanofer.networkplatform.paper.config.ConfigDocument;
 import com.stephanofer.networkplatform.paper.config.ConfigTemplate;
 import com.stephanofer.networkplayersettings.api.Language;
+import java.util.List;
 
 public record PluginConfig(
     DatabaseSection database,
     SettingsSection settings,
+    CommandSection command,
     PlaceholderSection placeholderapi
 ) {
 
@@ -31,7 +33,14 @@ public record PluginConfig(
             new SettingsSection(
                 Language.fromCode(document.getString("settings.default-language", "en")),
                 document.getBoolean("settings.detect-client-locale", true),
-                document.getBoolean("settings.cache-cleanup-on-quit", true)
+                document.getBoolean("settings.cache-cleanup-on-quit", true),
+                document.getLong("settings.language-change-cooldown-millis", 750L)
+            ),
+            new CommandSection(
+                document.getString("command.name", "globalsettings"),
+                document.getStringList("command.aliases", List.of("settings", "prefs")),
+                CommandTargetType.fromConfig(document.getString("command.open.type", "menu")),
+                document.getString("command.open.key", "language")
             ),
             new PlaceholderSection(
                 document.getBoolean("placeholderapi.enabled", true),
@@ -71,8 +80,49 @@ public record PluginConfig(
     public record SettingsSection(
         Language defaultLanguage,
         boolean detectClientLocale,
-        boolean cacheCleanupOnQuit
+        boolean cacheCleanupOnQuit,
+        long languageChangeCooldownMillis
     ) {
+    }
+
+    public record CommandSection(
+        String name,
+        List<String> aliases,
+        CommandTargetType openTargetType,
+        String openTargetKey
+    ) {
+        public CommandSection {
+            name = normalize(name, "globalsettings");
+            final String normalizedName = name;
+            aliases = aliases == null
+                ? List.of()
+                : aliases.stream()
+                    .map(alias -> alias == null ? "" : alias.trim())
+                    .filter(alias -> !alias.isBlank())
+                    .filter(alias -> !alias.equalsIgnoreCase(normalizedName))
+                    .toList();
+            openTargetType = openTargetType == null ? CommandTargetType.MENU : openTargetType;
+            openTargetKey = normalize(openTargetKey, "language");
+        }
+
+        private static String normalize(final String raw, final String fallback) {
+            if (raw == null || raw.isBlank()) {
+                return fallback;
+            }
+            return raw.trim();
+        }
+    }
+
+    public enum CommandTargetType {
+        MENU,
+        DIALOG;
+
+        public static CommandTargetType fromConfig(final String raw) {
+            if (raw != null && raw.equalsIgnoreCase("dialog")) {
+                return DIALOG;
+            }
+            return MENU;
+        }
     }
 
     public record PlaceholderSection(

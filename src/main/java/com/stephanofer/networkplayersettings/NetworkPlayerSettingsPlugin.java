@@ -58,6 +58,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
         this.menuService.loader().registerButtons(buttonManager -> buttonManager.register(new LanguageButtonLoader(this)));
         this.menuService.loader().loadPatterns("patterns");
         this.menuService.loader().loadInventories("inventories");
+        this.menuService.loader().loadDialogs("dialogs");
 
         if (this.config.placeholderapi().enabled()) {
             new PlayerSettingsPlaceholderRegistrar(
@@ -69,7 +70,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
         }
 
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this.settingsService, this.config), this);
-        this.platform.commands().register(new GlobalSettingsCommand(this.settingsService, this.menuService, this.messages).spec());
+        this.platform.commands().register(new GlobalSettingsCommand(this.settingsService, this.menuService, this.messages, this.config.command()).spec());
         getServer().getServicesManager().register(PlayerSettingsService.class, this.settingsService, this, ServicePriority.Normal);
     }
 
@@ -93,5 +94,9 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     public PluginMessages messages() {
         return this.messages;
+    }
+
+    public PluginConfig config() {
+        return this.config;
     }
 }
