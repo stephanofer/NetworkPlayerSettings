@@ -8,6 +8,7 @@ import com.stephanofer.networkplayersettings.api.PlayerSettingsSnapshot;
 import com.stephanofer.networkplayersettings.api.SettingKey;
 import com.stephanofer.networkplayersettings.config.PluginConfig;
 import com.stephanofer.networkplayersettings.country.GeoIpCountryResolver;
+import com.stephanofer.networkplayersettings.country.GeoIpCountryResolver.CountryLookup;
 import com.stephanofer.networkplayersettings.event.PlayerSettingChangeEvent;
 import com.stephanofer.networkplayersettings.event.PlayerSettingsReadyEvent;
 import com.stephanofer.networkplayersettings.language.LanguageResolver;
@@ -33,6 +34,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     private final GeoIpCountryResolver countryResolver;
     private final Logger logger;
     private final ConcurrentHashMap<UUID, PlayerSettingsSnapshot> cache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, String> localeCache = new ConcurrentHashMap<>();
     private final Set<UUID> readyPlayers = ConcurrentHashMap.newKeySet();
 
     public DefaultPlayerSettingsService(
@@ -70,14 +72,15 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
                 return;
             }
 
-            final String countryCode = this.countryResolver.resolveCountryCode(address);
+            final CountryLookup countryLookup = this.countryResolver.resolveCountry(address);
             this.logger.info(
                 "GeoIP debug for " + playerId
                     + ": address=" + (address == null ? "null" : address.getHostAddress())
                     + ", localOrPrivate=" + isLocalOrPrivateAddress(address)
-                    + ", detectedCountry=" + countryCode
+                    + ", detectedCountry=" + countryLookup.countryCode()
+                    + ", unknownReason=" + countryLookup.unknownReason()
             );
-            final PlayerSettingsSnapshot updated = updateDetectedCountrySnapshot(playerId, loadResult.snapshot(), countryCode, true);
+            final PlayerSettingsSnapshot updated = updateDetectedCountrySnapshot(playerId, loadResult.snapshot(), countryLookup, true);
             this.cache.put(playerId, updated);
             this.readyPlayers.remove(playerId);
         } catch (final Exception exception) {
@@ -91,29 +94,29 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
 
     public void handleJoin(final Player player) {
         final UUID playerId = player.getUniqueId();
-        final PlayerSettingsSnapshot previous = getCachedOrDefault(playerId);
-        final String locale = this.languageResolver.normalizeLocale(player.locale());
-        final PlayerSettingsSnapshot updated = updateDetectedLocaleSnapshot(playerId, previous, locale);
-        final Language resolved = resolveLanguage(updated, locale);
+        final PlayerSettingsSnapshot snapshot = getCachedOrDefault(playerId);
+        final String locale = currentLocale(player);
+        rememberLocale(playerId, locale);
+        final Language resolved = resolveLanguage(snapshot, locale);
         this.readyPlayers.add(playerId);
-        new PlayerSettingsReadyEvent(player, updated, resolved).callEvent();
+        new PlayerSettingsReadyEvent(player, snapshot, resolved).callEvent();
     }
 
     public void handleLocaleChange(final Player player, final String newLocaleRaw) {
         final UUID playerId = player.getUniqueId();
-        final PlayerSettingsSnapshot previous = getCachedOrDefault(playerId);
-        final String oldLocale = previous.detectedLocale().orElse("");
+        final PlayerSettingsSnapshot snapshot = getCachedOrDefault(playerId);
+        final String oldLocale = this.localeCache.getOrDefault(playerId, currentLocale(player));
         final String newLocale = this.languageResolver.normalizeLocale(newLocaleRaw);
-        final Language oldResolved = resolveLanguage(previous, oldLocale);
-        final PlayerSettingsSnapshot updated = updateDetectedLocaleSnapshot(playerId, previous, newLocale);
-        final Language newResolved = resolveLanguage(updated, newLocale);
+        final Language oldResolved = resolveLanguage(snapshot, oldLocale);
+        rememberLocale(playerId, newLocale);
+        final Language newResolved = resolveLanguage(snapshot, newLocale);
 
-        if (previous.languagePreference() == LanguagePreference.AUTO && oldResolved != newResolved) {
+        if (snapshot.languagePreference() == LanguagePreference.AUTO && oldResolved != newResolved) {
             new PlayerSettingChangeEvent(
                 playerId,
                 SettingKey.LANGUAGE,
-                previous.languagePreference().storageValue(),
-                updated.languagePreference().storageValue(),
+                snapshot.languagePreference().storageValue(),
+                snapshot.languagePreference().storageValue(),
                 oldResolved.code(),
                 newResolved.code()
             ).callEvent();
@@ -122,6 +125,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
 
     public void evict(final UUID playerId, final boolean clearCache) {
         this.readyPlayers.remove(playerId);
+        this.localeCache.remove(playerId);
         if (clearCache) {
             this.cache.remove(playerId);
         }
@@ -154,7 +158,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     @Override
     public Language resolvedLanguage(final Player player) {
         final PlayerSettingsSnapshot snapshot = getCachedOrDefault(player.getUniqueId());
-        return resolveLanguage(snapshot, this.languageResolver.normalizeLocale(player.locale()));
+        return resolveLanguage(snapshot, currentLocale(player));
     }
 
     @Override
@@ -174,7 +178,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         if (previous.languagePreference() == preference) {
             return CompletableFuture.completedFuture(null);
         }
-        final String locale = currentLocale(playerId, previous);
+        final String locale = currentLocale(playerId);
         final Language oldResolved = resolveLanguage(previous, locale);
         final PlayerSettingsSnapshot updated = previous.withSetting(SettingKey.LANGUAGE, preference.storageValue());
         final Language newResolved = resolveLanguage(updated, locale);
@@ -278,36 +282,22 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         return this.readyPlayers.contains(playerId);
     }
 
-    private PlayerSettingsSnapshot updateDetectedLocaleSnapshot(
-        final UUID playerId,
-        final PlayerSettingsSnapshot previous,
-        final String locale
-    ) {
-        if (!this.config.settings().detectClientLocale()) {
-            return previous;
-        }
-
-        if (Objects.equals(previous.detectedLocale().orElse(""), locale)) {
-            this.cache.put(playerId, previous);
-            return previous;
-        }
-
-        final PlayerSettingsSnapshot updated = previous.withSetting(SettingKey.DETECTED_LOCALE, locale);
-        this.cache.put(playerId, updated);
-        return updated;
-    }
-
     private PlayerSettingsSnapshot updateDetectedCountrySnapshot(
         final UUID playerId,
         final PlayerSettingsSnapshot previous,
-        final String countryCode,
+        final CountryLookup countryLookup,
         final boolean persist
     ) {
-        final String normalizedCountry = CountryFlag.normalizeCode(countryCode);
-        final boolean alreadyPersisted = previous.setting(SettingKey.DETECTED_COUNTRY).isPresent();
-        final boolean unchanged = Objects.equals(previous.detectedCountryCode(), normalizedCountry);
+        final String previousCountry = previous.detectedCountryCode();
+        final String normalizedCountry = countryLookup.countryCode();
 
-        if (persist && (!alreadyPersisted || !unchanged)) {
+        if (!countryLookup.detectedRealCountry() && !CountryFlag.UNKNOWN_CODE.equals(previousCountry)) {
+            return previous;
+        }
+
+        final boolean unchanged = Objects.equals(previousCountry, normalizedCountry);
+
+        if (persist && !unchanged) {
             try {
                 this.repository.upsert(playerId, SettingKey.DETECTED_COUNTRY, normalizedCountry);
             } catch (final Exception exception) {
@@ -331,16 +321,33 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
             || address.isMulticastAddress();
     }
 
-    private String currentLocale(final UUID playerId, final PlayerSettingsSnapshot snapshot) {
+    private String currentLocale(final UUID playerId) {
+        if (!this.config.settings().detectClientLocale()) {
+            return "";
+        }
         final Player onlinePlayer = Bukkit.getPlayer(playerId);
         if (onlinePlayer != null) {
-            return this.languageResolver.normalizeLocale(onlinePlayer.locale());
+            return currentLocale(onlinePlayer);
         }
-        return snapshot.detectedLocale().orElse("");
+        return this.localeCache.getOrDefault(playerId, "");
+    }
+
+    private String currentLocale(final Player player) {
+        if (!this.config.settings().detectClientLocale()) {
+            return "";
+        }
+        return this.languageResolver.normalizeLocale(player.locale());
+    }
+
+    private void rememberLocale(final UUID playerId, final String locale) {
+        if (!this.config.settings().detectClientLocale() || locale == null || locale.isBlank()) {
+            this.localeCache.remove(playerId);
+            return;
+        }
+        this.localeCache.put(playerId, locale);
     }
 
     private Language resolveLanguage(final PlayerSettingsSnapshot snapshot, final String locale) {
-        final String localeToUse = locale == null || locale.isBlank() ? snapshot.detectedLocale().orElse("") : locale;
-        return this.languageResolver.resolve(snapshot.languagePreference(), localeToUse);
+        return this.languageResolver.resolve(snapshot.languagePreference(), locale);
     }
 }

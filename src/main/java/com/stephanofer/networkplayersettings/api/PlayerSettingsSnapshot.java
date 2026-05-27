@@ -16,7 +16,6 @@ public final class PlayerSettingsSnapshot {
         this.playerId = Objects.requireNonNull(playerId, "playerId");
         final EnumMap<SettingKey, String> copy = new EnumMap<>(SettingKey.class);
         copy.put(SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
-        copy.put(SettingKey.DETECTED_LOCALE, "");
         copy.put(SettingKey.DETECTED_COUNTRY, CountryFlag.UNKNOWN_CODE);
         copy.put(SettingKey.COUNTRY_OVERRIDE, "");
         values.forEach((key, value) -> copy.put(
@@ -29,7 +28,6 @@ public final class PlayerSettingsSnapshot {
     public static PlayerSettingsSnapshot defaults(final UUID playerId) {
         return new PlayerSettingsSnapshot(playerId, Map.of(
             SettingKey.LANGUAGE, SettingKey.LANGUAGE.defaultValue(),
-            SettingKey.DETECTED_LOCALE, SettingKey.DETECTED_LOCALE.defaultValue(),
             SettingKey.DETECTED_COUNTRY, SettingKey.DETECTED_COUNTRY.defaultValue(),
             SettingKey.COUNTRY_OVERRIDE, SettingKey.COUNTRY_OVERRIDE.defaultValue()
         ));
@@ -53,10 +51,6 @@ public final class PlayerSettingsSnapshot {
 
     public LanguagePreference languagePreference() {
         return LanguagePreference.fromStorage(valueOrDefault(SettingKey.LANGUAGE));
-    }
-
-    public Optional<String> detectedLocale() {
-        return setting(SettingKey.DETECTED_LOCALE);
     }
 
     public String detectedCountryCode() {

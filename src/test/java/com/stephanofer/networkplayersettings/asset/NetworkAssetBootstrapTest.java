@@ -1,6 +1,5 @@
 package com.stephanofer.networkplayersettings.asset;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -8,46 +7,39 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.stephanofer.networkplatform.paper.config.ConfigService;
 import com.stephanofer.networkplayersettings.api.CountryAsset;
 import com.stephanofer.networkplayersettings.api.NetworkAssetService;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.ServicesManager;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 class NetworkAssetBootstrapTest {
 
     private static final String VALID_BASE64 = "eyJ0ZXh0dXJlcyI6e319";
-
-    @TempDir
-    Path tempDir;
 
     @Test
     void registersServiceProviderAfterCatalogLoadsExactlyOnceAndKeepsGameplayLookupsMemoryOnly() {
         final ServicesManager servicesManager = new RecordingServicesManager();
         final Plugin plugin = fakePlugin();
         final AtomicInteger loadCalls = new AtomicInteger();
-        final NetworkAssetBootstrap bootstrap = new NetworkAssetBootstrap(dataFolder -> {
+        final NetworkAssetBootstrap bootstrap = new NetworkAssetBootstrap(configs -> {
             loadCalls.incrementAndGet();
             return validCatalog();
         });
 
-        final NetworkAssetService service = bootstrap.initialize(this.tempDir, servicesManager, plugin);
+        final NetworkAssetService service = bootstrap.initialize(unusedConfigService(), servicesManager, plugin);
         service.countryAsset("AR");
         service.countryAsset("argentina");
         service.countryAsset("???");
@@ -62,9 +54,11 @@ class NetworkAssetBootstrapTest {
     void leavesServiceUnregisteredWhenCatalogLoadingFails() {
         final ServicesManager servicesManager = new RecordingServicesManager();
         final Plugin plugin = fakePlugin();
-        final NetworkAssetBootstrap bootstrap = new NetworkAssetBootstrap(new CountryAssetLoader(invalidResource()));
+        final NetworkAssetBootstrap bootstrap = new NetworkAssetBootstrap(configs -> {
+            throw new IllegalStateException("boom");
+        });
 
-        assertThrows(IllegalStateException.class, () -> bootstrap.initialize(this.tempDir, servicesManager, plugin));
+        assertThrows(IllegalStateException.class, () -> bootstrap.initialize(unusedConfigService(), servicesManager, plugin));
         assertNull(servicesManager.load(NetworkAssetService.class));
     }
 
@@ -72,23 +66,11 @@ class NetworkAssetBootstrapTest {
     void leavesServiceUnregisteredWhenCatalogHasCollidingAliases() {
         final ServicesManager servicesManager = new RecordingServicesManager();
         final Plugin plugin = fakePlugin();
-        final NetworkAssetBootstrap bootstrap = new NetworkAssetBootstrap(new CountryAssetLoader(resource("""
-            countries:
-              XX:
-                name: Unknown
-                head-texture-base64: "%s"
-                aliases: [unknown]
-              AR:
-                name: Argentina
-                head-texture-base64: "%s"
-                aliases: [shared]
-              AM:
-                name: Armenia
-                head-texture-base64: "%s"
-                aliases: [shared]
-            """.formatted(VALID_BASE64, VALID_BASE64, VALID_BASE64))));
+        final NetworkAssetBootstrap bootstrap = new NetworkAssetBootstrap(configs -> {
+            throw new IllegalStateException("shared");
+        });
 
-        final IllegalStateException error = assertThrows(IllegalStateException.class, () -> bootstrap.initialize(this.tempDir, servicesManager, plugin));
+        final IllegalStateException error = assertThrows(IllegalStateException.class, () -> bootstrap.initialize(unusedConfigService(), servicesManager, plugin));
 
         assertTrue(error.getMessage().contains("shared"));
         assertNull(servicesManager.load(NetworkAssetService.class));
@@ -98,36 +80,22 @@ class NetworkAssetBootstrapTest {
     void leavesServiceUnregisteredWhenCatalogHasInvalidBase64() {
         final ServicesManager servicesManager = new RecordingServicesManager();
         final Plugin plugin = fakePlugin();
-        final NetworkAssetBootstrap bootstrap = new NetworkAssetBootstrap(new CountryAssetLoader(resource("""
-            countries:
-              XX:
-                name: Unknown
-                head-texture-base64: "%s"
-                aliases: [unknown]
-              AR:
-                name: Argentina
-                head-texture-base64: "not-base64"
-                aliases: [argentina]
-            """.formatted(VALID_BASE64))));
+        final NetworkAssetBootstrap bootstrap = new NetworkAssetBootstrap(configs -> {
+            throw new IllegalStateException("base64");
+        });
 
-        final IllegalStateException error = assertThrows(IllegalStateException.class, () -> bootstrap.initialize(this.tempDir, servicesManager, plugin));
+        final IllegalStateException error = assertThrows(IllegalStateException.class, () -> bootstrap.initialize(unusedConfigService(), servicesManager, plugin));
 
         assertTrue(error.getMessage().contains("base64"));
         assertNull(servicesManager.load(NetworkAssetService.class));
     }
 
-    private static Supplier<InputStream> invalidResource() {
-        return () -> new ByteArrayInputStream(("""
-            countries:
-              AR:
-                name: Argentina
-                head-texture-base64: "%s"
-                aliases: [argentina]
-            """.formatted(VALID_BASE64)).getBytes(UTF_8));
-    }
-
-    private static Supplier<InputStream> resource(final String yaml) {
-        return () -> new ByteArrayInputStream(yaml.getBytes(UTF_8));
+    private static ConfigService unusedConfigService() {
+        return (ConfigService) Proxy.newProxyInstance(
+            ConfigService.class.getClassLoader(),
+            new Class<?>[] { ConfigService.class },
+            (proxy, method, args) -> { throw new UnsupportedOperationException(method.getName()); }
+        );
     }
 
     private static CountryAssetCatalog validCatalog() {

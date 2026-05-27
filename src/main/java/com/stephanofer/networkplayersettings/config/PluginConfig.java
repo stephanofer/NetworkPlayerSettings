@@ -1,8 +1,7 @@
 package com.stephanofer.networkplayersettings.config;
 
 import com.stephanofer.networkplatform.database.DatabaseConfig;
-import com.stephanofer.networkplatform.paper.config.ConfigDocument;
-import com.stephanofer.networkplatform.paper.config.ConfigTemplate;
+import com.stephanofer.networkplatform.paper.libs.boostedyaml.YamlDocument;
 import com.stephanofer.networkplayersettings.api.Language;
 import java.util.List;
 
@@ -14,11 +13,7 @@ public record PluginConfig(
     PlaceholderSection placeholderapi
 ) {
 
-    public static final ConfigTemplate TEMPLATE = ConfigTemplate.builder("config.yml")
-        .typed(PluginConfig.class, PluginConfig::fromDocument)
-        .build();
-
-    public static PluginConfig fromDocument(final ConfigDocument document) {
+    public static PluginConfig fromDocument(final YamlDocument document) {
         return new PluginConfig(
             new DatabaseSection(
                 document.getString("database.host", "127.0.0.1"),

@@ -8,6 +8,8 @@ import com.stephanofer.networkplatform.menus.MenuModule;
 import com.stephanofer.networkplatform.menus.MenuModuleConfig;
 import com.stephanofer.networkplatform.menus.MenuService;
 import com.stephanofer.networkplatform.paper.NetworkPlatform;
+import com.stephanofer.networkplatform.paper.config.ConfigFileSpec;
+import com.stephanofer.networkplatform.paper.libs.boostedyaml.YamlDocument;
 import com.stephanofer.networkplayersettings.api.NetworkAssetService;
 import com.stephanofer.networkplayersettings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.asset.CountryAssetLoader;
@@ -43,14 +45,17 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         this.platform = NetworkPlatform.create(this);
-        this.platform.configs().preload(
-            PluginConfig.TEMPLATE,
-            com.stephanofer.networkplatform.paper.config.ConfigTemplate.builder("inventories/language.yml").build()
+        final YamlDocument configDocument = this.platform.configs().load(
+            ConfigFileSpec.builder("config.yml")
+                .autoUpdate(true)
+                .versionRoute("file-version")
+                .build()
         );
-        this.config = this.platform.configs().file(PluginConfig.TEMPLATE, PluginConfig.class).snapshot();
+        this.platform.configs().load("inventories/language.yml");
+        this.config = PluginConfig.fromDocument(configDocument);
         this.messages = new PluginMessages();
-        this.networkAssetService = new NetworkAssetBootstrap(new CountryAssetLoader(() -> getResource("assets/countries.yml")))
-            .initialize(getDataFolder().toPath(), getServer().getServicesManager(), this);
+        this.networkAssetService = new NetworkAssetBootstrap(new CountryAssetLoader())
+            .initialize(this.platform.configs(), getServer().getServicesManager(), this);
 
         this.databaseService = DatabaseModule.install(this.platform, this.config.database().toDatabaseConfig());
         this.menuService = MenuModule.install(this.platform, new MenuModuleConfig(false, "patterns", "inventories", "dialogs"));

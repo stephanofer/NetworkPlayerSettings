@@ -1,6 +1,7 @@
 package com.stephanofer.networkplayersettings.repository;
 
 import com.stephanofer.networkplatform.database.DatabaseService;
+import com.stephanofer.networkplayersettings.api.CountryFlag;
 import com.stephanofer.networkplayersettings.api.LanguagePreference;
 import com.stephanofer.networkplayersettings.api.PlayerSettingsSnapshot;
 import com.stephanofer.networkplayersettings.api.SettingKey;
@@ -84,6 +85,7 @@ public final class SqlPlayerSettingsRepository implements PlayerSettingsReposito
         final EnumMap<SettingKey, String> values = readValues(connection, playerId);
         boolean createdDefault = values.isEmpty();
         createdDefault |= ensureDefault(connection, playerId, values, SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
+        createdDefault |= ensureDefault(connection, playerId, values, SettingKey.DETECTED_COUNTRY, CountryFlag.UNKNOWN_CODE);
         return new RepositoryLoadResult(new PlayerSettingsSnapshot(playerId, values), createdDefault);
     }
 

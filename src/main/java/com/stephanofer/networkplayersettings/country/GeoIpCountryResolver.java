@@ -14,12 +14,12 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public final class GeoIpCountryResolver implements AutoCloseable {
+public class GeoIpCountryResolver implements AutoCloseable {
 
     private final Logger logger;
     private final DatabaseReader reader;
 
-    private GeoIpCountryResolver(final Logger logger, final DatabaseReader reader) {
+    protected GeoIpCountryResolver(final Logger logger, final DatabaseReader reader) {
         this.logger = Objects.requireNonNull(logger, "logger");
         this.reader = reader;
     }
@@ -54,20 +54,26 @@ public final class GeoIpCountryResolver implements AutoCloseable {
     }
 
     public String resolveCountryCode(final InetAddress address) {
+        return resolveCountry(address).countryCode();
+    }
+
+    public CountryLookup resolveCountry(final InetAddress address) {
         if (this.reader == null || address == null || isNonPublicAddress(address)) {
-            return CountryFlag.UNKNOWN_CODE;
+            return CountryLookup.unknown(UnknownReason.NON_PUBLIC_ADDRESS);
         }
 
         try {
             final CountryResponse response = this.reader.country(address);
             return Optional.ofNullable(response.country().isoCode())
                 .map(CountryFlag::normalizeCode)
-                .orElse(CountryFlag.UNKNOWN_CODE);
+                .filter(code -> !CountryFlag.UNKNOWN_CODE.equals(code))
+                .map(CountryLookup::detected)
+                .orElseGet(() -> CountryLookup.unknown(UnknownReason.NOT_FOUND));
         } catch (final AddressNotFoundException exception) {
-            return CountryFlag.UNKNOWN_CODE;
+            return CountryLookup.unknown(UnknownReason.NOT_FOUND);
         } catch (final Exception exception) {
             this.logger.log(Level.WARNING, "Failed to resolve GeoIP country for player address", exception);
-            return CountryFlag.UNKNOWN_CODE;
+            return CountryLookup.unknown(UnknownReason.ERROR);
         }
     }
 
@@ -88,5 +94,37 @@ public final class GeoIpCountryResolver implements AutoCloseable {
             || address.isLinkLocalAddress()
             || address.isSiteLocalAddress()
             || address.isMulticastAddress();
+    }
+
+    public record CountryLookup(String countryCode, UnknownReason unknownReason) {
+
+        public CountryLookup {
+            countryCode = CountryFlag.normalizeCode(countryCode);
+            unknownReason = CountryFlag.UNKNOWN_CODE.equals(countryCode)
+                ? Objects.requireNonNullElse(unknownReason, UnknownReason.NOT_FOUND)
+                : null;
+        }
+
+        public static CountryLookup detected(final String countryCode) {
+            final String normalized = CountryFlag.normalizeCode(countryCode);
+            if (CountryFlag.UNKNOWN_CODE.equals(normalized)) {
+                return unknown(UnknownReason.NOT_FOUND);
+            }
+            return new CountryLookup(normalized, null);
+        }
+
+        public static CountryLookup unknown(final UnknownReason reason) {
+            return new CountryLookup(CountryFlag.UNKNOWN_CODE, Objects.requireNonNull(reason, "reason"));
+        }
+
+        public boolean detectedRealCountry() {
+            return this.unknownReason == null && !CountryFlag.UNKNOWN_CODE.equals(this.countryCode);
+        }
+    }
+
+    public enum UnknownReason {
+        NON_PUBLIC_ADDRESS,
+        NOT_FOUND,
+        ERROR
     }
 }

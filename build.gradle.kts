@@ -12,10 +12,10 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.64-stable")
-    implementation("com.stephanofer:network-platform-paper:1.0.0-SNAPSHOT")
-    implementation("com.stephanofer:network-platform-database:1.0.0-SNAPSHOT")
-    implementation("com.stephanofer:network-platform-hooks:1.0.0-SNAPSHOT")
-    implementation("com.stephanofer:network-platform-menus:1.0.0-SNAPSHOT")
+    implementation("com.stephanofer:network-platform-paper:1.0.1-SNAPSHOT")
+    implementation("com.stephanofer:network-platform-database:1.0.1-SNAPSHOT")
+    implementation("com.stephanofer:network-platform-hooks:1.0.1-SNAPSHOT")
+    implementation("com.stephanofer:network-platform-menus:1.0.1-SNAPSHOT")
     implementation("com.maxmind.geoip2:geoip2:5.1.0")
 
     testImplementation(platform("org.junit:junit-bom:5.12.2"))
