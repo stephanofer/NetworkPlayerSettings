@@ -1,7 +1,9 @@
 package com.stephanofer.networkplayersettings.config;
 
-import com.stephanofer.networkplatform.database.DatabaseConfig;
-import com.stephanofer.networkplatform.paper.libs.boostedyaml.YamlDocument;
+import com.hera.craftkit.database.DatabaseConfig;
+import com.hera.craftkit.database.MigrationConfig;
+import com.hera.craftkit.database.PoolConfig;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import com.stephanofer.networkplayersettings.api.Language;
 import java.util.List;
 
@@ -61,19 +63,25 @@ public record PluginConfig(
         boolean migrationsEnabled
     ) {
         public DatabaseConfig toDatabaseConfig() {
-            return DatabaseConfig.mysql()
+            final DatabaseConfig.Builder builder = DatabaseConfig.builder()
                 .host(this.host)
                 .port(this.port)
                 .database(this.database)
                 .username(this.username)
                 .password(this.password)
                 .tablePrefix(this.tablePrefix)
-                .pool(pool -> {
-                    pool.maximumPoolSize(this.maximumPoolSize);
-                    pool.minimumIdle(this.minimumIdle);
-                })
-                .migrations(migrations -> migrations.enabled(this.migrationsEnabled))
-                .build();
+                .pool(PoolConfig.builder()
+                    .maximumPoolSize(this.maximumPoolSize)
+                    .minimumIdle(this.minimumIdle)
+                    .build());
+
+            if (this.migrationsEnabled) {
+                builder.migration(MigrationConfig.sharedDatabaseDefaults());
+            } else {
+                builder.migration(MigrationConfig.builder().enabled(false).build());
+            }
+
+            return builder.build();
         }
     }
 

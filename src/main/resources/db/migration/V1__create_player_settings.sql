@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `${prefix}player_settings` (
+CREATE TABLE IF NOT EXISTS `${tablePrefix}player_settings` (
     `player_uuid` BINARY(16) NOT NULL,
     `setting_key` VARCHAR(64) NOT NULL,
     `setting_value` VARCHAR(255) NOT NULL,

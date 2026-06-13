@@ -2,9 +2,8 @@ package com.stephanofer.networkplayersettings.asset;
 
 import com.stephanofer.networkplayersettings.api.CountryAsset;
 import com.stephanofer.networkplayersettings.api.CountryFlag;
-import com.stephanofer.networkplatform.paper.config.ConfigService;
-import com.stephanofer.networkplatform.paper.libs.boostedyaml.YamlDocument;
-import com.stephanofer.networkplatform.paper.libs.boostedyaml.block.implementation.Section;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.block.implementation.Section;
 import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,14 +12,11 @@ import java.util.Set;
 
 public final class CountryAssetLoader {
 
-    private static final String CONFIG_PATH = "assets/countries.yml";
-
     public CountryAssetLoader() {
     }
 
-    public CountryAssetCatalog load(final ConfigService configService) {
-        Objects.requireNonNull(configService, "configService");
-        final YamlDocument document = configService.load(CONFIG_PATH);
+    public CountryAssetCatalog load(final YamlDocument document) {
+        Objects.requireNonNull(document, "document");
         return parseCatalog(document);
     }
 

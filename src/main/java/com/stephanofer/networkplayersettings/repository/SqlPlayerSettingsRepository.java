@@ -1,6 +1,6 @@
 package com.stephanofer.networkplayersettings.repository;
 
-import com.stephanofer.networkplatform.database.DatabaseService;
+import com.hera.craftkit.database.Database;
 import com.stephanofer.networkplayersettings.api.CountryFlag;
 import com.stephanofer.networkplayersettings.api.LanguagePreference;
 import com.stephanofer.networkplayersettings.api.PlayerSettingsSnapshot;
@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,62 +17,42 @@ import java.util.concurrent.CompletableFuture;
 
 public final class SqlPlayerSettingsRepository implements PlayerSettingsRepository {
 
-    private final DatabaseService databaseService;
+    private final Database database;
     private final String tableName;
 
-    public SqlPlayerSettingsRepository(final DatabaseService databaseService) {
-        this.databaseService = Objects.requireNonNull(databaseService, "databaseService");
-        this.tableName = this.databaseService.config().tablePrefix() + "player_settings";
+    public SqlPlayerSettingsRepository(final Database database) {
+        this.database = Objects.requireNonNull(database, "database");
+        this.tableName = this.database.table("player_settings");
     }
 
     @Override
     public RepositoryLoadResult loadOrCreate(final UUID playerId) {
-        return this.databaseService.withConnection(connection -> loadOrCreate(connection, playerId));
+        return loadOrCreateAsync(playerId).join();
     }
 
     @Override
     public PlayerSettingsSnapshot load(final UUID playerId) {
-        return this.databaseService.withConnection(connection -> new PlayerSettingsSnapshot(playerId, readValues(connection, playerId)));
+        return loadAsync(playerId).join();
     }
 
     @Override
     public CompletableFuture<PlayerSettingsSnapshot> loadAsync(final UUID playerId) {
-        return this.databaseService.queryAsync(connection -> new PlayerSettingsSnapshot(playerId, readValues(connection, playerId)));
+        return this.database.query(connection -> new PlayerSettingsSnapshot(playerId, readValues(connection, playerId)));
     }
 
     @Override
     public CompletableFuture<RepositoryLoadResult> loadOrCreateAsync(final UUID playerId) {
-        return this.databaseService.queryAsync(connection -> loadOrCreate(connection, playerId));
+        return this.database.transaction(connection -> loadOrCreate(connection, playerId));
     }
 
     @Override
     public void upsert(final UUID playerId, final SettingKey key, final String value) {
-        this.databaseService.useConnection(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement(
-                "INSERT INTO " + this.tableName + " (player_uuid, setting_key, setting_value) VALUES (?, ?, ?) "
-                    + "ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = CURRENT_TIMESTAMP"
-            )) {
-                statement.setBytes(1, toBytes(playerId));
-                statement.setString(2, key.storageKey());
-                statement.setString(3, value);
-                statement.executeUpdate();
-            }
-        });
+        upsertAsync(playerId, key, value).join();
     }
 
     @Override
     public CompletableFuture<Void> upsertAsync(final UUID playerId, final SettingKey key, final String value) {
-        return this.databaseService.executeAsync(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement(
-                "INSERT INTO " + this.tableName + " (player_uuid, setting_key, setting_value) VALUES (?, ?, ?) "
-                    + "ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = CURRENT_TIMESTAMP"
-            )) {
-                statement.setBytes(1, toBytes(playerId));
-                statement.setString(2, key.storageKey());
-                statement.setString(3, value);
-                statement.executeUpdate();
-            }
-        });
+        return this.database.execute(connection -> upsert(connection, playerId, key, value));
     }
 
     private static byte[] toBytes(final UUID uuid) {
@@ -81,7 +62,7 @@ public final class SqlPlayerSettingsRepository implements PlayerSettingsReposito
         return buffer.array();
     }
 
-    private RepositoryLoadResult loadOrCreate(final Connection connection, final UUID playerId) throws Exception {
+    private RepositoryLoadResult loadOrCreate(final Connection connection, final UUID playerId) throws SQLException {
         final EnumMap<SettingKey, String> values = readValues(connection, playerId);
         boolean createdDefault = values.isEmpty();
         createdDefault |= ensureDefault(connection, playerId, values, SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
@@ -95,7 +76,7 @@ public final class SqlPlayerSettingsRepository implements PlayerSettingsReposito
         final EnumMap<SettingKey, String> values,
         final SettingKey key,
         final String defaultValue
-    ) throws Exception {
+    ) throws SQLException {
         if (values.containsKey(key)) {
             return false;
         }
@@ -105,7 +86,7 @@ public final class SqlPlayerSettingsRepository implements PlayerSettingsReposito
         return true;
     }
 
-    private EnumMap<SettingKey, String> readValues(final Connection connection, final UUID playerId) throws Exception {
+    private EnumMap<SettingKey, String> readValues(final Connection connection, final UUID playerId) throws SQLException {
         final EnumMap<SettingKey, String> values = new EnumMap<>(SettingKey.class);
         try (PreparedStatement statement = connection.prepareStatement(
             "SELECT setting_key, setting_value FROM " + this.tableName + " WHERE player_uuid = ?"
@@ -123,7 +104,7 @@ public final class SqlPlayerSettingsRepository implements PlayerSettingsReposito
         return values;
     }
 
-    private void upsert(final Connection connection, final UUID playerId, final SettingKey key, final String value) throws Exception {
+    private void upsert(final Connection connection, final UUID playerId, final SettingKey key, final String value) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
             "INSERT INTO " + this.tableName + " (player_uuid, setting_key, setting_value) VALUES (?, ?, ?) "
                 + "ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = CURRENT_TIMESTAMP"

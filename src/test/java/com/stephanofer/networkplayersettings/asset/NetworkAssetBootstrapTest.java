@@ -7,11 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.stephanofer.networkplatform.paper.config.ConfigService;
 import com.stephanofer.networkplayersettings.api.CountryAsset;
 import com.stephanofer.networkplayersettings.api.NetworkAssetService;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import java.io.ByteArrayInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +42,7 @@ class NetworkAssetBootstrapTest {
             return validCatalog();
         });
 
-        final NetworkAssetService service = bootstrap.initialize(unusedConfigService(), servicesManager, plugin);
+        final NetworkAssetService service = bootstrap.initialize(unusedDocument(), servicesManager, plugin);
         service.countryAsset("AR");
         service.countryAsset("argentina");
         service.countryAsset("???");
@@ -58,7 +61,7 @@ class NetworkAssetBootstrapTest {
             throw new IllegalStateException("boom");
         });
 
-        assertThrows(IllegalStateException.class, () -> bootstrap.initialize(unusedConfigService(), servicesManager, plugin));
+        assertThrows(IllegalStateException.class, () -> bootstrap.initialize(unusedDocument(), servicesManager, plugin));
         assertNull(servicesManager.load(NetworkAssetService.class));
     }
 
@@ -70,7 +73,7 @@ class NetworkAssetBootstrapTest {
             throw new IllegalStateException("shared");
         });
 
-        final IllegalStateException error = assertThrows(IllegalStateException.class, () -> bootstrap.initialize(unusedConfigService(), servicesManager, plugin));
+        final IllegalStateException error = assertThrows(IllegalStateException.class, () -> bootstrap.initialize(unusedDocument(), servicesManager, plugin));
 
         assertTrue(error.getMessage().contains("shared"));
         assertNull(servicesManager.load(NetworkAssetService.class));
@@ -84,18 +87,19 @@ class NetworkAssetBootstrapTest {
             throw new IllegalStateException("base64");
         });
 
-        final IllegalStateException error = assertThrows(IllegalStateException.class, () -> bootstrap.initialize(unusedConfigService(), servicesManager, plugin));
+        final IllegalStateException error = assertThrows(IllegalStateException.class, () -> bootstrap.initialize(unusedDocument(), servicesManager, plugin));
 
         assertTrue(error.getMessage().contains("base64"));
         assertNull(servicesManager.load(NetworkAssetService.class));
     }
 
-    private static ConfigService unusedConfigService() {
-        return (ConfigService) Proxy.newProxyInstance(
-            ConfigService.class.getClassLoader(),
-            new Class<?>[] { ConfigService.class },
-            (proxy, method, args) -> { throw new UnsupportedOperationException(method.getName()); }
-        );
+    private static YamlDocument unusedDocument() {
+        try {
+            final Path tempFile = Files.createTempFile("nps-network-assets", ".yml");
+            return YamlDocument.create(tempFile.toFile(), new ByteArrayInputStream("countries: {}".getBytes()));
+        } catch (final Exception exception) {
+            throw new IllegalStateException("Failed to create test YAML document", exception);
+        }
     }
 
     private static CountryAssetCatalog validCatalog() {
