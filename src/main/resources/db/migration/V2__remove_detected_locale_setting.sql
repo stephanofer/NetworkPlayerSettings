@@ -1,2 +1,2 @@
-DELETE FROM `${prefix}player_settings`
+DELETE FROM `${tablePrefix}player_settings`
 WHERE `setting_key` = 'detected_locale';

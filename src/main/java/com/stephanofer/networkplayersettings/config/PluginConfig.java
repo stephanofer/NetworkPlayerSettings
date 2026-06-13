@@ -1,6 +1,7 @@
 package com.stephanofer.networkplayersettings.config;
 
 import com.hera.craftkit.database.DatabaseConfig;
+import com.hera.craftkit.database.ExistingSchemaStrategy;
 import com.hera.craftkit.database.MigrationConfig;
 import com.hera.craftkit.database.PoolConfig;
 import dev.dejvokep.boostedyaml.YamlDocument;
@@ -62,7 +63,7 @@ public record PluginConfig(
         int minimumIdle,
         boolean migrationsEnabled
     ) {
-        public DatabaseConfig toDatabaseConfig() {
+        public DatabaseConfig toDatabaseConfig(final ClassLoader migrationClassLoader) {
             final DatabaseConfig.Builder builder = DatabaseConfig.builder()
                 .host(this.host)
                 .port(this.port)
@@ -76,7 +77,10 @@ public record PluginConfig(
                     .build());
 
             if (this.migrationsEnabled) {
-                builder.migration(MigrationConfig.sharedDatabaseDefaults());
+                builder.migration(MigrationConfig.builder()
+                    .existingSchemaStrategy(ExistingSchemaStrategy.BASELINE_AT_ZERO)
+                    .classLoader(migrationClassLoader)
+                    .build());
             } else {
                 builder.migration(MigrationConfig.builder().enabled(false).build());
             }

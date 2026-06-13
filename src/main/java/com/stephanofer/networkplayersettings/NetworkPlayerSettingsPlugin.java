@@ -4,6 +4,8 @@ import static net.kyori.adventure.text.Component.text;
 
 import com.hera.craftkit.database.Database;
 import com.hera.craftkit.database.Databases;
+import com.hera.craftkit.zmenu.ZMenuIntegration;
+import com.hera.craftkit.zmenu.ZMenus;
 import com.stephanofer.networkplayersettings.api.NetworkAssetService;
 import com.stephanofer.networkplayersettings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.asset.CountryAssetLoader;
@@ -14,30 +16,20 @@ import com.stephanofer.networkplayersettings.country.GeoIpCountryResolver;
 import com.stephanofer.networkplayersettings.i18n.PluginMessages;
 import com.stephanofer.networkplayersettings.language.LanguageResolver;
 import com.stephanofer.networkplayersettings.listener.PlayerConnectionListener;
-import com.stephanofer.networkplayersettings.menu.BukkitServiceResolver;
 import com.stephanofer.networkplayersettings.menu.SettingsViewOpener;
-import com.stephanofer.networkplayersettings.menu.ZMenuBatchLoader;
+import com.stephanofer.networkplayersettings.menu.SettingsMenuBootstrap;
 import com.stephanofer.networkplayersettings.placeholder.PlayerSettingsPlaceholderExpansion;
 import com.stephanofer.networkplayersettings.repository.PlayerSettingsRepository;
 import com.stephanofer.networkplayersettings.repository.SqlPlayerSettingsRepository;
 import com.stephanofer.networkplayersettings.service.DefaultPlayerSettingsService;
 import com.stephanofer.networkplayersettings.yaml.PluginYamlLoader;
 import dev.dejvokep.boostedyaml.YamlDocument;
-import fr.maxlego08.menu.api.BedrockManager;
-import fr.maxlego08.menu.api.ButtonManager;
-import fr.maxlego08.menu.api.DialogManager;
-import fr.maxlego08.menu.api.InventoryManager;
-import fr.maxlego08.menu.api.MenuPlugin;
-import fr.maxlego08.menu.api.pattern.PatternManager;
-import fr.maxlego08.menu.api.exceptions.DialogException;
-import fr.maxlego08.menu.api.exceptions.InventoryException;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.CompletionException;
 import java.time.Duration;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.incendo.cloud.execution.ExecutionCoordinator;
@@ -52,12 +44,7 @@ import org.incendo.cloud.paper.util.sender.Source;
 public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     private Database database;
-    private MenuPlugin menuPlugin;
-    private InventoryManager inventoryManager;
-    private ButtonManager buttonManager;
-    private DialogManager dialogManager;
-    private PatternManager patternManager;
-    private BedrockManager bedrockManager;
+    private ZMenuIntegration zmenu;
     private PluginYamlLoader yamlLoader;
     private PluginConfig config;
     private PluginMessages messages;
@@ -78,13 +65,12 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
             this.networkAssetService = new NetworkAssetBootstrap(new CountryAssetLoader())
                 .initialize(countryDocument, getServer().getServicesManager(), this);
 
-            this.database = Databases.mysql(this.config.database().toDatabaseConfig());
+            this.database = Databases.mysql(this.config.database().toDatabaseConfig(getClass().getClassLoader()));
             this.database.migrate().join();
 
-            this.menuPlugin = requireMenuPlugin();
-            resolveZMenuServices();
-            final SettingsViewOpener settingsViewOpener = new SettingsViewOpener(this, this.inventoryManager, this.dialogManager, getLogger());
-            registerMenus();
+            this.zmenu = ZMenus.require(this);
+            new SettingsMenuBootstrap(this, this.zmenu).load();
+            final SettingsViewOpener settingsViewOpener = new SettingsViewOpener(this, this.zmenu, getLogger());
 
             this.countryResolver = openCountryResolver();
 
@@ -116,19 +102,6 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
             getServer().getServicesManager().unregisterAll(this);
         }
         shutdownResources();
-    }
-
-    private void registerMenus() throws InventoryException, DialogException {
-        new ZMenuBatchLoader(
-            this,
-            this.yamlLoader,
-            this.buttonManager,
-            this.inventoryManager,
-            this.dialogManager,
-            this.patternManager,
-            this.bedrockManager,
-            getLogger()
-        ).initialize();
     }
 
     private void registerPlaceholderExpansion() {
@@ -180,23 +153,6 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
         new GlobalSettingsCommand(this.settingsService, settingsViewOpener, this.messages, this.config.command())
             .register(commandManager, minecraftHelp);
-    }
-
-    private MenuPlugin requireMenuPlugin() {
-        final Plugin plugin = getServer().getPluginManager().getPlugin("zMenu");
-        if (!(plugin instanceof MenuPlugin hookedMenuPlugin)) {
-            throw new IllegalStateException("zMenu is required and must expose the MenuPlugin API.");
-        }
-        return hookedMenuPlugin;
-    }
-
-    private void resolveZMenuServices() {
-        final BukkitServiceResolver resolver = new BukkitServiceResolver(this);
-        this.inventoryManager = resolver.requireService(InventoryManager.class);
-        this.buttonManager = resolver.requireService(ButtonManager.class);
-        this.patternManager = resolver.requireService(PatternManager.class);
-        this.dialogManager = resolver.requireService(DialogManager.class);
-        this.bedrockManager = resolver.findService(BedrockManager.class).orElse(null);
     }
 
     private GeoIpCountryResolver openCountryResolver() {
