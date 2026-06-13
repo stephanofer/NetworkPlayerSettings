@@ -21,10 +21,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public final class DefaultPlayerSettingsService implements PlayerSettingsService {
 
@@ -33,6 +35,8 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     private final PluginConfig config;
     private final GeoIpCountryResolver countryResolver;
     private final Logger logger;
+    private final Consumer<Runnable> mainThreadExecutor;
+    private final Consumer<PlayerSettingChangeEvent> settingChangeEventDispatcher;
     private final ConcurrentHashMap<UUID, PlayerSettingsSnapshot> cache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, String> localeCache = new ConcurrentHashMap<>();
     private final Set<UUID> readyPlayers = ConcurrentHashMap.newKeySet();
@@ -42,13 +46,36 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         final LanguageResolver languageResolver,
         final PluginConfig config,
         final GeoIpCountryResolver countryResolver,
-        final Logger logger
+        final Logger logger,
+        final JavaPlugin plugin
+    ) {
+        this(
+            repository,
+            languageResolver,
+            config,
+            countryResolver,
+            logger,
+            task -> plugin.getServer().getScheduler().runTask(plugin, task),
+            PlayerSettingChangeEvent::callEvent
+        );
+    }
+
+    DefaultPlayerSettingsService(
+        final PlayerSettingsRepository repository,
+        final LanguageResolver languageResolver,
+        final PluginConfig config,
+        final GeoIpCountryResolver countryResolver,
+        final Logger logger,
+        final Consumer<Runnable> mainThreadExecutor,
+        final Consumer<PlayerSettingChangeEvent> settingChangeEventDispatcher
     ) {
         this.repository = Objects.requireNonNull(repository, "repository");
         this.languageResolver = Objects.requireNonNull(languageResolver, "languageResolver");
         this.config = Objects.requireNonNull(config, "config");
         this.countryResolver = Objects.requireNonNull(countryResolver, "countryResolver");
         this.logger = Objects.requireNonNull(logger, "logger");
+        this.mainThreadExecutor = Objects.requireNonNull(mainThreadExecutor, "mainThreadExecutor");
+        this.settingChangeEventDispatcher = Objects.requireNonNull(settingChangeEventDispatcher, "settingChangeEventDispatcher");
     }
 
     public void preloadForLogin(final UUID playerId) {
@@ -73,13 +100,6 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
             }
 
             final CountryLookup countryLookup = this.countryResolver.resolveCountry(address);
-            this.logger.info(
-                "GeoIP debug for " + playerId
-                    + ": address=" + (address == null ? "null" : address.getHostAddress())
-                    + ", localOrPrivate=" + isLocalOrPrivateAddress(address)
-                    + ", detectedCountry=" + countryLookup.countryCode()
-                    + ", unknownReason=" + countryLookup.unknownReason()
-            );
             final PlayerSettingsSnapshot updated = updateDetectedCountrySnapshot(playerId, loadResult.snapshot(), countryLookup, true);
             this.cache.put(playerId, updated);
             this.readyPlayers.remove(playerId);
@@ -112,14 +132,14 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         final Language newResolved = resolveLanguage(snapshot, newLocale);
 
         if (snapshot.languagePreference() == LanguagePreference.AUTO && oldResolved != newResolved) {
-            new PlayerSettingChangeEvent(
+            dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
                 playerId,
                 SettingKey.LANGUAGE,
                 snapshot.languagePreference().storageValue(),
                 snapshot.languagePreference().storageValue(),
                 oldResolved.code(),
                 newResolved.code()
-            ).callEvent();
+            ));
         }
     }
 
@@ -182,24 +202,27 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         final Language oldResolved = resolveLanguage(previous, locale);
         final PlayerSettingsSnapshot updated = previous.withSetting(SettingKey.LANGUAGE, preference.storageValue());
         final Language newResolved = resolveLanguage(updated, locale);
-        this.cache.put(playerId, updated);
-
-        if (!previous.valueOrDefault(SettingKey.LANGUAGE).equals(updated.valueOrDefault(SettingKey.LANGUAGE)) || oldResolved != newResolved) {
-            new PlayerSettingChangeEvent(
-                playerId,
-                SettingKey.LANGUAGE,
-                previous.valueOrDefault(SettingKey.LANGUAGE),
-                updated.valueOrDefault(SettingKey.LANGUAGE),
-                oldResolved.code(),
-                newResolved.code()
-            ).callEvent();
-        }
 
         return this.repository.upsertAsync(playerId, SettingKey.LANGUAGE, preference.storageValue())
-            .exceptionally(throwable -> {
+            .whenComplete((unused, throwable) -> {
+                if (throwable == null) {
+                    return;
+                }
                 this.logger.log(Level.SEVERE, "Failed to persist language setting for " + playerId, throwable);
-                return null;
-            });
+            })
+            .thenCompose(unused -> runOnMainThread(() -> {
+                this.cache.put(playerId, updated);
+                if (!previous.valueOrDefault(SettingKey.LANGUAGE).equals(updated.valueOrDefault(SettingKey.LANGUAGE)) || oldResolved != newResolved) {
+                    dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
+                        playerId,
+                        SettingKey.LANGUAGE,
+                        previous.valueOrDefault(SettingKey.LANGUAGE),
+                        updated.valueOrDefault(SettingKey.LANGUAGE),
+                        oldResolved.code(),
+                        newResolved.code()
+                    ));
+                }
+            }));
     }
 
     @Override
@@ -211,48 +234,54 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
 
         final PlayerSettingsSnapshot previous = getCachedOrDefault(playerId);
         final PlayerSettingsSnapshot updated = previous.withSetting(SettingKey.COUNTRY_OVERRIDE, normalizedCountry);
-        this.cache.put(playerId, updated);
-
-        if (!Objects.equals(previous.countryCode(), updated.countryCode())) {
-            new PlayerSettingChangeEvent(
-                playerId,
-                SettingKey.COUNTRY_OVERRIDE,
-                previous.valueOrDefault(SettingKey.COUNTRY_OVERRIDE),
-                normalizedCountry,
-                previous.countryCode(),
-                updated.countryCode()
-            ).callEvent();
-        }
 
         return this.repository.upsertAsync(playerId, SettingKey.COUNTRY_OVERRIDE, normalizedCountry)
-            .exceptionally(throwable -> {
+            .whenComplete((unused, throwable) -> {
+                if (throwable == null) {
+                    return;
+                }
                 this.logger.log(Level.SEVERE, "Failed to persist country override for " + playerId, throwable);
-                return null;
-            });
+            })
+            .thenCompose(unused -> runOnMainThread(() -> {
+                this.cache.put(playerId, updated);
+                if (!Objects.equals(previous.countryCode(), updated.countryCode())) {
+                    dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
+                        playerId,
+                        SettingKey.COUNTRY_OVERRIDE,
+                        previous.valueOrDefault(SettingKey.COUNTRY_OVERRIDE),
+                        normalizedCountry,
+                        previous.countryCode(),
+                        updated.countryCode()
+                    ));
+                }
+            }));
     }
 
     @Override
     public CompletableFuture<Void> clearCountryOverride(final UUID playerId) {
         final PlayerSettingsSnapshot previous = getCachedOrDefault(playerId);
         final PlayerSettingsSnapshot updated = previous.withSetting(SettingKey.COUNTRY_OVERRIDE, "");
-        this.cache.put(playerId, updated);
-
-        if (!Objects.equals(previous.countryCode(), updated.countryCode())) {
-            new PlayerSettingChangeEvent(
-                playerId,
-                SettingKey.COUNTRY_OVERRIDE,
-                previous.valueOrDefault(SettingKey.COUNTRY_OVERRIDE),
-                "",
-                previous.countryCode(),
-                updated.countryCode()
-            ).callEvent();
-        }
 
         return this.repository.upsertAsync(playerId, SettingKey.COUNTRY_OVERRIDE, "")
-            .exceptionally(throwable -> {
+            .whenComplete((unused, throwable) -> {
+                if (throwable == null) {
+                    return;
+                }
                 this.logger.log(Level.SEVERE, "Failed to clear country override for " + playerId, throwable);
-                return null;
-            });
+            })
+            .thenCompose(unused -> runOnMainThread(() -> {
+                this.cache.put(playerId, updated);
+                if (!Objects.equals(previous.countryCode(), updated.countryCode())) {
+                    dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
+                        playerId,
+                        SettingKey.COUNTRY_OVERRIDE,
+                        previous.valueOrDefault(SettingKey.COUNTRY_OVERRIDE),
+                        "",
+                        previous.countryCode(),
+                        updated.countryCode()
+                    ));
+                }
+            }));
     }
 
     @Override
@@ -312,15 +341,6 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         return previous.withSetting(SettingKey.DETECTED_COUNTRY, normalizedCountry);
     }
 
-    private static boolean isLocalOrPrivateAddress(final InetAddress address) {
-        return address == null
-            || address.isAnyLocalAddress()
-            || address.isLoopbackAddress()
-            || address.isLinkLocalAddress()
-            || address.isSiteLocalAddress()
-            || address.isMulticastAddress();
-    }
-
     private String currentLocale(final UUID playerId) {
         if (!this.config.settings().detectClientLocale()) {
             return "";
@@ -330,6 +350,27 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
             return currentLocale(onlinePlayer);
         }
         return this.localeCache.getOrDefault(playerId, "");
+    }
+
+    private CompletableFuture<Void> runOnMainThread(final Runnable task) {
+        final CompletableFuture<Void> result = new CompletableFuture<>();
+        try {
+            this.mainThreadExecutor.accept(() -> {
+                try {
+                    task.run();
+                    result.complete(null);
+                } catch (final Throwable throwable) {
+                    result.completeExceptionally(throwable);
+                }
+            });
+        } catch (final Throwable throwable) {
+            result.completeExceptionally(throwable);
+        }
+        return result;
+    }
+
+    private void dispatchSettingChangeEvent(final PlayerSettingChangeEvent event) {
+        this.settingChangeEventDispatcher.accept(event);
     }
 
     private String currentLocale(final Player player) {

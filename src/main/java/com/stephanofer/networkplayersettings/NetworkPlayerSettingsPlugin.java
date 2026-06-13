@@ -25,9 +25,9 @@ import com.stephanofer.networkplayersettings.service.DefaultPlayerSettingsServic
 import com.stephanofer.networkplayersettings.yaml.PluginYamlLoader;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.CompletionException;
-import java.time.Duration;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
@@ -40,7 +40,6 @@ import org.incendo.cloud.paper.PaperCommandManager;
 import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
 import org.incendo.cloud.paper.util.sender.Source;
 
-@SuppressWarnings("UnstableApiUsage")
 public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     private Database database;
@@ -51,46 +50,22 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     private NetworkAssetService networkAssetService;
     private GeoIpCountryResolver countryResolver;
     private DefaultPlayerSettingsService settingsService;
+    private PlaceholderExpansion placeholderExpansion;
 
     @Override
     public void onEnable() {
         try {
-            this.yamlLoader = new PluginYamlLoader(this);
-
-            final YamlDocument configDocument = this.yamlLoader.load("config.yml");
-            this.config = PluginConfig.fromDocument(configDocument);
-            this.messages = new PluginMessages();
-
-            final YamlDocument countryDocument = this.yamlLoader.load("assets/countries.yml");
-            this.networkAssetService = new NetworkAssetBootstrap(new CountryAssetLoader())
-                .initialize(countryDocument, getServer().getServicesManager(), this);
-
-            this.database = Databases.mysql(this.config.database().toDatabaseConfig(getClass().getClassLoader()));
-            this.database.migrate().join();
-
-            this.zmenu = ZMenus.require(this);
-            new SettingsMenuBootstrap(this, this.zmenu).load();
-            final SettingsViewOpener settingsViewOpener = new SettingsViewOpener(this, this.zmenu, getLogger());
-
-            this.countryResolver = openCountryResolver();
-
-            final PlayerSettingsRepository repository = new SqlPlayerSettingsRepository(this.database);
-            this.settingsService = new DefaultPlayerSettingsService(
-                repository,
-                new LanguageResolver(this.config.settings().defaultLanguage()),
-                this.config,
-                this.countryResolver,
-                getLogger()
-            );
-
+            loadConfiguration();
+            initializeAssets();
+            initializeDatabase();
+            final SettingsViewOpener settingsViewOpener = initializeMenus();
+            initializeSettingsService();
             registerPlaceholderExpansion();
-            registerCommands(settingsViewOpener);
-
-            getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this.settingsService, this.config), this);
-            getServer().getServicesManager().register(PlayerSettingsService.class, this.settingsService, this, ServicePriority.Normal);
+            registerCommandsAndListeners(settingsViewOpener);
         } catch (final Exception exception) {
             getLogger().severe("Failed to enable NetworkPlayerSettings: " + rootCauseMessage(exception));
             getLogger().log(java.util.logging.Level.SEVERE, "Startup failure details", exception);
+            unregisterPlaceholderExpansion();
             shutdownResources();
             getServer().getPluginManager().disablePlugin(this);
         }
@@ -98,10 +73,48 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        unregisterPlaceholderExpansion();
         if (getServer() != null) {
             getServer().getServicesManager().unregisterAll(this);
         }
         shutdownResources();
+    }
+
+    private void loadConfiguration() {
+        this.yamlLoader = new PluginYamlLoader(this);
+        final YamlDocument configDocument = this.yamlLoader.load("config.yml");
+        this.config = PluginConfig.fromDocument(configDocument);
+        this.messages = new PluginMessages();
+    }
+
+    private void initializeAssets() {
+        final YamlDocument countryDocument = this.yamlLoader.load("assets/countries.yml");
+        this.networkAssetService = new NetworkAssetBootstrap(new CountryAssetLoader())
+            .initialize(countryDocument, getServer().getServicesManager(), this);
+    }
+
+    private void initializeDatabase() {
+        this.database = Databases.mysql(this.config.database().toDatabaseConfig(getClass().getClassLoader()));
+        this.database.migrate().join();
+    }
+
+    private SettingsViewOpener initializeMenus() {
+        this.zmenu = ZMenus.require(this);
+        new SettingsMenuBootstrap(this, this.zmenu).load();
+        return new SettingsViewOpener(this, this.zmenu, getLogger());
+    }
+
+    private void initializeSettingsService() {
+        this.countryResolver = openCountryResolver();
+        final PlayerSettingsRepository repository = new SqlPlayerSettingsRepository(this.database);
+        this.settingsService = new DefaultPlayerSettingsService(
+            repository,
+            new LanguageResolver(this.config.settings().defaultLanguage()),
+            this.config,
+            this.countryResolver,
+            getLogger(),
+            this
+        );
     }
 
     private void registerPlaceholderExpansion() {
@@ -114,14 +127,24 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
             return;
         }
 
-        final PlaceholderExpansion expansion = new PlayerSettingsPlaceholderExpansion(
+        this.placeholderExpansion = new PlayerSettingsPlaceholderExpansion(
             this.settingsService,
             Duration.ofMillis(Math.max(0L, this.config.placeholderapi().cacheTtlMillis())),
             getPluginMeta().getVersion()
         );
-        expansion.register();
+        this.placeholderExpansion.register();
     }
 
+    private void unregisterPlaceholderExpansion() {
+        if (this.placeholderExpansion == null) {
+            return;
+        }
+
+        this.placeholderExpansion.unregister();
+        this.placeholderExpansion = null;
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
     private void registerCommands(final SettingsViewOpener settingsViewOpener) {
         final PaperCommandManager<Source> commandManager = PaperCommandManager.builder(PaperSimpleSenderMapper.simpleSenderMapper())
             .executionCoordinator(ExecutionCoordinator.simpleCoordinator())
@@ -153,6 +176,12 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
         new GlobalSettingsCommand(this.settingsService, settingsViewOpener, this.messages, this.config.command())
             .register(commandManager, minecraftHelp);
+    }
+
+    private void registerCommandsAndListeners(final SettingsViewOpener settingsViewOpener) {
+        registerCommands(settingsViewOpener);
+        getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this.settingsService, this.config), this);
+        getServer().getServicesManager().register(PlayerSettingsService.class, this.settingsService, this, ServicePriority.Normal);
     }
 
     private GeoIpCountryResolver openCountryResolver() {

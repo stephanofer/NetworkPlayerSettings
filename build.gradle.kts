@@ -43,6 +43,7 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         mergeServiceFiles()
+        exclude("INFO_BIN", "INFO_SRC", "README")
         filesMatching("META-INF/services/**") {
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
@@ -73,6 +74,10 @@ tasks {
         relocate(
             "com.maxmind",
             "com.stephanofer.networkplayersettings.libs.maxmind"
+        )
+        relocate(
+            "com.zaxxer",
+            "com.stephanofer.networkplayersettings.libs.zaxxer"
         )
     }
 
