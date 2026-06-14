@@ -8,11 +8,6 @@
 /boosted-yaml/
 /cloud-minecraft/
 
-# Local documentation/vendor mirrors that should not be tracked here
-/docs/zMenu/
-/docs/Craftkit/craftkit-zmenu/
-/docs/cloud-minecraft/
-
 # Local Pi runtime state
 .atl/
 .pi/
