@@ -4,7 +4,7 @@ Este documento explica cómo declarar y obtener NetworkPlayerSettings desde otro
 
 ## Dependencias reales del proyecto
 
-El proyecto se compila como `java-library` y genera un JAR sombreado con Shadow. El `build.gradle.kts` declara:
+El proyecto se compila como `java-library`, genera un JAR sombreado con Shadow y expone publicación local con `maven-publish`. El `build.gradle.kts` declara:
 
 | Dependencia | Uso visible |
 |---|---|
@@ -16,20 +16,60 @@ El proyecto se compila como `java-library` y genera un JAR sombreado con Shadow.
 | `org.incendo:cloud-paper:2.0.0-beta.15` y `cloud-minecraft-extras` | Comando `/globalsettings`. |
 | `com.maxmind.geoip2:geoip2:5.1.0` | Resolución GeoIP interna. |
 
-El repositorio no define `group`, `version` propia fija ni `publishing`. Por lo tanto, no hay coordenadas Maven publicadas inferibles desde este código. Para compilar un plugin consumidor tenés opciones respaldadas por el repositorio:
+## Publicación local de NetworkPlayerSettings
 
-- dependencia de proyecto en un build multi-módulo;
-- `compileOnly(files("ruta/al/NetworkPlayerSettings.jar"))`;
-- publicación local/manual si tu pipeline la agrega fuera de este repositorio.
+El proyecto define estas coordenadas Maven locales:
 
-Ejemplo local sin inventar coordenadas:
+```kotlin
+group = "com.stephanofer"
+version = "1.0.0-SNAPSHOT"
+artifactId = "networkplayersettings"
+```
+
+Para instalar el artefacto en Maven Local desde este proyecto:
+
+```bash
+./gradlew publishToMavenLocal
+```
+
+En Windows también podés usar:
+
+```powershell
+.\gradlew.bat publishToMavenLocal
+```
+
+Después, un plugin consumidor puede compilar contra la API pública así:
+
+```kotlin
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven("https://repo.papermc.io/repository/maven-public/")
+}
+
+dependencies {
+    compileOnly("com.stephanofer:networkplayersettings:1.0.0-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.69-stable")
+}
+```
+
+Usá `compileOnly`, no `implementation`, porque NetworkPlayerSettings debe estar instalado como plugin en el servidor. El consumidor necesita las clases para compilar, pero no debe sombrear ni empaquetar NetworkPlayerSettings dentro de su propio JAR.
+
+### Cuándo usar `libs/`
+
+`libs/NetworkPlayerSettings.jar` sigue siendo posible para pruebas puntuales, pero no es la opción recomendada para desarrollo normal de varios plugins consumidores. Maven Local es más limpio porque versiona la dependencia, evita copias manuales y hace explícito qué versión consume cada plugin.
+
+Ejemplo válido pero menos recomendable:
 
 ```kotlin
 dependencies {
     compileOnly(files("libs/NetworkPlayerSettings.jar"))
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.69-stable")
 }
 ```
+
+### Límite actual
+
+La publicación configurada es local. El proyecto no declara un repositorio Maven remoto para publicar releases compartidos. Si varios desarrolladores o un CI necesitan resolver la dependencia sin depender de la máquina local, publicá el mismo artefacto en un Maven privado y reemplazá `mavenLocal()` por ese repositorio.
 
 ## Metadata del plugin consumidor
 

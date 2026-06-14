@@ -1,7 +1,11 @@
 plugins {
     id("java-library")
+    id("maven-publish")
     id("com.gradleup.shadow") version "9.4.1"
 }
+
+group = "com.stephanofer"
+version = "1.0.0-SNAPSHOT"
 
 repositories {
     mavenLocal()
@@ -30,6 +34,15 @@ dependencies {
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            artifactId = "networkplayersettings"
+            from(components["java"])
+        }
+    }
 }
 
 tasks {
