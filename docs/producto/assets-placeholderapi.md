@@ -1,6 +1,6 @@
-# Assets de países, PlaceholderAPI, comandos y UI
+# Assets de países y PlaceholderAPI
 
-Este documento cubre puntos de integración complementarios para plugins consumidores.
+Este documento cubre puntos de integración complementarios del core `NetworkPlayerSettings`. El core no registra comandos, inventarios ni menús.
 
 ## `NetworkAssetService`
 
@@ -55,37 +55,13 @@ Identificador de expansión: `playersettings`.
 
 Los placeholders se cachean por `playerId:param` durante `placeholderapi.cache-ttl-millis` si el TTL es positivo. Con TTL `0` o negativo, no se cachean.
 
-## Comando de usuario
+## Consumo desde interfaces externas
 
-El comando se registra con Cloud Paper. Defaults:
+NetworkPlayerSettings no expone comandos ni menús propios. Un plugin consumidor puede construir cualquier interfaz usando únicamente:
 
-- `/globalsettings`
-- aliases `/settings`, `/prefs`
-- `/globalsettings help [query]`
+- `PlayerSettingsService` para leer/mutar idioma y país;
+- `NetworkAssetService` para renderizar assets de países;
+- `PlayerSettingsReadyEvent` para esperar datos listos;
+- `PlayerSettingChangeEvent` para reaccionar a cambios.
 
-Solo jugadores pueden ejecutar el comando principal. El handler:
-
-1. comprueba `settingsService.isReady(player.getUniqueId())`;
-2. si no está listo, envía `settings.loading`;
-3. si está listo, intenta abrir el target configurado;
-4. si falla, envía `settings.menu-open-failed`.
-
-## Menú de idioma
-
-El menú interno se carga con zMenu desde `inventories/language.yml` y registra un botón custom `NPS_LANGUAGE`.
-
-El botón:
-
-- cambia la preferencia mediante `settingsService.setLanguage`;
-- aplica cooldown por jugador con `settings.language-change-cooldown-millis`;
-- limpia cooldown al salir el jugador;
-- renderiza selección con enchant visual;
-- usa placeholders internos de zMenu, no PlaceholderAPI.
-
-Limitación importante: el click llama `setLanguage(...)` pero no encadena el `CompletableFuture` para confirmar al jugador después de persistir. Esto es comportamiento interno del menú; para plugins consumidores que muten ajustes, sí se recomienda esperar el future antes de mostrar confirmaciones críticas.
-
-## Dialogs zMenu
-
-`SettingsMenuBootstrap` carga `.dialogs("dialogs")` y `SettingsViewOpener` soporta `command.open.type: dialog`, pero este repositorio no contiene recursos bajo `src/main/resources/dialogs`. Si configurás `dialog` sin recursos/dialog manager disponible, abrir el comando puede fallar y enviar `settings.menu-open-failed`.
-
-Para consumidores, esto no es un extension point público. Si querés abrir tu propia UI, hacelo desde tu plugin usando `PlayerSettingsService` en vez de acoplarte a `SettingsViewOpener`.
+Regla importante: la UI externa no debe instanciar servicios internos ni escribir directo en la base de datos. Debe usar `ServicesManager` y los contratos públicos documentados en [`api-publica.md`](api-publica.md).

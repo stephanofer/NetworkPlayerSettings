@@ -6,13 +6,11 @@ import com.hera.craftkit.database.MigrationConfig;
 import com.hera.craftkit.database.PoolConfig;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import com.stephanofer.networkplayersettings.api.Language;
-import java.util.List;
 
 public record PluginConfig(
     DatabaseSection database,
     SettingsSection settings,
     GeoIpSection geoip,
-    CommandSection command,
     PlaceholderSection placeholderapi
 ) {
 
@@ -32,18 +30,11 @@ public record PluginConfig(
             new SettingsSection(
                 Language.fromCode(document.getString("settings.default-language", "en")),
                 document.getBoolean("settings.detect-client-locale", true),
-                document.getBoolean("settings.cache-cleanup-on-quit", true),
-                document.getLong("settings.language-change-cooldown-millis", 750L)
+                document.getBoolean("settings.cache-cleanup-on-quit", true)
             ),
             new GeoIpSection(
                 document.getBoolean("geoip.enabled", true),
                 document.getString("geoip.database-path", "GeoLite2-Country.mmdb")
-            ),
-            new CommandSection(
-                document.getString("command.name", "globalsettings"),
-                document.getStringList("command.aliases", List.of("settings", "prefs")),
-                CommandTargetType.fromConfig(document.getString("command.open.type", "menu")),
-                document.getString("command.open.key", "language")
             ),
             new PlaceholderSection(
                 document.getBoolean("placeholderapi.enabled", true),
@@ -92,8 +83,7 @@ public record PluginConfig(
     public record SettingsSection(
         Language defaultLanguage,
         boolean detectClientLocale,
-        boolean cacheCleanupOnQuit,
-        long languageChangeCooldownMillis
+        boolean cacheCleanupOnQuit
     ) {
     }
 
@@ -107,46 +97,6 @@ public record PluginConfig(
             } else {
                 databasePath = databasePath.trim();
             }
-        }
-    }
-
-    public record CommandSection(
-        String name,
-        List<String> aliases,
-        CommandTargetType openTargetType,
-        String openTargetKey
-    ) {
-        public CommandSection {
-            name = normalize(name, "globalsettings");
-            final String normalizedName = name;
-            aliases = aliases == null
-                ? List.of()
-                : aliases.stream()
-                    .map(alias -> alias == null ? "" : alias.trim())
-                    .filter(alias -> !alias.isBlank())
-                    .filter(alias -> !alias.equalsIgnoreCase(normalizedName))
-                    .toList();
-            openTargetType = openTargetType == null ? CommandTargetType.MENU : openTargetType;
-            openTargetKey = normalize(openTargetKey, "language");
-        }
-
-        private static String normalize(final String raw, final String fallback) {
-            if (raw == null || raw.isBlank()) {
-                return fallback;
-            }
-            return raw.trim();
-        }
-    }
-
-    public enum CommandTargetType {
-        MENU,
-        DIALOG;
-
-        public static CommandTargetType fromConfig(final String raw) {
-            if (raw != null && raw.equalsIgnoreCase("dialog")) {
-                return DIALOG;
-            }
-            return MENU;
         }
     }
 

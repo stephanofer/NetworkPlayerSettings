@@ -1,10 +1,10 @@
-package com.stephanofer.networkplayersettings.menu;
+package com.stephanofer.networkplayersettingszmenu.menu;
 
 import com.hera.craftkit.zmenu.ZMenuIntegration;
-import com.stephanofer.networkplayersettings.config.PluginConfig;
-import fr.maxlego08.menu.api.DialogInventory;
+import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import fr.maxlego08.menu.api.DialogManager;
 import fr.maxlego08.menu.api.Inventory;
+import fr.maxlego08.menu.api.inventory.dialog.DialogInventory;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -27,7 +27,7 @@ public final class SettingsViewOpener {
         this.logger = Objects.requireNonNull(logger, "logger");
     }
 
-    public boolean open(final Player player, final PluginConfig.CommandSection commandConfig) {
+    public boolean open(final Player player, final ZMenuPluginConfig.CommandSection commandConfig) {
         Objects.requireNonNull(player, "player");
         Objects.requireNonNull(commandConfig, "commandConfig");
 

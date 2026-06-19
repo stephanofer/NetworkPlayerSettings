@@ -17,21 +17,11 @@ settings:
   default-language: "en"
   detect-client-locale: true
   cache-cleanup-on-quit: true
-  language-change-cooldown-millis: 750
 
 geoip:
   enabled: true
   # Put GeoLite2-Country.mmdb in the plugin data folder, or use an absolute path.
   database-path: "GeoLite2-Country.mmdb"
-
-command:
-  name: "globalsettings"
-  aliases:
-    - "settings"
-    - "prefs"
-  open:
-    type: "menu"
-    key: "language"
 
 placeholderapi:
   enabled: true

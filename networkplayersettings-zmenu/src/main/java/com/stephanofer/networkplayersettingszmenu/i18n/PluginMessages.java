@@ -1,4 +1,4 @@
-package com.stephanofer.networkplayersettings.i18n;
+package com.stephanofer.networkplayersettingszmenu.i18n;
 
 import com.stephanofer.networkplayersettings.api.Language;
 import java.text.MessageFormat;

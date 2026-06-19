@@ -2,7 +2,6 @@ package com.stephanofer.networkplayersettings.listener;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.stephanofer.networkplayersettings.config.PluginConfig;
-import com.stephanofer.networkplayersettings.menu.LanguageButton;
 import com.stephanofer.networkplayersettings.service.DefaultPlayerSettingsService;
 import io.papermc.paper.event.connection.configuration.AsyncPlayerConnectionConfigureEvent;
 import java.net.InetSocketAddress;
@@ -55,7 +54,6 @@ public final class PlayerConnectionListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(final PlayerQuitEvent event) {
-        LanguageButton.clearCooldown(event.getPlayer().getUniqueId());
         this.settingsService.evict(event.getPlayer().getUniqueId(), this.config.settings().cacheCleanupOnQuit());
     }
 }

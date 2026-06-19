@@ -1,0 +1,13 @@
+file-version: 1
+
+command:
+  name: "globalsettings"
+  aliases:
+    - "settings"
+    - "prefs"
+  open:
+    type: "menu"
+    key: "language"
+
+settings:
+  language-change-cooldown-millis: 750

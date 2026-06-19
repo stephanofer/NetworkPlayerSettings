@@ -1,23 +1,15 @@
 package com.stephanofer.networkplayersettings;
 
-import static net.kyori.adventure.text.Component.text;
-
 import com.hera.craftkit.database.Database;
 import com.hera.craftkit.database.Databases;
-import com.hera.craftkit.zmenu.ZMenuIntegration;
-import com.hera.craftkit.zmenu.ZMenus;
 import com.stephanofer.networkplayersettings.api.NetworkAssetService;
 import com.stephanofer.networkplayersettings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.asset.CountryAssetLoader;
 import com.stephanofer.networkplayersettings.asset.NetworkAssetBootstrap;
-import com.stephanofer.networkplayersettings.command.GlobalSettingsCommand;
 import com.stephanofer.networkplayersettings.config.PluginConfig;
 import com.stephanofer.networkplayersettings.country.GeoIpCountryResolver;
-import com.stephanofer.networkplayersettings.i18n.PluginMessages;
 import com.stephanofer.networkplayersettings.language.LanguageResolver;
 import com.stephanofer.networkplayersettings.listener.PlayerConnectionListener;
-import com.stephanofer.networkplayersettings.menu.SettingsViewOpener;
-import com.stephanofer.networkplayersettings.menu.SettingsMenuBootstrap;
 import com.stephanofer.networkplayersettings.placeholder.PlayerSettingsPlaceholderExpansion;
 import com.stephanofer.networkplayersettings.repository.PlayerSettingsRepository;
 import com.stephanofer.networkplayersettings.repository.SqlPlayerSettingsRepository;
@@ -32,21 +24,12 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.incendo.cloud.execution.ExecutionCoordinator;
-import org.incendo.cloud.minecraft.extras.MinecraftExceptionHandler;
-import org.incendo.cloud.minecraft.extras.MinecraftHelp;
-import org.incendo.cloud.minecraft.extras.caption.ComponentCaptionFormatter;
-import org.incendo.cloud.paper.PaperCommandManager;
-import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
-import org.incendo.cloud.paper.util.sender.Source;
 
 public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     private Database database;
-    private ZMenuIntegration zmenu;
     private PluginYamlLoader yamlLoader;
     private PluginConfig config;
-    private PluginMessages messages;
     private NetworkAssetService networkAssetService;
     private GeoIpCountryResolver countryResolver;
     private DefaultPlayerSettingsService settingsService;
@@ -58,10 +41,10 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
             loadConfiguration();
             initializeAssets();
             initializeDatabase();
-            final SettingsViewOpener settingsViewOpener = initializeMenus();
             initializeSettingsService();
+            registerServices();
             registerPlaceholderExpansion();
-            registerCommandsAndListeners(settingsViewOpener);
+            registerListeners();
         } catch (final Exception exception) {
             getLogger().severe("Failed to enable NetworkPlayerSettings: " + rootCauseMessage(exception));
             getLogger().log(java.util.logging.Level.SEVERE, "Startup failure details", exception);
@@ -84,7 +67,6 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
         this.yamlLoader = new PluginYamlLoader(this);
         final YamlDocument configDocument = this.yamlLoader.load("config.yml");
         this.config = PluginConfig.fromDocument(configDocument);
-        this.messages = new PluginMessages();
     }
 
     private void initializeAssets() {
@@ -96,12 +78,6 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     private void initializeDatabase() {
         this.database = Databases.mysql(this.config.database().toDatabaseConfig(getClass().getClassLoader()));
         this.database.migrate().join();
-    }
-
-    private SettingsViewOpener initializeMenus() {
-        this.zmenu = ZMenus.require(this);
-        new SettingsMenuBootstrap(this, this.zmenu).load();
-        return new SettingsViewOpener(this, this.zmenu, getLogger());
     }
 
     private void initializeSettingsService() {
@@ -144,44 +120,12 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
         this.placeholderExpansion = null;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
-    private void registerCommands(final SettingsViewOpener settingsViewOpener) {
-        final PaperCommandManager<Source> commandManager = PaperCommandManager.builder(PaperSimpleSenderMapper.simpleSenderMapper())
-            .executionCoordinator(ExecutionCoordinator.simpleCoordinator())
-            .buildOnEnable(this);
-
-        MinecraftExceptionHandler.create(Source::source)
-            .defaultInvalidSyntaxHandler()
-            .defaultInvalidSenderHandler()
-            .defaultNoPermissionHandler()
-            .defaultArgumentParsingHandler()
-            .defaultCommandExecutionHandler()
-            .decorator(component -> text().append(text("[", net.kyori.adventure.text.format.NamedTextColor.DARK_GRAY))
-                .append(text("Settings", net.kyori.adventure.text.format.NamedTextColor.AQUA))
-                .append(text("] ", net.kyori.adventure.text.format.NamedTextColor.DARK_GRAY))
-                .append(component)
-                .build())
-            .registerTo(commandManager);
-
-        final MinecraftHelp<Source> minecraftHelp = MinecraftHelp.<Source>builder()
-            .commandManager(commandManager)
-            .audienceProvider(Source::source)
-            .commandPrefix('/' + this.config.command().name() + " help")
-            .messageProvider(MinecraftHelp.captionMessageProvider(
-                commandManager.captionRegistry(),
-                ComponentCaptionFormatter.miniMessage()
-            ))
-            .build();
-        commandManager.captionRegistry().registerProvider(MinecraftHelp.defaultCaptionsProvider());
-
-        new GlobalSettingsCommand(this.settingsService, settingsViewOpener, this.messages, this.config.command())
-            .register(commandManager, minecraftHelp);
+    private void registerServices() {
+        getServer().getServicesManager().register(PlayerSettingsService.class, this.settingsService, this, ServicePriority.Normal);
     }
 
-    private void registerCommandsAndListeners(final SettingsViewOpener settingsViewOpener) {
-        registerCommands(settingsViewOpener);
+    private void registerListeners() {
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this.settingsService, this.config), this);
-        getServer().getServicesManager().register(PlayerSettingsService.class, this.settingsService, this, ServicePriority.Normal);
     }
 
     private GeoIpCountryResolver openCountryResolver() {
@@ -218,10 +162,6 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     public DefaultPlayerSettingsService settingsService() {
         return this.settingsService;
-    }
-
-    public PluginMessages messages() {
-        return this.messages;
     }
 
     public PluginConfig config() {

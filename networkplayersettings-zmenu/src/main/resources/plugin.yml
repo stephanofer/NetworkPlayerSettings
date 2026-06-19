@@ -1,0 +1,7 @@
+name: NetworkPlayerSettingsZMenu
+version: '${version}'
+
+main: com.stephanofer.networkplayersettingszmenu.NetworkPlayerSettingsZMenuPlugin
+api-version: '26.1.2'
+load: POSTWORLD
+depend: [NetworkPlayerSettings, zMenu]

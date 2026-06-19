@@ -20,10 +20,7 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.12.2")
 
     implementation("com.hera.craftkit:craftkit-database:1.1.0")
-    implementation("com.hera.craftkit:craftkit-zmenu:1.1.0")
     implementation("com.stephanofer.boostedyaml:boosted-yaml:1.3.7")
-    implementation("org.incendo:cloud-paper:2.0.0-beta.15")
-    implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.15")
     implementation("com.maxmind.geoip2:geoip2:5.1.0")
 
     testImplementation(platform("org.junit:junit-bom:5.12.2"))
@@ -40,7 +37,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             artifactId = "networkplayersettings"
-            from(components["java"])
+            artifact(tasks.named("jar"))
         }
     }
 }
@@ -54,6 +51,7 @@ tasks {
     }
 
     shadowJar {
+        destinationDirectory.set(rootProject.layout.projectDirectory.dir("target"))
         archiveClassifier.set("")
         mergeServiceFiles()
         exclude("INFO_BIN", "INFO_SRC", "README")
@@ -67,22 +65,6 @@ tasks {
         relocate(
             "dev.dejvokep.boostedyaml",
             "com.stephanofer.networkplayersettings.libs.boostedyaml"
-        )
-        relocate(
-            "org.incendo.cloud",
-            "com.stephanofer.networkplayersettings.libs.cloud"
-        )
-        relocate(
-            "io.leangen.geantyref",
-            "com.stephanofer.networkplayersettings.libs.geantyref"
-        )
-        relocate(
-            "xyz.jpenilla.reflectionremapper",
-            "com.stephanofer.networkplayersettings.libs.reflectionremapper"
-        )
-        relocate(
-            "net.fabricmc.mappingio",
-            "com.stephanofer.networkplayersettings.libs.mappingio"
         )
         relocate(
             "com.maxmind",

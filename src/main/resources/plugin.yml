@@ -4,5 +4,4 @@ version: '${version}'
 main: com.stephanofer.networkplayersettings.NetworkPlayerSettingsPlugin
 api-version: '26.1.2'
 load: POSTWORLD
-depend: [zMenu]
 softdepend: [PlaceholderAPI]

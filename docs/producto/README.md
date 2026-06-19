@@ -26,7 +26,7 @@ if (settings == null) {
 | Eventos | `PlayerSettingsReadyEvent` y `PlayerSettingChangeEvent`. |
 | Países y flags | `CountryFlag`, `CountryAsset`, `NetworkAssetService`. |
 | PlaceholderAPI | Expansión `%playersettings_*%` si PlaceholderAPI está instalada y la config lo permite. |
-| UI/comandos | Comando configurable de ajustes globales y menú zMenu interno de idioma. No es una API de extensión pública. |
+| UI/comandos | No pertenecen al core. Cualquier UI debe consumir la API pública como otro plugin. |
 
 ## Cuándo conviene depender de NetworkPlayerSettings
 
@@ -41,7 +41,7 @@ Usalo cuando tu plugin necesita:
 No lo uses para:
 
 - escribir directamente en la base de datos `nps_player_settings`;
-- llamar clases en paquetes internos como `service`, `repository`, `config`, `asset`, `menu`, `listener`, `placeholder`, `country`, `language` o `yaml`;
+- llamar clases en paquetes internos como `service`, `repository`, `config`, `asset`, `listener`, `placeholder`, `country`, `language` o `yaml`;
 - asumir que el dato del jugador está listo durante `AsyncPlayerPreLoginEvent` de tu propio plugin sin coordinar el flujo.
 
 ## Documentos de esta carpeta
@@ -50,7 +50,7 @@ No lo uses para:
 - [`api-publica.md`](api-publica.md): referencia completa de clases públicas de API y eventos.
 - [`flujo-ajustes-eventos.md`](flujo-ajustes-eventos.md): carga, caché, persistencia, eventos y threading observado en el código.
 - [`configuracion.md`](configuracion.md): `config.yml`, `assets/countries.yml`, recursos, defaults y consecuencias operativas.
-- [`assets-placeholderapi-ui.md`](assets-placeholderapi-ui.md): assets de países, PlaceholderAPI, comandos y menú.
+- [`assets-placeholderapi.md`](assets-placeholderapi.md): assets de países, PlaceholderAPI y consumo desde interfaces externas.
 - [`ejemplos-y-buenas-practicas.md`](ejemplos-y-buenas-practicas.md): snippets correctos y do/don't para plugins consumidores.
 - [`troubleshooting-source-map.md`](troubleshooting-source-map.md): errores comunes, diagnóstico y mapa de archivos fuente.
 
@@ -58,5 +58,5 @@ No lo uses para:
 
 - El repositorio publica para desarrollo local con `maven-publish`: `com.stephanofer:networkplayersettings:1.0.0-SNAPSHOT` mediante `publishToMavenLocal`.
 - No hay repositorio Maven remoto configurado en el proyecto. Para builds compartidos fuera de la máquina local, publicá el artefacto en un Maven privado o usá otra estrategia controlada por tu pipeline.
-- La metadata real del plugin usa `depend: [zMenu]` y `softdepend: [PlaceholderAPI]`; los consumidores deben declarar su relación con `NetworkPlayerSettings` según si la integración es obligatoria u opcional.
+- La metadata del core usa `softdepend: [PlaceholderAPI]`; no declara dependencia hacia zMenu ni registra comandos de UI.
 - El proyecto registra servicios Bukkit con `ServicePriority.Normal`; no hay API propia de bootstrap fuera de `ServicesManager`.

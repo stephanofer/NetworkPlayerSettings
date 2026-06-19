@@ -1,12 +1,12 @@
-package com.stephanofer.networkplayersettings.command;
+package com.stephanofer.networkplayersettingszmenu.command;
 
 import static net.kyori.adventure.text.Component.text;
 import static org.incendo.cloud.parser.standard.StringParser.greedyStringParser;
 
 import com.stephanofer.networkplayersettings.api.PlayerSettingsService;
-import com.stephanofer.networkplayersettings.config.PluginConfig;
-import com.stephanofer.networkplayersettings.i18n.PluginMessages;
-import com.stephanofer.networkplayersettings.menu.SettingsViewOpener;
+import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
+import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
+import com.stephanofer.networkplayersettingszmenu.menu.SettingsViewOpener;
 import java.util.List;
 import java.util.Objects;
 import org.bukkit.entity.Player;
@@ -23,13 +23,13 @@ public final class GlobalSettingsCommand {
     private final PlayerSettingsService settingsService;
     private final SettingsViewOpener settingsViewOpener;
     private final PluginMessages messages;
-    private final PluginConfig.CommandSection commandConfig;
+    private final ZMenuPluginConfig.CommandSection commandConfig;
 
     public GlobalSettingsCommand(
         final PlayerSettingsService settingsService,
         final SettingsViewOpener settingsViewOpener,
         final PluginMessages messages,
-        final PluginConfig.CommandSection commandConfig
+        final ZMenuPluginConfig.CommandSection commandConfig
     ) {
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
         this.settingsViewOpener = Objects.requireNonNull(settingsViewOpener, "settingsViewOpener");

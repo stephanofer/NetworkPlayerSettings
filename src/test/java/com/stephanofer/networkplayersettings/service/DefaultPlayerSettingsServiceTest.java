@@ -442,9 +442,8 @@ class DefaultPlayerSettingsServiceTest {
     private static PluginConfig pluginConfig() {
         return new PluginConfig(
             new PluginConfig.DatabaseSection("127.0.0.1", 3306, "test", "root", "", "nps_", 1, 1, false),
-            new PluginConfig.SettingsSection(Language.ENGLISH, true, true, 0L),
+            new PluginConfig.SettingsSection(Language.ENGLISH, true, true),
             new PluginConfig.GeoIpSection(false, "GeoLite2-Country.mmdb"),
-            new PluginConfig.CommandSection("globalsettings", java.util.List.of(), PluginConfig.CommandTargetType.MENU, "language"),
             new PluginConfig.PlaceholderSection(false, 0L)
         );
     }
@@ -452,9 +451,8 @@ class DefaultPlayerSettingsServiceTest {
     private static PluginConfig geoIpEnabledConfig() {
         return new PluginConfig(
             new PluginConfig.DatabaseSection("127.0.0.1", 3306, "test", "root", "", "nps_", 1, 1, false),
-            new PluginConfig.SettingsSection(Language.ENGLISH, true, true, 0L),
+            new PluginConfig.SettingsSection(Language.ENGLISH, true, true),
             new PluginConfig.GeoIpSection(true, "GeoLite2-Country.mmdb"),
-            new PluginConfig.CommandSection("globalsettings", java.util.List.of(), PluginConfig.CommandTargetType.MENU, "language"),
             new PluginConfig.PlaceholderSection(false, 0L)
         );
     }
@@ -462,9 +460,8 @@ class DefaultPlayerSettingsServiceTest {
     private static PluginConfig localeDetectionDisabledConfig() {
         return new PluginConfig(
             new PluginConfig.DatabaseSection("127.0.0.1", 3306, "test", "root", "", "nps_", 1, 1, false),
-            new PluginConfig.SettingsSection(Language.ENGLISH, false, true, 0L),
+            new PluginConfig.SettingsSection(Language.ENGLISH, false, true),
             new PluginConfig.GeoIpSection(false, "GeoLite2-Country.mmdb"),
-            new PluginConfig.CommandSection("globalsettings", java.util.List.of(), PluginConfig.CommandTargetType.MENU, "language"),
             new PluginConfig.PlaceholderSection(false, 0L)
         );
     }

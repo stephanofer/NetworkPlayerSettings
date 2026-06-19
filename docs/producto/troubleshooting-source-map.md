@@ -7,7 +7,7 @@
 Verificá:
 
 - Tu `plugin.yml`/metadata declara `depend: [NetworkPlayerSettings]` si la integración es obligatoria.
-- NetworkPlayerSettings inició correctamente; si falla config, assets, DB o zMenu, se deshabilita y no registra servicio.
+- NetworkPlayerSettings inició correctamente; si falla config, assets o DB, se deshabilita y no registra servicio.
 - El nombre exacto del plugin es `NetworkPlayerSettings`.
 
 ### `NetworkAssetService` es `null`
@@ -82,8 +82,6 @@ Verificá:
 | Países default | `src/main/resources/assets/countries.yml` |
 | Migraciones | `src/main/resources/db/migration/*.sql` |
 | PlaceholderAPI | `placeholder/PlayerSettingsPlaceholderExpansion.java` |
-| Comando | `command/GlobalSettingsCommand.java` |
-| zMenu/bootstrap | `menu/*`, `src/main/resources/inventories/language.yml` |
 | Tests de contratos de servicio | `src/test/java/com/stephanofer/networkplayersettings/service/DefaultPlayerSettingsServiceTest.java` |
 | Tests de assets | `src/test/java/com/stephanofer/networkplayersettings/asset/*Test.java` |
 
@@ -92,6 +90,6 @@ Verificá:
 - [ ] Si cambia `PlayerSettingsService`, actualizar `api-publica.md` y ejemplos.
 - [ ] Si cambia `PluginConfig` o `config.yml`, actualizar `configuracion.md`.
 - [ ] Si cambia `DefaultPlayerSettingsService`, revisar flujo, eventos, async y do/don't.
-- [ ] Si cambia PlaceholderAPI, actualizar `assets-placeholderapi-ui.md`.
+- [ ] Si cambia PlaceholderAPI o assets públicos, actualizar `assets-placeholderapi.md`.
 - [ ] Si cambia `assets/countries.yml` o loader/catalog, actualizar reglas de assets.
 - [ ] Si cambia plugin metadata, actualizar instalación/integración.
