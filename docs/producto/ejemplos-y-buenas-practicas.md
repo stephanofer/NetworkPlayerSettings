@@ -52,15 +52,14 @@ Language language = settings.resolvedLanguage(player);
 player.sendMessage("Language: " + language.code());
 ```
 
-## Leer país y renderizar bandera
+## Leer país normalizado
 
 ```java
 import com.stephanofer.networkplayersettings.settings.country.CountryFlag;
 
 UUID playerId = player.getUniqueId();
-String countryCode = settings.countryCode(playerId);
-String flag = CountryFlag.emoji(countryCode);
-player.sendMessage("Country: " + flag + " " + countryCode);
+String countryCode = CountryFlag.normalizeCode(settings.countryCode(playerId));
+player.sendMessage("Country: " + countryCode);
 ```
 
 ## Cambiar idioma sin bloquear el main thread

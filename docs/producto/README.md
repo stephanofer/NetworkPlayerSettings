@@ -25,7 +25,7 @@ if (settings == null) {
 | Ajustes de jugador | `com.stephanofer.networkplayersettings.settings.api`: `PlayerSettingsService`, `PlayerSettingsSnapshot`, `SettingKey`. |
 | Idioma | `com.stephanofer.networkplayersettings.settings.language`: `LanguagePreference`, `Language`. |
 | Eventos | `com.stephanofer.networkplayersettings.settings.event`: `PlayerSettingsReadyEvent`, `PlayerSettingChangeEvent`. |
-| Países y flags | `com.stephanofer.networkplayersettings.settings.country.CountryFlag`, `com.stephanofer.networkplayersettings.assets.api.CountryAsset`, `NetworkAssetService`. |
+| Países | `com.stephanofer.networkplayersettings.settings.country.CountryFlag`, `com.stephanofer.networkplayersettings.assets.api.CountryAsset`, `NetworkAssetService`. |
 | PlaceholderAPI | Expansión `%playersettings_*%` si PlaceholderAPI está instalada y la config lo permite. |
 | UI/comandos | No pertenecen al core. Cualquier UI debe consumir la API pública como otro plugin. |
 

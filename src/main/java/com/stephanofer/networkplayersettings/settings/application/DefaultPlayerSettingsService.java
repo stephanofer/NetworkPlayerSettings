@@ -14,7 +14,10 @@ import com.stephanofer.networkplayersettings.settings.language.LanguagePreferenc
 import com.stephanofer.networkplayersettings.settings.language.LanguageResolver;
 import com.stephanofer.networkplayersettings.settings.storage.PlayerSettingsRepository;
 import com.stephanofer.networkplayersettings.settings.storage.RepositoryLoadResult;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.net.InetAddress;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -39,8 +42,8 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     private final Logger logger;
     private final Consumer<Runnable> mainThreadExecutor;
     private final Consumer<PlayerSettingChangeEvent> settingChangeEventDispatcher;
-    private final ConcurrentHashMap<UUID, PlayerSettingsSnapshot> cache = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<UUID, String> localeCache = new ConcurrentHashMap<>();
+    private final Cache<UUID, PlayerSettingsSnapshot> cache;
+    private final Cache<UUID, String> localeCache;
     private final ConcurrentHashMap<UUID, CompletableFuture<Void>> mutationChains = new ConcurrentHashMap<>();
     private final Set<UUID> readyPlayers = ConcurrentHashMap.newKeySet();
 
@@ -79,6 +82,15 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         this.logger = Objects.requireNonNull(logger, "logger");
         this.mainThreadExecutor = Objects.requireNonNull(mainThreadExecutor, "mainThreadExecutor");
         this.settingChangeEventDispatcher = Objects.requireNonNull(settingChangeEventDispatcher, "settingChangeEventDispatcher");
+        this.cache = Caffeine.newBuilder()
+            .maximumSize(this.config.settings().cacheMaximumSize())
+            .build();
+        final Caffeine<Object, Object> localeCacheBuilder = Caffeine.newBuilder()
+            .maximumSize(this.config.settings().cacheMaximumSize());
+        if (this.config.settings().localeCacheExpireAfterAccessMillis() > 0L) {
+            localeCacheBuilder.expireAfterAccess(Duration.ofMillis(this.config.settings().localeCacheExpireAfterAccessMillis()));
+        }
+        this.localeCache = localeCacheBuilder.build();
     }
 
     public void preloadForLogin(final UUID playerId) {
@@ -128,7 +140,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     public void handleLocaleChange(final Player player, final String newLocaleRaw) {
         final UUID playerId = player.getUniqueId();
         final PlayerSettingsSnapshot snapshot = getCachedOrDefault(playerId);
-        final String oldLocale = this.localeCache.getOrDefault(playerId, currentLocale(player));
+        final String oldLocale = Objects.requireNonNullElse(this.localeCache.getIfPresent(playerId), currentLocale(player));
         final String newLocale = this.languageResolver.normalizeLocale(newLocaleRaw);
         final Language oldResolved = resolveLanguage(snapshot, oldLocale);
         rememberLocale(playerId, newLocale);
@@ -148,16 +160,16 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
 
     public void evict(final UUID playerId, final boolean clearCache) {
         this.readyPlayers.remove(playerId);
-        this.localeCache.remove(playerId);
+        this.localeCache.invalidate(playerId);
         if (clearCache) {
-            this.cache.remove(playerId);
+            this.cache.invalidate(playerId);
         }
         this.mutationChains.remove(playerId);
     }
 
     @Override
     public CompletableFuture<PlayerSettingsSnapshot> load(final UUID playerId) {
-        final PlayerSettingsSnapshot cached = this.cache.get(playerId);
+        final PlayerSettingsSnapshot cached = this.cache.getIfPresent(playerId);
         if (cached != null) {
             return CompletableFuture.completedFuture(cached);
         }
@@ -171,12 +183,13 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
 
     @Override
     public Optional<PlayerSettingsSnapshot> cached(final UUID playerId) {
-        return Optional.ofNullable(this.cache.get(playerId));
+        return Optional.ofNullable(this.cache.getIfPresent(playerId));
     }
 
     @Override
     public PlayerSettingsSnapshot getCachedOrDefault(final UUID playerId) {
-        return this.cache.getOrDefault(playerId, PlayerSettingsSnapshot.defaults(playerId));
+        final PlayerSettingsSnapshot cached = this.cache.getIfPresent(playerId);
+        return cached == null ? PlayerSettingsSnapshot.defaults(playerId) : cached;
     }
 
     @Override
@@ -359,7 +372,8 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         if (onlinePlayer != null) {
             return currentLocale(onlinePlayer);
         }
-        return this.localeCache.getOrDefault(playerId, "");
+        final String cachedLocale = this.localeCache.getIfPresent(playerId);
+        return cachedLocale == null ? "" : cachedLocale;
     }
 
     private CompletableFuture<Void> runOnMainThread(final Runnable task) {
@@ -405,7 +419,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
 
     private void rememberLocale(final UUID playerId, final String locale) {
         if (!this.config.settings().detectClientLocale() || locale == null || locale.isBlank()) {
-            this.localeCache.remove(playerId);
+            this.localeCache.invalidate(playerId);
             return;
         }
         this.localeCache.put(playerId, locale);

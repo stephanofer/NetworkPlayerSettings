@@ -6,12 +6,15 @@ import com.stephanofer.networkplayersettings.settings.language.Language;
 import com.stephanofer.networkplayersettings.settings.language.LanguagePreference;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Expiry;
 import fr.maxlego08.menu.api.button.Button;
 import fr.maxlego08.menu.api.engine.InventoryEngine;
 import fr.maxlego08.menu.api.utils.Placeholders;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -22,7 +25,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class LanguageButton extends Button {
 
-    private static final ConcurrentHashMap<UUID, Long> COOLDOWN_UNTIL = new ConcurrentHashMap<>();
+    private static final Cache<UUID, Cooldown> COOLDOWNS = Caffeine.newBuilder()
+        .maximumSize(10_000L)
+        .expireAfter(Expiry.creating((UUID playerId, Cooldown cooldown) -> Duration.ofMillis(cooldown.durationMillis())))
+        .build();
 
     private final JavaPlugin plugin;
     private final PlayerSettingsService settingsService;
@@ -70,17 +76,16 @@ public final class LanguageButton extends Button {
         }
 
         final long cooldownMillis = Math.max(0L, this.settingsConfig.languageChangeCooldownMillis());
-        final long now = System.currentTimeMillis();
-        final long cooldownUntil = COOLDOWN_UNTIL.getOrDefault(player.getUniqueId(), 0L);
-        if (cooldownUntil > now) {
+        final Cooldown cooldown = COOLDOWNS.getIfPresent(player.getUniqueId());
+        if (cooldown != null) {
             final Language viewerLanguage = this.settingsService.resolvedLanguage(player);
-            final long seconds = Math.max(1L, (cooldownUntil - now + 999L) / 1000L);
+            final long seconds = Math.max(1L, (cooldown.expiresAtMillis() - System.currentTimeMillis() + 999L) / 1000L);
             player.sendRichMessage(this.messages.get(viewerLanguage, "settings.language.cooldown", seconds));
             return;
         }
 
         if (cooldownMillis > 0L) {
-            COOLDOWN_UNTIL.put(player.getUniqueId(), now + cooldownMillis);
+            COOLDOWNS.put(player.getUniqueId(), new Cooldown(System.currentTimeMillis() + cooldownMillis, cooldownMillis));
         }
 
         this.settingsService.setLanguage(player.getUniqueId(), this.preference)
@@ -89,7 +94,7 @@ public final class LanguageButton extends Button {
                     return;
                 }
                 if (throwable != null) {
-                    COOLDOWN_UNTIL.remove(player.getUniqueId());
+                    COOLDOWNS.invalidate(player.getUniqueId());
                     player.sendRichMessage(this.messages.get(
                         this.settingsService.resolvedLanguage(player),
                         "settings.language.update-failed"
@@ -175,10 +180,13 @@ public final class LanguageButton extends Button {
     }
 
     public static void clearCooldown(final UUID playerId) {
-        COOLDOWN_UNTIL.remove(playerId);
+        COOLDOWNS.invalidate(playerId);
     }
 
     public static void clearCooldowns() {
-        COOLDOWN_UNTIL.clear();
+        COOLDOWNS.invalidateAll();
+    }
+
+    private record Cooldown(long expiresAtMillis, long durationMillis) {
     }
 }

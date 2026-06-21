@@ -30,7 +30,9 @@ public record PluginConfig(
             new SettingsSection(
                 Language.fromCode(document.getString("settings.default-language", "en")),
                 document.getBoolean("settings.detect-client-locale", true),
-                document.getBoolean("settings.cache-cleanup-on-quit", true)
+                document.getBoolean("settings.cache-cleanup-on-quit", true),
+                document.getLong("settings.cache-maximum-size", 10_000L),
+                document.getLong("settings.locale-cache-expire-after-access-millis", 600_000L)
             ),
             new GeoIpSection(
                 document.getBoolean("geoip.enabled", true),
@@ -38,7 +40,8 @@ public record PluginConfig(
             ),
             new PlaceholderSection(
                 document.getBoolean("placeholderapi.enabled", true),
-                document.getLong("placeholderapi.cache-ttl-millis", 250L)
+                document.getLong("placeholderapi.cache-ttl-millis", 250L),
+                document.getLong("placeholderapi.cache-maximum-size", 50_000L)
             )
         );
     }
@@ -83,8 +86,14 @@ public record PluginConfig(
     public record SettingsSection(
         Language defaultLanguage,
         boolean detectClientLocale,
-        boolean cacheCleanupOnQuit
+        boolean cacheCleanupOnQuit,
+        long cacheMaximumSize,
+        long localeCacheExpireAfterAccessMillis
     ) {
+        public SettingsSection {
+            cacheMaximumSize = Math.max(1L, cacheMaximumSize);
+            localeCacheExpireAfterAccessMillis = Math.max(0L, localeCacheExpireAfterAccessMillis);
+        }
     }
 
     public record GeoIpSection(
@@ -102,7 +111,12 @@ public record PluginConfig(
 
     public record PlaceholderSection(
         boolean enabled,
-        long cacheTtlMillis
+        long cacheTtlMillis,
+        long cacheMaximumSize
     ) {
+        public PlaceholderSection {
+            cacheTtlMillis = Math.max(0L, cacheTtlMillis);
+            cacheMaximumSize = Math.max(1L, cacheMaximumSize);
+        }
     }
 }

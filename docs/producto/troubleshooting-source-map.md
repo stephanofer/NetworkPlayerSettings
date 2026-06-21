@@ -70,7 +70,7 @@ Verificá:
 | Snapshot y defaults | `src/main/java/com/stephanofer/networkplayersettings/settings/api/PlayerSettingsSnapshot.java` |
 | Idiomas | `settings/language/Language.java`, `settings/language/LanguagePreference.java`, `settings/language/LanguageResolver.java` |
 | Setting keys | `settings/api/SettingKey.java` |
-| País/flags | `settings/country/CountryFlag.java`, `assets/api/CountryAsset.java` |
+| País | `settings/country/CountryFlag.java`, `assets/api/CountryAsset.java` |
 | Servicio de assets | `assets/api/NetworkAssetService.java`, `assets/country/*` |
 | Eventos públicos | `settings/event/PlayerSettingsReadyEvent.java`, `settings/event/PlayerSettingChangeEvent.java` |
 | Servicio principal | `settings/application/DefaultPlayerSettingsService.java` |

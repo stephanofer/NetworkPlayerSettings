@@ -1,4 +1,4 @@
-file-version: 1
+file-version: 2
 
 database:
   host: "127.0.0.1"
@@ -17,6 +17,8 @@ settings:
   default-language: "en"
   detect-client-locale: true
   cache-cleanup-on-quit: true
+  cache-maximum-size: 10000
+  locale-cache-expire-after-access-millis: 600000
 
 geoip:
   enabled: true
@@ -26,3 +28,4 @@ geoip:
 placeholderapi:
   enabled: true
   cache-ttl-millis: 250
+  cache-maximum-size: 50000

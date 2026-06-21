@@ -24,21 +24,20 @@ Comportamiento:
 - `countryAssets()` expone un mapa inmutable con códigos canónicos, no aliases.
 - Las búsquedas de gameplay son en memoria; el catálogo se carga una vez al bootstrap.
 
-## Flags por emoji
+## Normalización de códigos de país
 
-`CountryFlag` no depende del catálogo YAML. Sirve para normalizar y renderizar flags:
+`CountryFlag` no depende del catálogo YAML. Sirve para normalizar y validar códigos de país:
 
 ```java
 import com.stephanofer.networkplayersettings.settings.country.CountryFlag;
 
 String code = CountryFlag.normalizeCode(settings.countryCode(playerId));
-String flag = CountryFlag.emoji(code);
+boolean validIso = CountryFlag.isIsoAlpha2(code);
 ```
 
 Fallbacks:
 
 - Código inválido o `null` -> `XX`.
-- Emoji de `XX` -> `🏳`.
 
 ## PlaceholderAPI
 

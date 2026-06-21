@@ -6,7 +6,7 @@ La API pública para consumidores está separada por dominio. Las demás clases 
 |---|---|
 | Settings | `com.stephanofer.networkplayersettings.settings.api` |
 | Idioma | `com.stephanofer.networkplayersettings.settings.language` |
-| País/flags | `com.stephanofer.networkplayersettings.settings.country.CountryFlag` |
+| País | `com.stephanofer.networkplayersettings.settings.country.CountryFlag` |
 | Eventos de settings | `com.stephanofer.networkplayersettings.settings.event` |
 | Assets | `com.stephanofer.networkplayersettings.assets.api` |
 
@@ -157,21 +157,18 @@ public enum Language {
 
 Paquete: `com.stephanofer.networkplayersettings.settings.country`.
 
-Utilidad pública de país/flag.
+Utilidad pública de país.
 
 ```java
 public final class CountryFlag {
     public static final String UNKNOWN_CODE = "XX";
-    public static final String UNKNOWN_FLAG = "🏳";
     public static String normalizeCode(String raw);
     public static boolean isIsoAlpha2(String code);
-    public static String emoji(String rawCode);
 }
 ```
 
 - `normalizeCode(null)` o valores inválidos devuelven `XX`.
 - `isIsoAlpha2` exige exactamente dos letras mayúsculas `A-Z`.
-- `emoji("AR")` devuelve la bandera regional; `XX` o inválidos devuelven `🏳`.
 
 ## `CountryAsset`
 

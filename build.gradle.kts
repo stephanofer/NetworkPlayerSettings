@@ -22,6 +22,7 @@ dependencies {
     implementation("com.hera.craftkit:craftkit-database:1.1.0")
     implementation("com.stephanofer.boostedyaml:boosted-yaml:1.3.7")
     implementation("com.maxmind.geoip2:geoip2:5.1.0")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
 
     testImplementation(platform("org.junit:junit-bom:5.12.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -73,6 +74,10 @@ tasks {
         relocate(
             "com.zaxxer",
             "com.stephanofer.networkplayersettings.libs.zaxxer"
+        )
+        relocate(
+            "com.github.benmanes.caffeine",
+            "com.stephanofer.networkplayersettings.libs.caffeine"
         )
     }
 

@@ -488,27 +488,27 @@ class DefaultPlayerSettingsServiceTest {
     private static PluginConfig pluginConfig() {
         return new PluginConfig(
             new PluginConfig.DatabaseSection("127.0.0.1", 3306, "test", "root", "", "nps_", 1, 1, false),
-            new PluginConfig.SettingsSection(Language.ENGLISH, true, true),
+            new PluginConfig.SettingsSection(Language.ENGLISH, true, true, 10_000L, 600_000L),
             new PluginConfig.GeoIpSection(false, "GeoLite2-Country.mmdb"),
-            new PluginConfig.PlaceholderSection(false, 0L)
+            new PluginConfig.PlaceholderSection(false, 0L, 50_000L)
         );
     }
 
     private static PluginConfig geoIpEnabledConfig() {
         return new PluginConfig(
             new PluginConfig.DatabaseSection("127.0.0.1", 3306, "test", "root", "", "nps_", 1, 1, false),
-            new PluginConfig.SettingsSection(Language.ENGLISH, true, true),
+            new PluginConfig.SettingsSection(Language.ENGLISH, true, true, 10_000L, 600_000L),
             new PluginConfig.GeoIpSection(true, "GeoLite2-Country.mmdb"),
-            new PluginConfig.PlaceholderSection(false, 0L)
+            new PluginConfig.PlaceholderSection(false, 0L, 50_000L)
         );
     }
 
     private static PluginConfig localeDetectionDisabledConfig() {
         return new PluginConfig(
             new PluginConfig.DatabaseSection("127.0.0.1", 3306, "test", "root", "", "nps_", 1, 1, false),
-            new PluginConfig.SettingsSection(Language.ENGLISH, false, true),
+            new PluginConfig.SettingsSection(Language.ENGLISH, false, true, 10_000L, 600_000L),
             new PluginConfig.GeoIpSection(false, "GeoLite2-Country.mmdb"),
-            new PluginConfig.PlaceholderSection(false, 0L)
+            new PluginConfig.PlaceholderSection(false, 0L, 50_000L)
         );
     }
 

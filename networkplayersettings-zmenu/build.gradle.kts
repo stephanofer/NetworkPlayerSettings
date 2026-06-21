@@ -20,6 +20,7 @@ dependencies {
     implementation("com.hera.craftkit:craftkit-zmenu:1.1.0")
     implementation("org.incendo:cloud-paper:2.0.0-beta.15")
     implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.15")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
 }
 
 java {
@@ -62,6 +63,10 @@ tasks {
         relocate(
             "net.fabricmc.mappingio",
             "com.stephanofer.networkplayersettingszmenu.libs.mappingio"
+        )
+        relocate(
+            "com.github.benmanes.caffeine",
+            "com.stephanofer.networkplayersettingszmenu.libs.caffeine"
         )
     }
 

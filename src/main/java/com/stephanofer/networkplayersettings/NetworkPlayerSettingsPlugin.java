@@ -106,6 +106,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
             this.settingsService,
             this.config.settings().defaultLanguage(),
             Duration.ofMillis(Math.max(0L, this.config.placeholderapi().cacheTtlMillis())),
+            this.config.placeholderapi().cacheMaximumSize(),
             getPluginMeta().getVersion()
         );
         this.placeholderExpansion.register();
