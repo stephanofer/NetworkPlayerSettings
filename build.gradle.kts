@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.stephanofer"
-version = "1.0.0-SNAPSHOT"
+version = "2.0.0"
 
 repositories {
     mavenLocal()
@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.69-stable")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.25-alpha")
     compileOnly("me.clip:placeholderapi:2.12.2")
 
     implementation("com.hera.craftkit:craftkit-database:1.1.0")
@@ -25,7 +25,7 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.12.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.papermc.paper:paper-api:26.1.2.build.69-stable")
+    testImplementation("io.papermc.paper:paper-api:26.2.build.25-alpha")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

@@ -4,13 +4,13 @@ import static net.kyori.adventure.text.Component.text;
 
 import com.hera.craftkit.zmenu.ZMenuIntegration;
 import com.hera.craftkit.zmenu.ZMenus;
-import com.stephanofer.networkplayersettings.api.PlayerSettingsService;
+import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettingszmenu.command.GlobalSettingsCommand;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
-import com.stephanofer.networkplayersettingszmenu.menu.LanguageButton;
-import com.stephanofer.networkplayersettingszmenu.menu.SettingsMenuBootstrap;
-import com.stephanofer.networkplayersettingszmenu.menu.SettingsViewOpener;
+import com.stephanofer.networkplayersettingszmenu.settings.language.LanguageButton;
+import com.stephanofer.networkplayersettingszmenu.settings.view.SettingsMenuBootstrap;
+import com.stephanofer.networkplayersettingszmenu.settings.view.SettingsViewOpener;
 import java.util.Objects;
 import java.util.concurrent.CompletionException;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -34,7 +34,7 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
     public void onEnable() {
         try {
             this.config = ZMenuPluginConfig.load(this);
-            this.messages = new PluginMessages();
+            this.messages = new PluginMessages(getLogger());
             this.settingsService = requireService(PlayerSettingsService.class);
             this.zmenu = ZMenus.require(this);
 

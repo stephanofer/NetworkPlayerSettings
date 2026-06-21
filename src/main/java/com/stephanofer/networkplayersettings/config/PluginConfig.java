@@ -5,7 +5,7 @@ import com.hera.craftkit.database.ExistingSchemaStrategy;
 import com.hera.craftkit.database.MigrationConfig;
 import com.hera.craftkit.database.PoolConfig;
 import dev.dejvokep.boostedyaml.YamlDocument;
-import com.stephanofer.networkplayersettings.api.Language;
+import com.stephanofer.networkplayersettings.settings.language.Language;
 
 public record PluginConfig(
     DatabaseSection database,

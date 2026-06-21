@@ -2,25 +2,24 @@ package com.stephanofer.networkplayersettings;
 
 import com.hera.craftkit.database.Database;
 import com.hera.craftkit.database.Databases;
-import com.stephanofer.networkplayersettings.api.NetworkAssetService;
-import com.stephanofer.networkplayersettings.api.PlayerSettingsService;
-import com.stephanofer.networkplayersettings.asset.CountryAssetLoader;
-import com.stephanofer.networkplayersettings.asset.NetworkAssetBootstrap;
+import com.stephanofer.networkplayersettings.assets.api.NetworkAssetService;
+import com.stephanofer.networkplayersettings.assets.country.CountryAssetLoader;
+import com.stephanofer.networkplayersettings.assets.country.NetworkAssetBootstrap;
 import com.stephanofer.networkplayersettings.config.PluginConfig;
-import com.stephanofer.networkplayersettings.country.GeoIpCountryResolver;
-import com.stephanofer.networkplayersettings.language.LanguageResolver;
-import com.stephanofer.networkplayersettings.listener.PlayerConnectionListener;
-import com.stephanofer.networkplayersettings.placeholder.PlayerSettingsPlaceholderExpansion;
-import com.stephanofer.networkplayersettings.repository.PlayerSettingsRepository;
-import com.stephanofer.networkplayersettings.repository.SqlPlayerSettingsRepository;
-import com.stephanofer.networkplayersettings.service.DefaultPlayerSettingsService;
-import com.stephanofer.networkplayersettings.yaml.PluginYamlLoader;
+import com.stephanofer.networkplayersettings.platform.bukkit.PlayerConnectionListener;
+import com.stephanofer.networkplayersettings.platform.bukkit.PlayerSettingsPlaceholderExpansion;
+import com.stephanofer.networkplayersettings.platform.bukkit.PluginYamlLoader;
+import com.stephanofer.networkplayersettings.settings.application.DefaultPlayerSettingsService;
+import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
+import com.stephanofer.networkplayersettings.settings.country.GeoIpCountryResolver;
+import com.stephanofer.networkplayersettings.settings.language.LanguageResolver;
+import com.stephanofer.networkplayersettings.settings.storage.PlayerSettingsRepository;
+import com.stephanofer.networkplayersettings.settings.storage.SqlPlayerSettingsRepository;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.CompletionException;
-import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -33,7 +32,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     private NetworkAssetService networkAssetService;
     private GeoIpCountryResolver countryResolver;
     private DefaultPlayerSettingsService settingsService;
-    private PlaceholderExpansion placeholderExpansion;
+    private PlayerSettingsPlaceholderExpansion placeholderExpansion;
 
     @Override
     public void onEnable() {
@@ -105,10 +104,12 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
         this.placeholderExpansion = new PlayerSettingsPlaceholderExpansion(
             this.settingsService,
+            this.config.settings().defaultLanguage(),
             Duration.ofMillis(Math.max(0L, this.config.placeholderapi().cacheTtlMillis())),
             getPluginMeta().getVersion()
         );
         this.placeholderExpansion.register();
+        getServer().getPluginManager().registerEvents(this.placeholderExpansion, this);
     }
 
     private void unregisterPlaceholderExpansion() {

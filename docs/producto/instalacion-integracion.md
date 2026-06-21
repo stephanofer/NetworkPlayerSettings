@@ -8,7 +8,7 @@ El proyecto se compila como `java-library`, genera un JAR sombreado con Shadow y
 
 | Dependencia | Uso visible |
 |---|---|
-| `io.papermc.paper:paper-api:26.1.2.build.69-stable` | API Paper de compilación. |
+| `io.papermc.paper:paper-api:26.2.build.25-alpha` | API Paper de compilación del core. |
 | `me.clip:placeholderapi:2.12.2` | Integración opcional PlaceholderAPI. |
 | `com.hera.craftkit:craftkit-database:1.1.0` | Base de datos y migraciones internas. |
 | `com.stephanofer.boostedyaml:boosted-yaml:1.3.7` | Carga y auto-update de YAML internos. |
@@ -22,7 +22,7 @@ El proyecto define estas coordenadas Maven locales:
 
 ```kotlin
 group = "com.stephanofer"
-version = "1.0.0-SNAPSHOT"
+version = "2.0.0"
 artifactId = "networkplayersettings"
 ```
 
@@ -48,8 +48,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.stephanofer:networkplayersettings:1.0.0-SNAPSHOT")
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.69-stable")
+    compileOnly("com.stephanofer:networkplayersettings:2.0.0")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.25-alpha")
 }
 ```
 
@@ -85,7 +85,7 @@ Shadow genera el JAR final del core en `target/`:
 
 | Archivo | Plugin |
 |---|---|
-| `target/NetworkPlayerSettings-1.0.0-SNAPSHOT.jar` | Core de settings, sin zMenu. |
+| `target/NetworkPlayerSettings-2.0.0.jar` | Core de settings, sin zMenu. |
 
 Si el repo contiene plugins consumidores adicionales, pueden generar sus propios JARs en la misma carpeta, pero no forman parte del contrato público de `NetworkPlayerSettings`.
 
@@ -123,6 +123,8 @@ NetworkPlayerSettings registra dos servicios en `ServicesManager`:
 Ejemplo recomendado en `onEnable()` de un consumidor con `depend`:
 
 ```java
+import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
+
 private PlayerSettingsService playerSettings;
 
 @Override
@@ -139,6 +141,8 @@ public void onEnable() {
 Ejemplo opcional con `softdepend`:
 
 ```java
+import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
+
 Optional<PlayerSettingsService> settings = Optional.ofNullable(
     Bukkit.getServicesManager().load(PlayerSettingsService.class)
 );

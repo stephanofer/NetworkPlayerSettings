@@ -122,7 +122,7 @@ Reglas reales del loader:
 - `aliases` se normalizan a minúsculas.
 - No puede haber códigos duplicados tras normalización.
 - No puede haber aliases duplicados.
-- Un alias no puede colisionar con un código canónico.
+- Un alias no puede colisionar con ningún código canónico del catálogo, incluso si ese código aparece después en el YAML.
 
 Si el catálogo es inválido, el bootstrap de assets falla y el plugin no registra `NetworkAssetService`.
 

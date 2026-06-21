@@ -3,10 +3,10 @@ package com.stephanofer.networkplayersettingszmenu.command;
 import static net.kyori.adventure.text.Component.text;
 import static org.incendo.cloud.parser.standard.StringParser.greedyStringParser;
 
-import com.stephanofer.networkplayersettings.api.PlayerSettingsService;
+import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
-import com.stephanofer.networkplayersettingszmenu.menu.SettingsViewOpener;
+import com.stephanofer.networkplayersettingszmenu.settings.view.SettingsViewOpener;
 import java.util.List;
 import java.util.Objects;
 import org.bukkit.entity.Player;

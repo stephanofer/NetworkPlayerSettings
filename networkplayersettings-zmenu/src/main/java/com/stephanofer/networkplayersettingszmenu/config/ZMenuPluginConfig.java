@@ -1,6 +1,9 @@
 package com.stephanofer.networkplayersettingszmenu.config;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -9,17 +12,21 @@ public record ZMenuPluginConfig(
     SettingsSection settings
 ) {
 
+    private static final Pattern COMMAND_TOKEN = Pattern.compile("[a-z0-9_-]+");
+    private static final Pattern TARGET_KEY = Pattern.compile("[a-zA-Z0-9_./-]+");
+
     public static ZMenuPluginConfig load(final JavaPlugin plugin) {
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
         final FileConfiguration config = plugin.getConfig();
+        final Logger logger = plugin.getLogger();
 
         return new ZMenuPluginConfig(
             new CommandSection(
-                config.getString("command.name", "globalsettings"),
-                config.getStringList("command.aliases"),
-                CommandTargetType.fromConfig(config.getString("command.open.type", "menu")),
-                config.getString("command.open.key", "language")
+                normalizeCommandToken(config.getString("command.name", "globalsettings"), "globalsettings", "command.name", logger),
+                normalizeAliases(config.getStringList("command.aliases"), "globalsettings", logger),
+                CommandTargetType.fromConfig(config.getString("command.open.type", "menu"), logger),
+                normalizeTargetKey(config.getString("command.open.key", "language"), "command.open.key", logger)
             ),
             new SettingsSection(config.getLong("settings.language-change-cooldown-millis", 750L))
         );
@@ -32,24 +39,20 @@ public record ZMenuPluginConfig(
         String openTargetKey
     ) {
         public CommandSection {
-            name = normalize(name, "globalsettings");
             final String normalizedName = name;
             aliases = aliases == null
                 ? List.of("settings", "prefs")
                 : aliases.stream()
-                    .map(alias -> alias == null ? "" : alias.trim())
+                    .map(alias -> normalizeCommandToken(alias, "", "command.aliases", null))
                     .filter(alias -> !alias.isBlank())
                     .filter(alias -> !alias.equalsIgnoreCase(normalizedName))
                     .toList();
-            openTargetType = openTargetType == null ? CommandTargetType.MENU : openTargetType;
-            openTargetKey = normalize(openTargetKey, "language");
-        }
-
-        private static String normalize(final String raw, final String fallback) {
-            if (raw == null || raw.isBlank()) {
-                return fallback;
+            if (aliases.isEmpty()) {
+                aliases = List.of("settings", "prefs").stream()
+                    .filter(alias -> !alias.equalsIgnoreCase(normalizedName))
+                    .toList();
             }
-            return raw.trim();
+            openTargetType = openTargetType == null ? CommandTargetType.MENU : openTargetType;
         }
     }
 
@@ -57,14 +60,59 @@ public record ZMenuPluginConfig(
         MENU,
         DIALOG;
 
-        public static CommandTargetType fromConfig(final String raw) {
+        public static CommandTargetType fromConfig(final String raw, final Logger logger) {
             if (raw != null && raw.equalsIgnoreCase("dialog")) {
                 return DIALOG;
+            }
+            if (raw != null && !raw.isBlank() && !raw.equalsIgnoreCase("menu") && logger != null) {
+                logger.warning("Invalid command.open.type '" + raw + "'. Falling back to menu.");
             }
             return MENU;
         }
     }
 
     public record SettingsSection(long languageChangeCooldownMillis) {
+    }
+
+    private static List<String> normalizeAliases(final List<String> rawAliases, final String commandName, final Logger logger) {
+        final List<String> aliases = rawAliases.stream()
+            .map(alias -> normalizeCommandToken(alias, "", "command.aliases", logger))
+            .filter(alias -> !alias.isBlank())
+            .filter(alias -> !alias.equalsIgnoreCase(commandName))
+            .toList();
+        if (!aliases.isEmpty()) {
+            return aliases;
+        }
+        return List.of("settings", "prefs").stream()
+            .filter(alias -> !alias.equalsIgnoreCase(commandName))
+            .toList();
+    }
+
+    private static String normalizeCommandToken(final String raw, final String fallback, final String path, final Logger logger) {
+        if (raw == null || raw.isBlank()) {
+            return fallback;
+        }
+        final String normalized = raw.trim().toLowerCase(Locale.ROOT);
+        if (COMMAND_TOKEN.matcher(normalized).matches()) {
+            return normalized;
+        }
+        if (logger != null) {
+            logger.warning("Invalid " + path + " value '" + raw + "'. Falling back to '" + fallback + "'.");
+        }
+        return fallback;
+    }
+
+    private static String normalizeTargetKey(final String raw, final String path, final Logger logger) {
+        if (raw == null || raw.isBlank()) {
+            return "language";
+        }
+        final String normalized = raw.trim();
+        if (TARGET_KEY.matcher(normalized).matches()) {
+            return normalized;
+        }
+        if (logger != null) {
+            logger.warning("Invalid " + path + " value '" + raw + "'. Falling back to 'language'.");
+        }
+        return "language";
     }
 }

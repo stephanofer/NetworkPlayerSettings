@@ -7,6 +7,9 @@ Este documento cubre puntos de integración complementarios del core `NetworkPla
 NetworkPlayerSettings registra `NetworkAssetService` durante startup después de cargar `assets/countries.yml`.
 
 ```java
+import com.stephanofer.networkplayersettings.assets.api.CountryAsset;
+import com.stephanofer.networkplayersettings.assets.api.NetworkAssetService;
+
 NetworkAssetService assets = Bukkit.getServicesManager().load(NetworkAssetService.class);
 CountryAsset argentina = assets.countryAsset("AR");
 CountryAsset byAlias = assets.countryAsset("argentina");
@@ -26,6 +29,8 @@ Comportamiento:
 `CountryFlag` no depende del catálogo YAML. Sirve para normalizar y renderizar flags:
 
 ```java
+import com.stephanofer.networkplayersettings.settings.country.CountryFlag;
+
 String code = CountryFlag.normalizeCode(settings.countryCode(playerId));
 String flag = CountryFlag.emoji(code);
 ```
@@ -48,12 +53,12 @@ Identificador de expansión: `playersettings`.
 
 | Placeholder | Valor |
 |---|---|
-| `%playersettings_language%` | Idioma efectivo (`es`/`en`) para jugador online. Si no hay jugador online, fallback `en`. |
+| `%playersettings_language%` | Idioma efectivo (`es`/`en`) para jugador online. Offline usa preferencia manual cacheada si existe; si está en `auto` o no hay UUID, usa `settings.default-language`. |
 | `%playersettings_language_preference%` | Preferencia guardada/cacheada (`auto`/`es`/`en`). Si no hay jugador/UUID, fallback `auto`. |
-| `%playersettings_language_name%` | Nombre del idioma efectivo visto desde ese idioma. Offline fallback `English`. |
+| `%playersettings_language_name%` | Nombre del idioma efectivo visto desde ese idioma. Offline sigue la misma regla de fallback que `%playersettings_language%`. |
 | `%playersettings_country%` | País efectivo (`AR`, `XX`, etc.). Si no hay jugador/UUID, fallback `XX`. |
 
-Los placeholders se cachean por `playerId:param` durante `placeholderapi.cache-ttl-millis` si el TTL es positivo. Con TTL `0` o negativo, no se cachean.
+Los placeholders se cachean por `playerId:param` durante `placeholderapi.cache-ttl-millis` si el TTL es positivo. Con TTL `0` o negativo, no se cachean. La expansión invalida el caché del jugador cuando recibe `PlayerSettingChangeEvent` y también al salir el jugador.
 
 ## Consumo desde interfaces externas
 
