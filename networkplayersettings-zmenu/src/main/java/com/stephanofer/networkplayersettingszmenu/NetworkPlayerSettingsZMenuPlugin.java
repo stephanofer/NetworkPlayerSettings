@@ -6,12 +6,13 @@ import com.hera.craftkit.zmenu.ZMenuIntegration;
 import com.hera.craftkit.zmenu.ZMenus;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettingszmenu.command.GlobalSettingsCommand;
+import com.stephanofer.networkplayersettingszmenu.config.AddonYamlLoader;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
-import com.stephanofer.networkplayersettingszmenu.settings.country.CountryFlagButton;
-import com.stephanofer.networkplayersettingszmenu.settings.language.LanguageButton;
+import com.stephanofer.networkplayersettingszmenu.settings.SettingMutationCooldowns;
 import com.stephanofer.networkplayersettingszmenu.settings.view.SettingsMenuBootstrap;
 import com.stephanofer.networkplayersettingszmenu.settings.view.SettingsViewOpener;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import java.util.Objects;
 import java.util.concurrent.CompletionException;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -34,8 +35,13 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         try {
-            this.config = ZMenuPluginConfig.load(this);
-            this.messages = new PluginMessages(getLogger());
+            final AddonYamlLoader yamlLoader = new AddonYamlLoader(this);
+            final YamlDocument configDocument = yamlLoader.load("config.yml");
+            final YamlDocument spanishMessages = yamlLoader.load("messages/messages_es.yml");
+            final YamlDocument englishMessages = yamlLoader.load("messages/messages_en.yml");
+
+            this.config = ZMenuPluginConfig.fromDocument(configDocument, getLogger());
+            this.messages = new PluginMessages(getLogger(), spanishMessages, englishMessages);
             this.settingsService = requireService(PlayerSettingsService.class);
             this.zmenu = ZMenus.require(this);
 
@@ -51,8 +57,7 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        LanguageButton.clearCooldowns();
-        CountryFlagButton.clearCooldowns();
+        SettingMutationCooldowns.clearAll();
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -109,8 +114,7 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
 
         @org.bukkit.event.EventHandler
         public void onPlayerQuit(final org.bukkit.event.player.PlayerQuitEvent event) {
-            LanguageButton.clearCooldown(event.getPlayer().getUniqueId());
-            CountryFlagButton.clearCooldown(event.getPlayer().getUniqueId());
+            SettingMutationCooldowns.clear(event.getPlayer().getUniqueId());
         }
     }
 }

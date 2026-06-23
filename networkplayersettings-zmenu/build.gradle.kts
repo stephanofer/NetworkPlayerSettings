@@ -18,6 +18,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.69-stable")
 
     implementation("com.hera.craftkit:craftkit-zmenu:1.1.0")
+    implementation("com.stephanofer.boostedyaml:boosted-yaml:1.3.7")
     implementation("org.incendo:cloud-paper:2.0.0-beta.15")
     implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.15")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
@@ -47,6 +48,10 @@ tasks {
         relocate(
             "com.hera.craftkit",
             "com.stephanofer.networkplayersettingszmenu.libs.craftkit"
+        )
+        relocate(
+            "dev.dejvokep.boostedyaml",
+            "com.stephanofer.networkplayersettingszmenu.libs.boostedyaml"
         )
         relocate(
             "org.incendo.cloud",

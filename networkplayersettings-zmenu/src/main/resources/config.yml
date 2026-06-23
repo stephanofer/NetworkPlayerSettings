@@ -1,4 +1,4 @@
-file-version: 1
+file-version: 2
 
 command:
   name: "globalsettings"
@@ -10,5 +10,4 @@ command:
     key: "language"
 
 settings:
-  language-change-cooldown-millis: 750
-  country-flag-toggle-cooldown-millis: 500
+  mutation-cooldown-millis: 750

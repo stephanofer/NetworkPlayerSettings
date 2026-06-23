@@ -1,0 +1,26 @@
+file-version: 1
+
+settings:
+  loading: "<yellow>Tus ajustes globales todavía se están cargando. Intentá de nuevo en un instante."
+  menu-open-failed: "<red>No se pudo abrir tu vista de ajustes globales ahora mismo."
+  language:
+    updated: "<green>Idioma actualizado a <white>{0}</white><green>."
+    update-failed: "<red>No se pudo actualizar tu idioma. Intentá de nuevo en un instante."
+    already-selected: "<yellow>Ya tenés seleccionada la opción <white>{0}</white><yellow>."
+    cooldown: "<yellow>Esperá <white>{0}</white><yellow>s antes de volver a cambiar un ajuste."
+    auto-name: "Automático"
+  country-flag:
+    enabled: "<green>Bandera de país activada."
+    disabled: "<yellow>Bandera de país desactivada."
+    update-failed: "<red>No se pudo actualizar tu preferencia de bandera. Intentá de nuevo en un instante."
+    cooldown: "<yellow>Esperá <white>{0}</white><yellow>s antes de volver a cambiar un ajuste."
+
+menu:
+  language:
+    selected-state: "Seleccionado"
+    available-state: "Disponible"
+  country-flag:
+    enabled-state: "Visible"
+    disabled-state: "Oculta"
+    enable-action: "para mostrar tu bandera"
+    disable-action: "para ocultar tu bandera"

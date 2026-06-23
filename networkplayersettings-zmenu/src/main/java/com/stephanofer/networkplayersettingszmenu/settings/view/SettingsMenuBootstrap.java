@@ -48,6 +48,7 @@ public final class SettingsMenuBootstrap {
                 ));
             })
             .defaultInventories("inventories/language.yml")
+            .defaultDialogs("dialogs/language.yml")
             .inventories("inventories")
             .dialogs("dialogs")
             .load();

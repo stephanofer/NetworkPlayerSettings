@@ -1,19 +1,15 @@
 package com.stephanofer.networkplayersettingszmenu.settings.country;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.Expiry;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsSnapshot;
 import com.stephanofer.networkplayersettings.settings.language.Language;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
+import com.stephanofer.networkplayersettingszmenu.settings.SettingMutationCooldowns;
 import fr.maxlego08.menu.api.button.Button;
 import fr.maxlego08.menu.api.engine.InventoryEngine;
 import fr.maxlego08.menu.api.utils.Placeholders;
-import java.time.Duration;
 import java.util.Objects;
-import java.util.UUID;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -23,11 +19,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class CountryFlagButton extends Button {
-
-    private static final Cache<UUID, Cooldown> COOLDOWNS = Caffeine.newBuilder()
-        .maximumSize(10_000L)
-        .expireAfter(Expiry.creating((UUID playerId, Cooldown cooldown) -> Duration.ofMillis(cooldown.durationMillis())))
-        .build();
 
     private final JavaPlugin plugin;
     private final PlayerSettingsService settingsService;
@@ -60,8 +51,8 @@ public final class CountryFlagButton extends Button {
             return;
         }
 
-        final long cooldownMillis = Math.max(0L, this.settingsConfig.countryFlagToggleCooldownMillis());
-        final Cooldown cooldown = COOLDOWNS.getIfPresent(player.getUniqueId());
+        final long cooldownMillis = Math.max(0L, this.settingsConfig.mutationCooldownMillis());
+        final SettingMutationCooldowns.Cooldown cooldown = SettingMutationCooldowns.get(player.getUniqueId());
         if (cooldown != null) {
             final Language viewerLanguage = this.settingsService.resolvedLanguage(player);
             final long seconds = Math.max(1L, (cooldown.expiresAtMillis() - System.currentTimeMillis() + 999L) / 1000L);
@@ -70,9 +61,7 @@ public final class CountryFlagButton extends Button {
         }
 
         final boolean nextState = !this.settingsService.showCountryFlag(player.getUniqueId());
-        if (cooldownMillis > 0L) {
-            COOLDOWNS.put(player.getUniqueId(), new Cooldown(System.currentTimeMillis() + cooldownMillis, cooldownMillis));
-        }
+        SettingMutationCooldowns.put(player.getUniqueId(), cooldownMillis);
 
         this.settingsService.setShowCountryFlag(player.getUniqueId(), nextState)
             .whenComplete((unused, throwable) -> this.plugin.getServer().getScheduler().runTask(this.plugin, () -> {
@@ -80,7 +69,7 @@ public final class CountryFlagButton extends Button {
                     return;
                 }
                 if (throwable != null) {
-                    COOLDOWNS.invalidate(player.getUniqueId());
+                    SettingMutationCooldowns.clear(player.getUniqueId());
                     player.sendRichMessage(this.messages.get(
                         this.settingsService.resolvedLanguage(player),
                         "settings.country-flag.update-failed"
@@ -146,14 +135,4 @@ public final class CountryFlagButton extends Button {
         return placeholders;
     }
 
-    public static void clearCooldown(final UUID playerId) {
-        COOLDOWNS.invalidate(playerId);
-    }
-
-    public static void clearCooldowns() {
-        COOLDOWNS.invalidateAll();
-    }
-
-    private record Cooldown(long expiresAtMillis, long durationMillis) {
-    }
 }

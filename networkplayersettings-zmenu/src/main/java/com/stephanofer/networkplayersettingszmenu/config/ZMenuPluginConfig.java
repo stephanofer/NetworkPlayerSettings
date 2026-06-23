@@ -1,11 +1,10 @@
 package com.stephanofer.networkplayersettingszmenu.config;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public record ZMenuPluginConfig(
     CommandSection command,
@@ -15,22 +14,18 @@ public record ZMenuPluginConfig(
     private static final Pattern COMMAND_TOKEN = Pattern.compile("[a-z0-9_-]+");
     private static final Pattern TARGET_KEY = Pattern.compile("[a-zA-Z0-9_./-]+");
 
-    public static ZMenuPluginConfig load(final JavaPlugin plugin) {
-        plugin.saveDefaultConfig();
-        plugin.reloadConfig();
-        final FileConfiguration config = plugin.getConfig();
-        final Logger logger = plugin.getLogger();
+    public static ZMenuPluginConfig fromDocument(final YamlDocument document, final Logger logger) {
+        final long mutationCooldownMillis = resolveMutationCooldownMillis(document);
 
         return new ZMenuPluginConfig(
             new CommandSection(
-                normalizeCommandToken(config.getString("command.name", "globalsettings"), "globalsettings", "command.name", logger),
-                normalizeAliases(config.getStringList("command.aliases"), "globalsettings", logger),
-                CommandTargetType.fromConfig(config.getString("command.open.type", "menu"), logger),
-                normalizeTargetKey(config.getString("command.open.key", "language"), "command.open.key", logger)
+                normalizeCommandToken(document.getString("command.name", "globalsettings"), "globalsettings", "command.name", logger),
+                normalizeAliases(document.getStringList("command.aliases"), "globalsettings", logger),
+                CommandTargetType.fromConfig(document.getString("command.open.type", "menu"), logger),
+                normalizeTargetKey(document.getString("command.open.key", "language"), "command.open.key", logger)
             ),
             new SettingsSection(
-                config.getLong("settings.language-change-cooldown-millis", 750L),
-                config.getLong("settings.country-flag-toggle-cooldown-millis", 500L)
+                mutationCooldownMillis
             )
         );
     }
@@ -49,10 +44,12 @@ public record ZMenuPluginConfig(
                     .map(alias -> normalizeCommandToken(alias, "", "command.aliases", null))
                     .filter(alias -> !alias.isBlank())
                     .filter(alias -> !alias.equalsIgnoreCase(normalizedName))
+                    .distinct()
                     .toList();
             if (aliases.isEmpty()) {
                 aliases = List.of("settings", "prefs").stream()
                     .filter(alias -> !alias.equalsIgnoreCase(normalizedName))
+                    .distinct()
                     .toList();
             }
             openTargetType = openTargetType == null ? CommandTargetType.MENU : openTargetType;
@@ -75,12 +72,10 @@ public record ZMenuPluginConfig(
     }
 
     public record SettingsSection(
-        long languageChangeCooldownMillis,
-        long countryFlagToggleCooldownMillis
+        long mutationCooldownMillis
     ) {
         public SettingsSection {
-            languageChangeCooldownMillis = Math.max(0L, languageChangeCooldownMillis);
-            countryFlagToggleCooldownMillis = Math.max(0L, countryFlagToggleCooldownMillis);
+            mutationCooldownMillis = Math.max(0L, mutationCooldownMillis);
         }
     }
 
@@ -89,13 +84,26 @@ public record ZMenuPluginConfig(
             .map(alias -> normalizeCommandToken(alias, "", "command.aliases", logger))
             .filter(alias -> !alias.isBlank())
             .filter(alias -> !alias.equalsIgnoreCase(commandName))
+            .distinct()
             .toList();
         if (!aliases.isEmpty()) {
             return aliases;
         }
         return List.of("settings", "prefs").stream()
             .filter(alias -> !alias.equalsIgnoreCase(commandName))
+            .distinct()
             .toList();
+    }
+
+    private static long resolveMutationCooldownMillis(final YamlDocument document) {
+        final long unified = document.getLong("settings.mutation-cooldown-millis", Long.MIN_VALUE);
+        if (unified != Long.MIN_VALUE) {
+            return unified;
+        }
+
+        final long language = document.getLong("settings.language-change-cooldown-millis", 750L);
+        final long countryFlag = document.getLong("settings.country-flag-toggle-cooldown-millis", 500L);
+        return Math.max(language, countryFlag);
     }
 
     private static String normalizeCommandToken(final String raw, final String fallback, final String path, final Logger logger) {

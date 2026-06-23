@@ -1,0 +1,26 @@
+file-version: 1
+
+settings:
+  loading: "<yellow>Your global settings are still loading. Please try again in a moment."
+  menu-open-failed: "<red>Your global settings view could not be opened right now."
+  language:
+    updated: "<green>Language updated to <white>{0}</white><green>."
+    update-failed: "<red>Your language could not be updated. Please try again in a moment."
+    already-selected: "<yellow>You already have <white>{0}</white><yellow> selected."
+    cooldown: "<yellow>Please wait <white>{0}</white><yellow>s before changing a setting again."
+    auto-name: "Auto"
+  country-flag:
+    enabled: "<green>Country flag enabled."
+    disabled: "<yellow>Country flag disabled."
+    update-failed: "<red>Your country flag preference could not be updated. Please try again in a moment."
+    cooldown: "<yellow>Please wait <white>{0}</white><yellow>s before changing a setting again."
+
+menu:
+  language:
+    selected-state: "Selected"
+    available-state: "Available"
+  country-flag:
+    enabled-state: "Visible"
+    disabled-state: "Hidden"
+    enable-action: "to show your flag"
+    disable-action: "to hide your flag"
