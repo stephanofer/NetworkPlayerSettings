@@ -22,6 +22,8 @@ public final class PlayerSettingsSnapshot {
         copy.put(SettingKey.DETECTED_COUNTRY, CountryFlag.UNKNOWN_CODE);
         copy.put(SettingKey.COUNTRY_OVERRIDE, "");
         copy.put(SettingKey.SHOW_COUNTRY_FLAG, SettingKey.SHOW_COUNTRY_FLAG.defaultValue());
+        copy.put(SettingKey.NICK_STYLE, SettingKey.NICK_STYLE.defaultValue());
+        copy.put(SettingKey.CHAT_STYLE, SettingKey.CHAT_STYLE.defaultValue());
         values.forEach((key, value) -> copy.put(
             Objects.requireNonNull(key, "key"),
             value == null ? "" : value.trim()
@@ -34,7 +36,9 @@ public final class PlayerSettingsSnapshot {
             SettingKey.LANGUAGE, SettingKey.LANGUAGE.defaultValue(),
             SettingKey.DETECTED_COUNTRY, SettingKey.DETECTED_COUNTRY.defaultValue(),
             SettingKey.COUNTRY_OVERRIDE, SettingKey.COUNTRY_OVERRIDE.defaultValue(),
-            SettingKey.SHOW_COUNTRY_FLAG, SettingKey.SHOW_COUNTRY_FLAG.defaultValue()
+            SettingKey.SHOW_COUNTRY_FLAG, SettingKey.SHOW_COUNTRY_FLAG.defaultValue(),
+            SettingKey.NICK_STYLE, SettingKey.NICK_STYLE.defaultValue(),
+            SettingKey.CHAT_STYLE, SettingKey.CHAT_STYLE.defaultValue()
         ));
     }
 

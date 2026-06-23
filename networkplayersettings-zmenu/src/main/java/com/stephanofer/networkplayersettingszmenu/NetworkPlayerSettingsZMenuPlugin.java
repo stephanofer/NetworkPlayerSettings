@@ -5,6 +5,7 @@ import static net.kyori.adventure.text.Component.text;
 import com.hera.craftkit.zmenu.ZMenuIntegration;
 import com.hera.craftkit.zmenu.ZMenus;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
+import com.stephanofer.networkplayersettings.settings.api.PlayerStyleService;
 import com.stephanofer.networkplayersettingszmenu.command.GlobalSettingsCommand;
 import com.stephanofer.networkplayersettingszmenu.config.AddonYamlLoader;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
@@ -30,6 +31,7 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
     private ZMenuPluginConfig config;
     private PluginMessages messages;
     private PlayerSettingsService settingsService;
+    private PlayerStyleService styleService;
     private ZMenuIntegration zmenu;
 
     @Override
@@ -43,9 +45,10 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
             this.config = ZMenuPluginConfig.fromDocument(configDocument, getLogger());
             this.messages = new PluginMessages(getLogger(), spanishMessages, englishMessages);
             this.settingsService = requireService(PlayerSettingsService.class);
+            this.styleService = requireService(PlayerStyleService.class);
             this.zmenu = ZMenus.require(this);
 
-            new SettingsMenuBootstrap(this, this.zmenu, this.settingsService, this.messages, this.config.settings()).load();
+            new SettingsMenuBootstrap(this, this.zmenu, this.settingsService, this.styleService, this.messages, this.config.settings()).load();
             registerCommands(new SettingsViewOpener(this, this.zmenu, getLogger()));
             getServer().getPluginManager().registerEvents(new PlayerQuitCooldownListener(), this);
         } catch (final Exception exception) {

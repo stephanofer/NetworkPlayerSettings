@@ -1,0 +1,132 @@
+file-version: 1
+
+name:
+  default: "#101820Global Settings"
+  locales:
+    es: "#101820Ajustes globales"
+    en: "#101820Global Settings"
+size: 27
+
+fillItem:
+  material: BLACK_STAINED_GLASS_PANE
+  name: " "
+
+items:
+  profile:
+    slot: 4
+    item:
+      material: "playerHead:%player%"
+      name:
+        default: "#92ffff%playersettings_nick_formatted%"
+        locales:
+          es: "#92ffff%playersettings_nick_formatted%"
+          en: "#92ffff%playersettings_nick_formatted%"
+      lore:
+        default:
+          - "#8c8c8cYour global preferences live here."
+          - "#8c8c8cChoose what you want to personalize."
+        locales:
+          es:
+            - "#8c8c8cTus preferencias globales viven acá."
+            - "#8c8c8cElegí qué querés personalizar."
+          en:
+            - "#8c8c8cYour global preferences live here."
+            - "#8c8c8cChoose what you want to personalize."
+
+  settings:
+    type: INVENTORY
+    inventory: "language"
+    slot: 11
+    sound: UI_BUTTON_CLICK
+    item:
+      material: COMPASS
+      name:
+        default: "#f5d76eSettings"
+        locales:
+          es: "#f5d76eAjustes"
+          en: "#f5d76eSettings"
+      lore:
+        default:
+          - "#8c8c8cLanguage and country visibility."
+          - ""
+          - "#2CCED2Click #92ffffto open settings"
+        locales:
+          es:
+            - "#8c8c8cIdioma y visibilidad de país."
+            - ""
+            - "#2CCED2Click #92ffffpara abrir ajustes"
+          en:
+            - "#8c8c8cLanguage and country visibility."
+            - ""
+            - "#2CCED2Click #92ffffto open settings"
+
+  nick:
+    type: INVENTORY
+    inventory: "nick-styles"
+    slot: 13
+    sound: BLOCK_AMETHYST_BLOCK_CHIME
+    item:
+      material: NAME_TAG
+      name:
+        default: "#ff7ad9Nick Style"
+        locales:
+          es: "#ff7ad9Estilo de nick"
+          en: "#ff7ad9Nick Style"
+      lore:
+        default:
+          - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_nick_style_id%"
+          - "#8c8c8cPreview#8c8c8c: #92ffff%playersettings_nick_formatted%"
+          - ""
+          - "#2CCED2Click #92ffffto choose your nick style"
+        locales:
+          es:
+            - "#8c8c8cActual#8c8c8c: #92ffff%playersettings_nick_style_id%"
+            - "#8c8c8cVista previa#8c8c8c: #92ffff%playersettings_nick_formatted%"
+            - ""
+            - "#2CCED2Click #92ffffpara elegir tu estilo de nick"
+          en:
+            - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_nick_style_id%"
+            - "#8c8c8cPreview#8c8c8c: #92ffff%playersettings_nick_formatted%"
+            - ""
+            - "#2CCED2Click #92ffffto choose your nick style"
+
+  chat:
+    type: INVENTORY
+    inventory: "chat-styles"
+    slot: 15
+    sound: BLOCK_NOTE_BLOCK_CHIME
+    item:
+      material: WRITABLE_BOOK
+      name:
+        default: "#80ffdbChat Style"
+        locales:
+          es: "#80ffdbEstilo de chat"
+          en: "#80ffdbChat Style"
+      lore:
+        default:
+          - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_id%"
+          - "#8c8c8cActive preview#8c8c8c: #92ffff%playersettings_chat_preview%"
+          - ""
+          - "#2CCED2Click #92ffffto choose your chat style"
+        locales:
+          es:
+            - "#8c8c8cActual#8c8c8c: #92ffff%playersettings_chat_style_id%"
+            - "#8c8c8cVista activa#8c8c8c: #92ffff%playersettings_chat_preview%"
+            - ""
+            - "#2CCED2Click #92ffffpara elegir tu estilo de chat"
+          en:
+            - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_id%"
+            - "#8c8c8cActive preview#8c8c8c: #92ffff%playersettings_chat_preview%"
+            - ""
+            - "#2CCED2Click #92ffffto choose your chat style"
+
+  close:
+    slot: 22
+    close-inventory: true
+    item:
+      material: BARRIER
+      name:
+        default: "#ff6666Close"
+        locales:
+          es: "#ff6666Cerrar"
+          en: "#ff6666Close"

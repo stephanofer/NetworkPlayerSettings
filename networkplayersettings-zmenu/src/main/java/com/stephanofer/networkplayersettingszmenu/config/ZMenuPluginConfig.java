@@ -22,7 +22,7 @@ public record ZMenuPluginConfig(
                 normalizeCommandToken(document.getString("command.name", "globalsettings"), "globalsettings", "command.name", logger),
                 normalizeAliases(document.getStringList("command.aliases"), "globalsettings", logger),
                 CommandTargetType.fromConfig(document.getString("command.open.type", "menu"), logger),
-                normalizeTargetKey(document.getString("command.open.key", "language"), "command.open.key", logger)
+                normalizeTargetKey(document.getString("command.open.key", "settings-main"), "command.open.key", logger)
             ),
             new SettingsSection(
                 mutationCooldownMillis
@@ -122,15 +122,15 @@ public record ZMenuPluginConfig(
 
     private static String normalizeTargetKey(final String raw, final String path, final Logger logger) {
         if (raw == null || raw.isBlank()) {
-            return "language";
+            return "settings-main";
         }
         final String normalized = raw.trim();
         if (TARGET_KEY.matcher(normalized).matches()) {
             return normalized;
         }
         if (logger != null) {
-            logger.warning("Invalid " + path + " value '" + raw + "'. Falling back to 'language'.");
+            logger.warning("Invalid " + path + " value '" + raw + "'. Falling back to 'settings-main'.");
         }
-        return "language";
+        return "settings-main";
     }
 }

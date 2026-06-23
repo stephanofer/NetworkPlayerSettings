@@ -9,14 +9,21 @@ import com.stephanofer.networkplayersettings.assets.country.DefaultCountryFlagSe
 import com.stephanofer.networkplayersettings.assets.country.NetworkAssetBootstrap;
 import com.stephanofer.networkplayersettings.config.PluginConfig;
 import com.stephanofer.networkplayersettings.platform.bukkit.PlayerConnectionListener;
+import com.stephanofer.networkplayersettings.platform.bukkit.PlayerChatStyleListener;
 import com.stephanofer.networkplayersettings.platform.bukkit.PlayerSettingsPlaceholderExpansion;
 import com.stephanofer.networkplayersettings.platform.bukkit.PluginYamlLoader;
 import com.stephanofer.networkplayersettings.settings.application.DefaultPlayerSettingsService;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
+import com.stephanofer.networkplayersettings.settings.api.PlayerStyleService;
 import com.stephanofer.networkplayersettings.settings.country.GeoIpCountryResolver;
 import com.stephanofer.networkplayersettings.settings.language.LanguageResolver;
 import com.stephanofer.networkplayersettings.settings.storage.PlayerSettingsRepository;
 import com.stephanofer.networkplayersettings.settings.storage.SqlPlayerSettingsRepository;
+import com.stephanofer.networkplayersettings.settings.style.DefaultPlayerStyleService;
+import com.stephanofer.networkplayersettings.settings.style.StylePatternCatalog;
+import com.stephanofer.networkplayersettings.settings.style.StylePatternCatalogLoader;
+import com.stephanofer.networkplayersettings.settings.style.StylePatternRenderer;
+import com.stephanofer.networkplayersettings.settings.style.StylePatternType;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -35,6 +42,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     private CountryFlagService countryFlagService;
     private GeoIpCountryResolver countryResolver;
     private DefaultPlayerSettingsService settingsService;
+    private PlayerStyleService styleService;
     private PlayerSettingsPlaceholderExpansion placeholderExpansion;
 
     @Override
@@ -44,6 +52,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
             initializeAssets();
             initializeDatabase();
             initializeSettingsService();
+            initializeStyleService();
             registerServices();
             registerPlaceholderExpansion();
             registerListeners();
@@ -96,6 +105,19 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
         this.countryFlagService = new DefaultCountryFlagService(this.settingsService, this.networkAssetService);
     }
 
+    private void initializeStyleService() {
+        final StylePatternCatalog nickCatalog = new StylePatternCatalogLoader(StylePatternType.NICK)
+            .load(this.yamlLoader.load("styles/nick-patterns.yml"));
+        final StylePatternCatalog chatCatalog = new StylePatternCatalogLoader(StylePatternType.CHAT)
+            .load(this.yamlLoader.load("styles/chat-patterns.yml"));
+        this.styleService = new DefaultPlayerStyleService(
+            this.settingsService,
+            nickCatalog,
+            chatCatalog,
+            new StylePatternRenderer()
+        );
+    }
+
     private void registerPlaceholderExpansion() {
         if (!this.config.placeholderapi().enabled()) {
             return;
@@ -108,6 +130,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
         this.placeholderExpansion = new PlayerSettingsPlaceholderExpansion(
             this.settingsService,
+            this.styleService,
             this.countryFlagService,
             this.config.settings().defaultLanguage(),
             Duration.ofMillis(Math.max(0L, this.config.placeholderapi().cacheTtlMillis())),
@@ -129,11 +152,13 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     private void registerServices() {
         getServer().getServicesManager().register(PlayerSettingsService.class, this.settingsService, this, ServicePriority.Normal);
+        getServer().getServicesManager().register(PlayerStyleService.class, this.styleService, this, ServicePriority.Normal);
         getServer().getServicesManager().register(CountryFlagService.class, this.countryFlagService, this, ServicePriority.Normal);
     }
 
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this.settingsService, this.config), this);
+        getServer().getPluginManager().registerEvents(new PlayerChatStyleListener(this.styleService), this);
     }
 
     private GeoIpCountryResolver openCountryResolver() {
@@ -170,6 +195,10 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     public DefaultPlayerSettingsService settingsService() {
         return this.settingsService;
+    }
+
+    public PlayerStyleService styleService() {
+        return this.styleService;
     }
 
     public PluginConfig config() {

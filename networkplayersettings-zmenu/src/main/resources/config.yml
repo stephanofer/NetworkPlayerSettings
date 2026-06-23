@@ -1,4 +1,4 @@
-file-version: 2
+file-version: 3
 
 command:
   name: "globalsettings"
@@ -7,7 +7,7 @@ command:
     - "prefs"
   open:
     type: "menu"
-    key: "language"
+    key: "settings-main"
 
 settings:
   mutation-cooldown-millis: 750

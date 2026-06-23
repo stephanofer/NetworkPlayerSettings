@@ -1,0 +1,123 @@
+file-version: 1
+
+patterns:
+  gray-clean:
+    display-name: "<gray>Gray Clean"
+    category: "basic"
+    permission: "networkplayersettings.chat.gray-clean"
+    mini-message: "<gray><message></gray>"
+    preview: "This is my message"
+  white-clean:
+    display-name: "<white>White Clean"
+    category: "basic"
+    permission: "networkplayersettings.chat.white-clean"
+    mini-message: "<white><message></white>"
+    preview: "This is my message"
+  green-chat:
+    display-name: "<green>Green Chat"
+    category: "basic"
+    permission: "networkplayersettings.chat.green-chat"
+    mini-message: "<green><message></green>"
+    preview: "This is my message"
+  blue-chat:
+    display-name: "<blue>Blue Chat"
+    category: "basic"
+    permission: "networkplayersettings.chat.blue-chat"
+    mini-message: "<blue><message></blue>"
+    preview: "This is my message"
+  gold-chat:
+    display-name: "<gold>Gold Chat"
+    category: "basic"
+    permission: "networkplayersettings.chat.gold-chat"
+    mini-message: "<gold><message></gold>"
+    preview: "This is my message"
+  pink-chat:
+    display-name: "<light_purple>Pink Chat"
+    category: "basic"
+    permission: "networkplayersettings.chat.pink-chat"
+    mini-message: "<light_purple><message></light_purple>"
+    preview: "This is my message"
+  soft-emerald:
+    display-name: "<gradient:#b7e4c7:#52b788>Soft Emerald</gradient>"
+    category: "professional"
+    permission: "networkplayersettings.chat.soft-emerald"
+    mini-message: "<gradient:#b7e4c7:#52b788><message></gradient>"
+    preview: "Trading wisdom with style"
+  deep-ocean:
+    display-name: "<gradient:#90e0ef:#0077b6>Deep Ocean</gradient>"
+    category: "professional"
+    permission: "networkplayersettings.chat.deep-ocean"
+    mini-message: "<gradient:#90e0ef:#0077b6><message></gradient>"
+    preview: "Flowing through the server"
+  warm-sunset:
+    display-name: "<gradient:#ffd166:#f77f00:#d62828>Warm Sunset</gradient>"
+    category: "professional"
+    permission: "networkplayersettings.chat.warm-sunset"
+    mini-message: "<gradient:#ffd166:#f77f00:#d62828><message></gradient>"
+    preview: "A message with sunset energy"
+  violet-pulse:
+    display-name: "<gradient:#e0aaff:#9d4edd>Violet Pulse</gradient>"
+    category: "professional"
+    permission: "networkplayersettings.chat.violet-pulse"
+    mini-message: "<gradient:#e0aaff:#9d4edd><message></gradient>"
+    preview: "Calm power, clean words"
+  aqua-shadow:
+    display-name: "<shadow:#00ffff80><aqua>Aqua Shadow</aqua>"
+    category: "professional"
+    permission: "networkplayersettings.chat.aqua-shadow"
+    mini-message: "<shadow:#00ffff80><aqua><message></aqua>"
+    preview: "Readable but premium"
+  clean-bold:
+    display-name: "<white><bold>Clean Bold</bold></white>"
+    category: "professional"
+    permission: "networkplayersettings.chat.clean-bold"
+    mini-message: "<white><bold><message></bold></white>"
+    preview: "Strong and readable"
+  premium-gold:
+    display-name: "<gradient:#fff3b0:#d4a017><bold>Premium Gold</bold></gradient>"
+    category: "premium"
+    permission: "networkplayersettings.chat.premium-gold"
+    mini-message: "<shadow:#00000080><gradient:#fff3b0:#d4a017><bold><message></bold></gradient>"
+    preview: "Premium words deserve attention"
+  aurora-message:
+    display-name: "<gradient:#80ffdb:#72efdd:#5390d9>Aurora Message</gradient>"
+    category: "premium"
+    permission: "networkplayersettings.chat.aurora-message"
+    mini-message: "<gradient:#80ffdb:#72efdd:#5390d9><message></gradient>"
+    preview: "A clean aurora trail"
+  galaxy-message:
+    display-name: "<gradient:#7400b8:#6930c3:#48bfe3>Galaxy Message</gradient>"
+    category: "premium"
+    permission: "networkplayersettings.chat.galaxy-message"
+    mini-message: "<shadow:#24004680><gradient:#7400b8:#6930c3:#48bfe3><message></gradient>"
+    preview: "Broadcasting from the stars"
+  inferno-message:
+    display-name: "<gradient:#ffba08:#f48c06:#d00000>Inferno Message</gradient>"
+    category: "premium"
+    permission: "networkplayersettings.chat.inferno-message"
+    mini-message: "<gradient:#ffba08:#f48c06:#d00000><message></gradient>"
+    preview: "A message with fire"
+  cyber-message:
+    display-name: "<gradient:#ff00ff:#00ffff><bold>Cyber Message</bold></gradient>"
+    category: "premium"
+    permission: "networkplayersettings.chat.cyber-message"
+    mini-message: "<shadow:#ff00ff80><gradient:#ff00ff:#00ffff><bold><message></bold></gradient>"
+    preview: "Digital and bright"
+  rainbow-message:
+    display-name: "<rainbow>Rainbow Message</rainbow>"
+    category: "special"
+    permission: "networkplayersettings.chat.rainbow-message"
+    mini-message: "<rainbow><message></rainbow>"
+    preview: "Every word has color"
+  pride-message:
+    display-name: "<pride>Pride Message</pride>"
+    category: "special"
+    permission: "networkplayersettings.chat.pride-message"
+    mini-message: "<pride><message></pride>"
+    preview: "Be proud, be kind"
+  progress-pride-message:
+    display-name: "<pride:progress>Progress Pride Message</pride>"
+    category: "special"
+    permission: "networkplayersettings.chat.progress-pride-message"
+    mini-message: "<pride:progress><message></pride>"
+    preview: "Progress with every message"

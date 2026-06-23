@@ -8,7 +8,9 @@ public enum SettingKey {
     LANGUAGE("language", true, true, LanguagePreference.AUTO.storageValue()),
     DETECTED_COUNTRY("detected_country", true, false, CountryFlag.UNKNOWN_CODE),
     COUNTRY_OVERRIDE("country_override", true, false, ""),
-    SHOW_COUNTRY_FLAG("show_country_flag", true, true, "true");
+    SHOW_COUNTRY_FLAG("show_country_flag", true, true, "true"),
+    NICK_STYLE("nick_style", true, true, ""),
+    CHAT_STYLE("chat_style", true, true, "");
 
     private final String storageKey;
     private final boolean persisted;

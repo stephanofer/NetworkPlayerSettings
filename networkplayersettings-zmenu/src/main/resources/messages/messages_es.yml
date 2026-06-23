@@ -1,4 +1,4 @@
-file-version: 1
+file-version: 2
 
 settings:
   loading: "<yellow>Tus ajustes globales todavía se están cargando. Intentá de nuevo en un instante."
@@ -14,6 +14,20 @@ settings:
     disabled: "<yellow>Bandera de país desactivada."
     update-failed: "<red>No se pudo actualizar tu preferencia de bandera. Intentá de nuevo en un instante."
     cooldown: "<yellow>Esperá <white>{0}</white><yellow>s antes de volver a cambiar un ajuste."
+  style:
+    missing-pattern: "<red>Este estilo ya no existe en el catálogo. Avisá al staff."
+    locked: "<yellow>No tenés permiso para usar este estilo. Permiso requerido: <white>{0}</white><yellow>."
+    cooldown: "<yellow>Esperá <white>{0}</white><yellow>s antes de volver a cambiar un estilo."
+    update-failed: "<red>No se pudo actualizar tu estilo. Intentá de nuevo en un instante."
+    none-active: "<yellow>No tenés ningún estilo activo para quitar."
+  nick:
+    updated: "<green>Estilo de nick actualizado."
+    cleared: "<yellow>Estilo de nick quitado."
+    already-selected: "<yellow>Ya tenés seleccionado este estilo de nick."
+  chat:
+    updated: "<green>Estilo de chat actualizado."
+    cleared: "<yellow>Estilo de chat quitado."
+    already-selected: "<yellow>Ya tenés seleccionado este estilo de chat."
 
 menu:
   language:
@@ -24,3 +38,12 @@ menu:
     disabled-state: "Oculta"
     enable-action: "para mostrar tu bandera"
     disable-action: "para ocultar tu bandera"
+  style:
+    selected-state: "Seleccionado"
+    available-state: "Disponible"
+    locked-state: "Bloqueado"
+    selected-action: "ya está activo"
+    select-action: "para seleccionar"
+    locked-action: "requiere permiso"
+    clear-available: "Disponible"
+    clear-empty: "Sin estilo activo"

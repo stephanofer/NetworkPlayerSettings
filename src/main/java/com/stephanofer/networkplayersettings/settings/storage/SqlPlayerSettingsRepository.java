@@ -68,6 +68,8 @@ public final class SqlPlayerSettingsRepository implements PlayerSettingsReposito
         createdDefault |= ensureDefault(connection, playerId, values, SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
         createdDefault |= ensureDefault(connection, playerId, values, SettingKey.DETECTED_COUNTRY, CountryFlag.UNKNOWN_CODE);
         createdDefault |= ensureDefault(connection, playerId, values, SettingKey.SHOW_COUNTRY_FLAG, SettingKey.SHOW_COUNTRY_FLAG.defaultValue());
+        createdDefault |= ensureDefault(connection, playerId, values, SettingKey.NICK_STYLE, SettingKey.NICK_STYLE.defaultValue());
+        createdDefault |= ensureDefault(connection, playerId, values, SettingKey.CHAT_STYLE, SettingKey.CHAT_STYLE.defaultValue());
         return new RepositoryLoadResult(new PlayerSettingsSnapshot(playerId, values), createdDefault);
     }
 

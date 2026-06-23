@@ -366,7 +366,41 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
             return setShowCountryFlag(playerId, enabled.get());
         }
 
+        if (key == SettingKey.NICK_STYLE || key == SettingKey.CHAT_STYLE) {
+            return setRawSetting(playerId, key, value);
+        }
+
         return CompletableFuture.failedFuture(new IllegalArgumentException("unsupported setting: " + key.storageKey()));
+    }
+
+    private CompletableFuture<Void> setRawSetting(final UUID playerId, final SettingKey key, final String value) {
+        final String normalizedValue = value == null ? "" : value.trim();
+        return enqueueMutation(playerId, () -> {
+            final PlayerSettingsSnapshot previous = getCachedOrDefault(playerId);
+            final String previousValue = previous.valueOrDefault(key);
+            if (Objects.equals(previousValue, normalizedValue)) {
+                return CompletableFuture.completedFuture(null);
+            }
+
+            final PlayerSettingsSnapshot updated = previous.withSetting(key, normalizedValue);
+            return this.repository.upsertAsync(playerId, key, normalizedValue)
+                .whenComplete((unused, throwable) -> {
+                    if (throwable != null) {
+                        this.logger.log(Level.SEVERE, "Failed to persist setting " + key.storageKey() + " for " + playerId, throwable);
+                    }
+                })
+                .thenCompose(unused -> runOnMainThread(() -> {
+                    this.cache.put(playerId, updated);
+                    dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
+                        playerId,
+                        key,
+                        previousValue,
+                        normalizedValue,
+                        previousValue,
+                        normalizedValue
+                    ));
+                }));
+        });
     }
 
     private static Optional<Boolean> parseBooleanSetting(final String value) {

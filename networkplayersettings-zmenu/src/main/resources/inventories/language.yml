@@ -1,4 +1,4 @@
-file-version: 1
+file-version: 2
 
 name:
   default: "#0c1719Select your language"
@@ -129,3 +129,24 @@ items:
             - "#8c8c8cState#8c8c8c: #92ffff%country_flag_state%"
             - ""
             - "#8c8c8c• #2CCED2Click #92ffff%country_flag_action%"
+
+  back:
+    type: INVENTORY
+    inventory: "settings-main"
+    is-permanent: true
+    slot: 18
+    item:
+      material: ARROW
+      name:
+        default: "#92ffffBack"
+        locales:
+          es: "#92ffffVolver"
+          en: "#92ffffBack"
+      lore:
+        default:
+          - "#8c8c8cReturn to the main settings menu."
+        locales:
+          es:
+            - "#8c8c8cVolver al menú principal de ajustes."
+          en:
+            - "#8c8c8cReturn to the main settings menu."

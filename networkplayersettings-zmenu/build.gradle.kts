@@ -22,6 +22,10 @@ dependencies {
     implementation("org.incendo:cloud-paper:2.0.0-beta.15")
     implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.15")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
+
+    testImplementation(platform("org.junit:junit-bom:5.12.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {
@@ -77,5 +81,9 @@ tasks {
 
     assemble {
         dependsOn(shadowJar)
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
