@@ -1,5 +1,7 @@
 package com.stephanofer.networkplayersettings.platform.bukkit;
 
+import com.stephanofer.networkplayersettings.assets.api.CountryAsset;
+import com.stephanofer.networkplayersettings.assets.api.CountryFlagService;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.settings.event.PlayerSettingChangeEvent;
 import com.stephanofer.networkplayersettings.settings.language.Language;
@@ -20,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansion implements Listener {
 
     private final PlayerSettingsService settingsService;
+    private final CountryFlagService countryFlagService;
     private final Language defaultLanguage;
     private final boolean cacheEnabled;
     private final String version;
@@ -27,12 +30,14 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
 
     public PlayerSettingsPlaceholderExpansion(
         final PlayerSettingsService settingsService,
+        final CountryFlagService countryFlagService,
         final Language defaultLanguage,
         final Duration cacheTtl,
         final long cacheMaximumSize,
         final String version
     ) {
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
+        this.countryFlagService = Objects.requireNonNull(countryFlagService, "countryFlagService");
         this.defaultLanguage = Objects.requireNonNull(defaultLanguage, "defaultLanguage");
         Objects.requireNonNull(cacheTtl, "cacheTtl");
         this.cacheEnabled = !cacheTtl.isZero() && !cacheTtl.isNegative();
@@ -116,7 +121,39 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
             return this.settingsService.countryCode(player.getUniqueId());
         }
 
+        if (normalizedParam.equals("country_display_name")) {
+            return countryAsset(player).displayName();
+        }
+
+        if (normalizedParam.equals("country_head_value")) {
+            if (player == null || player.getUniqueId() == null) {
+                return this.countryFlagService.headTextureValueForCountry("XX");
+            }
+            return this.countryFlagService.headTextureValue(player.getUniqueId());
+        }
+
+        if (normalizedParam.equals("country_head_tag")) {
+            if (player == null || player.getUniqueId() == null) {
+                return this.countryFlagService.miniMessageTagForCountry("XX");
+            }
+            return this.countryFlagService.miniMessageTag(player.getUniqueId());
+        }
+
+        if (normalizedParam.equals("show_country_flag")) {
+            if (player == null || player.getUniqueId() == null) {
+                return "true";
+            }
+            return Boolean.toString(this.settingsService.showCountryFlag(player.getUniqueId()));
+        }
+
         return null;
+    }
+
+    private CountryAsset countryAsset(final OfflinePlayer player) {
+        if (player == null || player.getUniqueId() == null) {
+            return this.countryFlagService.assetForCountry("XX");
+        }
+        return this.countryFlagService.asset(player.getUniqueId());
     }
 
     @EventHandler

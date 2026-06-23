@@ -209,6 +209,11 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     }
 
     @Override
+    public boolean showCountryFlag(final UUID playerId) {
+        return getCachedOrDefault(playerId).showCountryFlag();
+    }
+
+    @Override
     public CompletableFuture<Void> setLanguage(final UUID playerId, final LanguagePreference preference) {
         Objects.requireNonNull(preference, "preference");
         return enqueueMutation(playerId, () -> {
@@ -308,6 +313,38 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     }
 
     @Override
+    public CompletableFuture<Void> setShowCountryFlag(final UUID playerId, final boolean enabled) {
+        return enqueueMutation(playerId, () -> {
+            final PlayerSettingsSnapshot previous = getCachedOrDefault(playerId);
+            if (previous.showCountryFlag() == enabled) {
+                return CompletableFuture.completedFuture(null);
+            }
+
+            final String value = Boolean.toString(enabled);
+            final PlayerSettingsSnapshot updated = previous.withSetting(SettingKey.SHOW_COUNTRY_FLAG, value);
+
+            return this.repository.upsertAsync(playerId, SettingKey.SHOW_COUNTRY_FLAG, value)
+                .whenComplete((unused, throwable) -> {
+                    if (throwable == null) {
+                        return;
+                    }
+                    this.logger.log(Level.SEVERE, "Failed to persist country flag visibility for " + playerId, throwable);
+                })
+                .thenCompose(unused -> runOnMainThread(() -> {
+                    this.cache.put(playerId, updated);
+                    dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
+                        playerId,
+                        SettingKey.SHOW_COUNTRY_FLAG,
+                        Boolean.toString(previous.showCountryFlag()),
+                        value,
+                        Boolean.toString(previous.showCountryFlag()),
+                        value
+                    ));
+                }));
+        });
+    }
+
+    @Override
     public CompletableFuture<Void> setSetting(final UUID playerId, final SettingKey key, final String value) {
         Objects.requireNonNull(key, "key");
         if (!key.playerWritable()) {
@@ -321,7 +358,27 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
             return setLanguage(playerId, LanguagePreference.fromStorage(value));
         }
 
+        if (key == SettingKey.SHOW_COUNTRY_FLAG) {
+            final Optional<Boolean> enabled = parseBooleanSetting(value);
+            if (enabled.isEmpty()) {
+                return CompletableFuture.failedFuture(new IllegalArgumentException("unsupported boolean value: " + value));
+            }
+            return setShowCountryFlag(playerId, enabled.get());
+        }
+
         return CompletableFuture.failedFuture(new IllegalArgumentException("unsupported setting: " + key.storageKey()));
+    }
+
+    private static Optional<Boolean> parseBooleanSetting(final String value) {
+        if (value == null) {
+            return Optional.empty();
+        }
+        final String normalized = value.trim().toLowerCase(java.util.Locale.ROOT);
+        return switch (normalized) {
+            case "true" -> Optional.of(true);
+            case "false" -> Optional.of(false);
+            default -> Optional.empty();
+        };
     }
 
     @Override

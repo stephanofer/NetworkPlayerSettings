@@ -21,6 +21,7 @@ public final class PlayerSettingsSnapshot {
         copy.put(SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
         copy.put(SettingKey.DETECTED_COUNTRY, CountryFlag.UNKNOWN_CODE);
         copy.put(SettingKey.COUNTRY_OVERRIDE, "");
+        copy.put(SettingKey.SHOW_COUNTRY_FLAG, SettingKey.SHOW_COUNTRY_FLAG.defaultValue());
         values.forEach((key, value) -> copy.put(
             Objects.requireNonNull(key, "key"),
             value == null ? "" : value.trim()
@@ -32,7 +33,8 @@ public final class PlayerSettingsSnapshot {
         return new PlayerSettingsSnapshot(playerId, Map.of(
             SettingKey.LANGUAGE, SettingKey.LANGUAGE.defaultValue(),
             SettingKey.DETECTED_COUNTRY, SettingKey.DETECTED_COUNTRY.defaultValue(),
-            SettingKey.COUNTRY_OVERRIDE, SettingKey.COUNTRY_OVERRIDE.defaultValue()
+            SettingKey.COUNTRY_OVERRIDE, SettingKey.COUNTRY_OVERRIDE.defaultValue(),
+            SettingKey.SHOW_COUNTRY_FLAG, SettingKey.SHOW_COUNTRY_FLAG.defaultValue()
         ));
     }
 
@@ -69,6 +71,10 @@ public final class PlayerSettingsSnapshot {
 
     public String countryCode() {
         return countryOverride().orElseGet(this::detectedCountryCode);
+    }
+
+    public boolean showCountryFlag() {
+        return Boolean.parseBoolean(valueOrDefault(SettingKey.SHOW_COUNTRY_FLAG));
     }
 
     public PlayerSettingsSnapshot withSetting(final SettingKey key, final String value) {

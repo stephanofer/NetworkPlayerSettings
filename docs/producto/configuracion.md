@@ -126,6 +126,17 @@ Reglas reales del loader:
 
 Si el catálogo es inválido, el bootstrap de assets falla y el plugin no registra `NetworkAssetService`.
 
+## Setting `show_country_flag`
+
+`show_country_flag` es un setting persistido por jugador con default `true`.
+
+Comportamiento:
+
+- Si está en `true`, los helpers/placeholders de bandera devuelven el asset del país efectivo.
+- Si está en `false`, los helpers por jugador devuelven vacío o `Component.empty()`.
+- El país `XX` no significa vacío; se renderiza usando el asset `XX` cuando la bandera está activa.
+- El valor se guarda en la tabla de settings existente; no requiere columna nueva ni migración de schema.
+
 ## Migraciones DB incluidas
 
 - `V1__create_player_settings.sql`: crea tabla `${tablePrefix}player_settings`.

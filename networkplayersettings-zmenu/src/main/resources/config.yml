@@ -11,3 +11,4 @@ command:
 
 settings:
   language-change-cooldown-millis: 750
+  country-flag-toggle-cooldown-millis: 500

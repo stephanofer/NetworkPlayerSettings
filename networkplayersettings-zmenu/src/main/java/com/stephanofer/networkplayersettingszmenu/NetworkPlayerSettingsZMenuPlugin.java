@@ -8,6 +8,7 @@ import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettingszmenu.command.GlobalSettingsCommand;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
+import com.stephanofer.networkplayersettingszmenu.settings.country.CountryFlagButton;
 import com.stephanofer.networkplayersettingszmenu.settings.language.LanguageButton;
 import com.stephanofer.networkplayersettingszmenu.settings.view.SettingsMenuBootstrap;
 import com.stephanofer.networkplayersettingszmenu.settings.view.SettingsViewOpener;
@@ -51,6 +52,7 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         LanguageButton.clearCooldowns();
+        CountryFlagButton.clearCooldowns();
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -108,6 +110,7 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
         @org.bukkit.event.EventHandler
         public void onPlayerQuit(final org.bukkit.event.player.PlayerQuitEvent event) {
             LanguageButton.clearCooldown(event.getPlayer().getUniqueId());
+            CountryFlagButton.clearCooldown(event.getPlayer().getUniqueId());
         }
     }
 }

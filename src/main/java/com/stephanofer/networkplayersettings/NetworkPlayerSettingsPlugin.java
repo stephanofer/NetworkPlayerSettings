@@ -2,8 +2,10 @@ package com.stephanofer.networkplayersettings;
 
 import com.hera.craftkit.database.Database;
 import com.hera.craftkit.database.Databases;
+import com.stephanofer.networkplayersettings.assets.api.CountryFlagService;
 import com.stephanofer.networkplayersettings.assets.api.NetworkAssetService;
 import com.stephanofer.networkplayersettings.assets.country.CountryAssetLoader;
+import com.stephanofer.networkplayersettings.assets.country.DefaultCountryFlagService;
 import com.stephanofer.networkplayersettings.assets.country.NetworkAssetBootstrap;
 import com.stephanofer.networkplayersettings.config.PluginConfig;
 import com.stephanofer.networkplayersettings.platform.bukkit.PlayerConnectionListener;
@@ -30,6 +32,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     private PluginYamlLoader yamlLoader;
     private PluginConfig config;
     private NetworkAssetService networkAssetService;
+    private CountryFlagService countryFlagService;
     private GeoIpCountryResolver countryResolver;
     private DefaultPlayerSettingsService settingsService;
     private PlayerSettingsPlaceholderExpansion placeholderExpansion;
@@ -90,6 +93,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
             getLogger(),
             this
         );
+        this.countryFlagService = new DefaultCountryFlagService(this.settingsService, this.networkAssetService);
     }
 
     private void registerPlaceholderExpansion() {
@@ -104,6 +108,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
         this.placeholderExpansion = new PlayerSettingsPlaceholderExpansion(
             this.settingsService,
+            this.countryFlagService,
             this.config.settings().defaultLanguage(),
             Duration.ofMillis(Math.max(0L, this.config.placeholderapi().cacheTtlMillis())),
             this.config.placeholderapi().cacheMaximumSize(),
@@ -124,6 +129,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     private void registerServices() {
         getServer().getServicesManager().register(PlayerSettingsService.class, this.settingsService, this, ServicePriority.Normal);
+        getServer().getServicesManager().register(CountryFlagService.class, this.countryFlagService, this, ServicePriority.Normal);
     }
 
     private void registerListeners() {

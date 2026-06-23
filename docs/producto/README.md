@@ -66,6 +66,7 @@ No lo uses para:
 - [`flujo-ajustes-eventos.md`](flujo-ajustes-eventos.md): carga, caché, persistencia, eventos y threading observado en el código.
 - [`configuracion.md`](configuracion.md): `config.yml`, `assets/countries.yml`, recursos, defaults y consecuencias operativas.
 - [`assets-placeholderapi.md`](assets-placeholderapi.md): assets de países, PlaceholderAPI y consumo desde interfaces externas.
+- [`banderas-pais-head-components.md`](banderas-pais-head-components.md): guía completa de la feature de banderas de país con player head components, placeholders, API Java, CraftKit y addon zMenu.
 - [`ejemplos-y-buenas-practicas.md`](ejemplos-y-buenas-practicas.md): snippets correctos y do/don't para plugins consumidores.
 - [`troubleshooting-source-map.md`](troubleshooting-source-map.md): errores comunes, diagnóstico y mapa de archivos fuente.
 

@@ -22,11 +22,15 @@ public interface PlayerSettingsService {
 
     String countryCode(UUID playerId);
 
+    boolean showCountryFlag(UUID playerId);
+
     CompletableFuture<Void> setLanguage(UUID playerId, LanguagePreference preference);
 
     CompletableFuture<Void> setCountryOverride(UUID playerId, String countryCode);
 
     CompletableFuture<Void> clearCountryOverride(UUID playerId);
+
+    CompletableFuture<Void> setShowCountryFlag(UUID playerId, boolean enabled);
 
     CompletableFuture<Void> setSetting(UUID playerId, SettingKey key, String value);
 

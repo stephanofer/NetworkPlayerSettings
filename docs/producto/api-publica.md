@@ -24,9 +24,11 @@ public interface PlayerSettingsService {
     Language resolvedLanguage(Player player);
     LanguagePreference languagePreference(UUID playerId);
     String countryCode(UUID playerId);
+    boolean showCountryFlag(UUID playerId);
     CompletableFuture<Void> setLanguage(UUID playerId, LanguagePreference preference);
     CompletableFuture<Void> setCountryOverride(UUID playerId, String countryCode);
     CompletableFuture<Void> clearCountryOverride(UUID playerId);
+    CompletableFuture<Void> setShowCountryFlag(UUID playerId, boolean enabled);
     CompletableFuture<Void> setSetting(UUID playerId, SettingKey key, String value);
     Optional<String> getSetting(UUID playerId, SettingKey key);
     boolean isReady(UUID playerId);
@@ -41,10 +43,12 @@ public interface PlayerSettingsService {
 | `resolvedLanguage(Player)` | Resuelve idioma efectivo usando snapshot cache/default y locale actual del jugador si `settings.detect-client-locale` está activo. |
 | `languagePreference(UUID)` | Devuelve preferencia guardada/cacheada o `AUTO` por default. |
 | `countryCode(UUID)` | Devuelve país efectivo: `country_override` válido si existe; si no `detected_country`; fallback `XX`. |
+| `showCountryFlag(UUID)` | Devuelve si el jugador permite renderizar su bandera de país. Default `true`. |
 | `setLanguage(UUID, LanguagePreference)` | Persiste async; después agenda actualización de caché y evento en main thread. Si no cambia, devuelve future completado. |
 | `setCountryOverride(UUID, String)` | Normaliza ISO alpha-2. Rechaza `XX`/inválidos con future fallido. Persiste async; luego actualiza caché/evento en main thread. |
 | `clearCountryOverride(UUID)` | Persiste `country_override` vacío; luego actualiza caché/evento en main thread si cambia el país efectivo. |
-| `setSetting(UUID, SettingKey, String)` | Solo acepta claves `playerWritable`. En el código actual solo `LANGUAGE` es escribible por esta vía. |
+| `setShowCountryFlag(UUID, boolean)` | Persiste async la visibilidad de bandera; luego actualiza caché/evento en main thread si cambia. |
+| `setSetting(UUID, SettingKey, String)` | Solo acepta claves `playerWritable`. En el código actual soporta `LANGUAGE` y `SHOW_COUNTRY_FLAG`; booleanos inválidos fallan en vez de convertirse silenciosamente a `false`. |
 | `getSetting(UUID, SettingKey)` | Lee del snapshot cache/default y devuelve `Optional.empty()` para valores blancos. |
 | `isReady(UUID)` | `true` después de que `handleJoin` marca al jugador listo y dispara `PlayerSettingsReadyEvent`; `false` tras quit o antes de ready. |
 
@@ -72,6 +76,7 @@ public final class PlayerSettingsSnapshot {
     public String detectedCountryCode();
     public Optional<String> countryOverride();
     public String countryCode();
+    public boolean showCountryFlag();
     public PlayerSettingsSnapshot withSetting(SettingKey key, String value);
 }
 ```
@@ -83,6 +88,7 @@ Defaults aplicados por constructor/snapshot:
 | `LANGUAGE` | `auto` |
 | `DETECTED_COUNTRY` | `XX` |
 | `COUNTRY_OVERRIDE` | `""` |
+| `SHOW_COUNTRY_FLAG` | `true` |
 
 Detalles importantes:
 
@@ -91,6 +97,7 @@ Detalles importantes:
 - `setting(key)` filtra valores en blanco.
 - `countryOverride()` solo devuelve códigos ISO alpha-2 reales distintos de `XX`.
 - `countryCode()` prioriza override; si no existe, usa país detectado.
+- `showCountryFlag()` parsea el valor persistido como boolean y cae en `true` por default.
 
 ## `SettingKey`
 
@@ -100,15 +107,16 @@ Paquete: `com.stephanofer.networkplayersettings.settings.api`.
 public enum SettingKey {
     LANGUAGE("language", true, true, "auto"),
     DETECTED_COUNTRY("detected_country", true, false, "XX"),
-    COUNTRY_OVERRIDE("country_override", true, false, "");
+    COUNTRY_OVERRIDE("country_override", true, false, ""),
+    SHOW_COUNTRY_FLAG("show_country_flag", true, true, "true");
 }
 ```
 
 | Método | Resultado |
 |---|---|
 | `storageKey()` | Nombre persistido en DB. |
-| `persisted()` | `true` para las tres claves actuales. |
-| `playerWritable()` | `true` solo para `LANGUAGE`. |
+| `persisted()` | `true` para las claves actuales. |
+| `playerWritable()` | `true` para `LANGUAGE` y `SHOW_COUNTRY_FLAG`. |
 | `defaultValue()` | Default por clave. |
 | `fromStorageKey(String)` | Busca case-insensitive; devuelve `null` si no reconoce la key. |
 
@@ -204,6 +212,35 @@ public interface NetworkAssetService {
 
 - `countryAsset` acepta código o alias; ante `null`, blanco o desconocido devuelve asset fallback `XX`.
 - `countryAssets()` expone solo el mapa canónico por códigos, no los aliases, y es inmutable.
+
+## `CountryFlagService`
+
+Paquete: `com.stephanofer.networkplayersettings.assets.api`.
+
+Servicio público para obtener helpers de bandera de país. Compone `PlayerSettingsService`, `NetworkAssetService` y Adventure.
+
+```java
+public interface CountryFlagService {
+    String COUNTRY_FLAG_TAG = "country_flag";
+
+    CountryAsset asset(UUID playerId);
+    CountryAsset assetForCountry(String countryCodeOrAlias);
+    String headTextureValue(UUID playerId);
+    String headTextureValueForCountry(String countryCodeOrAlias);
+    String miniMessageTag(UUID playerId);
+    String miniMessageTagForCountry(String countryCodeOrAlias);
+    Component flag(UUID playerId);
+    Component flagForCountry(String countryCodeOrAlias);
+    TagResolver resolver(UUID playerId);
+    TagResolver resolverForCountry(String countryCodeOrAlias);
+}
+```
+
+- Métodos con `UUID playerId` respetan `show_country_flag`.
+- Métodos `ForCountry` son helpers directos del catálogo y no leen settings de jugador.
+- `flag(UUID)` devuelve `Component.empty()` cuando el jugador desactiva la bandera.
+- `resolver(UUID)` registra `<country_flag>` para MiniMessage.
+- `miniMessageTag(...)` devuelve `<craftkit_head:VALUE>` para pipelines que primero resuelven PlaceholderAPI y luego MiniMessage con CraftKit.
 
 ## Eventos públicos
 

@@ -67,6 +67,7 @@ public final class SqlPlayerSettingsRepository implements PlayerSettingsReposito
         boolean createdDefault = values.isEmpty();
         createdDefault |= ensureDefault(connection, playerId, values, SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue());
         createdDefault |= ensureDefault(connection, playerId, values, SettingKey.DETECTED_COUNTRY, CountryFlag.UNKNOWN_CODE);
+        createdDefault |= ensureDefault(connection, playerId, values, SettingKey.SHOW_COUNTRY_FLAG, SettingKey.SHOW_COUNTRY_FLAG.defaultValue());
         return new RepositoryLoadResult(new PlayerSettingsSnapshot(playerId, values), createdDefault);
     }
 

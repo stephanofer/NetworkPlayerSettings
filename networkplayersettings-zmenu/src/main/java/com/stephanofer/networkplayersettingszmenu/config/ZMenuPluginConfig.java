@@ -28,7 +28,10 @@ public record ZMenuPluginConfig(
                 CommandTargetType.fromConfig(config.getString("command.open.type", "menu"), logger),
                 normalizeTargetKey(config.getString("command.open.key", "language"), "command.open.key", logger)
             ),
-            new SettingsSection(config.getLong("settings.language-change-cooldown-millis", 750L))
+            new SettingsSection(
+                config.getLong("settings.language-change-cooldown-millis", 750L),
+                config.getLong("settings.country-flag-toggle-cooldown-millis", 500L)
+            )
         );
     }
 
@@ -71,7 +74,14 @@ public record ZMenuPluginConfig(
         }
     }
 
-    public record SettingsSection(long languageChangeCooldownMillis) {
+    public record SettingsSection(
+        long languageChangeCooldownMillis,
+        long countryFlagToggleCooldownMillis
+    ) {
+        public SettingsSection {
+            languageChangeCooldownMillis = Math.max(0L, languageChangeCooldownMillis);
+            countryFlagToggleCooldownMillis = Math.max(0L, countryFlagToggleCooldownMillis);
+        }
     }
 
     private static List<String> normalizeAliases(final List<String> rawAliases, final String commandName, final Logger logger) {

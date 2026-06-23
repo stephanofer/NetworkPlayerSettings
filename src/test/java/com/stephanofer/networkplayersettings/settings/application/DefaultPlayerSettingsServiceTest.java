@@ -45,6 +45,14 @@ class DefaultPlayerSettingsServiceTest {
     }
 
     @Test
+    void showsCountryFlagByDefault() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(PlayerSettingsSnapshot.defaults(playerId));
+
+        assertEquals(true, service.showCountryFlag(playerId));
+    }
+
+    @Test
     void returnsDetectedCountryFromCachedSnapshot() {
         final UUID playerId = UUID.randomUUID();
         final PlayerSettingsSnapshot snapshot = PlayerSettingsSnapshot.defaults(playerId)
@@ -430,6 +438,85 @@ class DefaultPlayerSettingsServiceTest {
         assertThrows(CompletionException.class, mutation::join);
         assertEquals("BR", service.countryCode(playerId));
         assertEquals(List.of(), events);
+    }
+
+    @Test
+    void setShowCountryFlagUpdatesCacheOnlyAfterPersistenceCompletes() {
+        final UUID playerId = UUID.randomUUID();
+        final RecordingPlayerSettingsRepository repository = new RecordingPlayerSettingsRepository(snapshotWith(playerId, Map.of(
+            SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue(),
+            SettingKey.DETECTED_COUNTRY, "AR",
+            SettingKey.SHOW_COUNTRY_FLAG, "true"
+        )));
+        final QueuedMainThreadExecutor mainThreadExecutor = new QueuedMainThreadExecutor();
+        final List<PlayerSettingChangeEvent> events = new ArrayList<>();
+        final DefaultPlayerSettingsService service = serviceWith(
+            repository,
+            GeoIpCountryResolver.disabled(LOGGER),
+            pluginConfig(),
+            mainThreadExecutor,
+            events
+        );
+        service.preloadForLogin(playerId);
+        final CompletableFuture<Void> persistence = repository.enqueueAsyncUpsert();
+
+        final CompletableFuture<Void> mutation = service.setShowCountryFlag(playerId, false);
+
+        assertFalse(mutation.isDone());
+        assertEquals(true, service.showCountryFlag(playerId));
+        assertEquals(List.of(), events);
+        persistence.complete(null);
+        assertFalse(mutation.isDone());
+        assertEquals(true, service.showCountryFlag(playerId));
+        assertEquals(List.of(), events);
+        mainThreadExecutor.runNext();
+        mutation.join();
+        assertEquals(false, service.showCountryFlag(playerId));
+        assertSettingChangeEvent(events, playerId, SettingKey.SHOW_COUNTRY_FLAG, "true", "false", "true", "false");
+    }
+
+    @Test
+    void setShowCountryFlagDoesNotUpdateCacheWhenPersistenceFails() {
+        final UUID playerId = UUID.randomUUID();
+        final RecordingPlayerSettingsRepository repository = new RecordingPlayerSettingsRepository(snapshotWith(playerId, Map.of(
+            SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue(),
+            SettingKey.DETECTED_COUNTRY, "AR",
+            SettingKey.SHOW_COUNTRY_FLAG, "true"
+        )));
+        final QueuedMainThreadExecutor mainThreadExecutor = new QueuedMainThreadExecutor();
+        final List<PlayerSettingChangeEvent> events = new ArrayList<>();
+        final DefaultPlayerSettingsService service = serviceWith(
+            repository,
+            GeoIpCountryResolver.disabled(LOGGER),
+            pluginConfig(),
+            mainThreadExecutor,
+            events
+        );
+        service.preloadForLogin(playerId);
+        final CompletableFuture<Void> persistence = repository.enqueueAsyncUpsert();
+
+        final CompletableFuture<Void> mutation = service.setShowCountryFlag(playerId, false);
+        persistence.completeExceptionally(new IllegalStateException("async persistence failed"));
+
+        assertThrows(CompletionException.class, mutation::join);
+        assertEquals(true, service.showCountryFlag(playerId));
+        assertEquals(List.of(), events);
+    }
+
+    @Test
+    void setSettingRejectsInvalidCountryFlagBoolean() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(snapshotWith(playerId, Map.of(
+            SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue(),
+            SettingKey.DETECTED_COUNTRY, "AR",
+            SettingKey.SHOW_COUNTRY_FLAG, "true"
+        )));
+        service.preloadForLogin(playerId);
+
+        final CompletableFuture<Void> mutation = service.setSetting(playerId, SettingKey.SHOW_COUNTRY_FLAG, "not-a-boolean");
+
+        assertThrows(CompletionException.class, mutation::join);
+        assertEquals(true, service.showCountryFlag(playerId));
     }
 
     private static DefaultPlayerSettingsService serviceWith(final PlayerSettingsSnapshot snapshot) {

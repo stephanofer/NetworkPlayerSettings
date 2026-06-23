@@ -87,6 +87,7 @@ Verificá:
 | Addon zMenu - comando | `networkplayersettings-zmenu/src/main/java/com/stephanofer/networkplayersettingszmenu/command/GlobalSettingsCommand.java` |
 | Addon zMenu - vista settings | `networkplayersettings-zmenu/src/main/java/com/stephanofer/networkplayersettingszmenu/settings/view/*` |
 | Addon zMenu - idioma | `networkplayersettings-zmenu/src/main/java/com/stephanofer/networkplayersettingszmenu/settings/language/*` |
+| Addon zMenu - bandera de país | `networkplayersettings-zmenu/src/main/java/com/stephanofer/networkplayersettingszmenu/settings/country/*` |
 
 ## Checklist de verificación al cambiar el proyecto
 

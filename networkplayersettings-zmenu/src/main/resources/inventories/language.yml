@@ -46,3 +46,16 @@ items:
         - "#8c8c8cState#8c8c8c: #92ffff%selected_state%"
         - ""
         - "#8c8c8c• #2CCED2Click #92ffffto use English"
+
+  country_flag:
+    type: NPS_COUNTRY_FLAG
+    is-permanent: true
+    slot: 22
+    item:
+      material: NAME_TAG
+      name: "%playersettings_country_head_tag%#ffd166%country_flag_marker%Country Flag"
+      lore:
+        - "#8c8c8cCountry#8c8c8c: #ffd166%country_code%"
+        - "#8c8c8cState#8c8c8c: #92ffff%country_flag_state%"
+        - ""
+        - "#8c8c8c• #2CCED2Click #92ffff%country_flag_action%"

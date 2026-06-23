@@ -4,6 +4,7 @@ import com.hera.craftkit.zmenu.ZMenuIntegration;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
+import com.stephanofer.networkplayersettingszmenu.settings.country.CountryFlagButtonLoader;
 import com.stephanofer.networkplayersettingszmenu.settings.language.LanguageButtonLoader;
 import java.util.Objects;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -32,12 +33,20 @@ public final class SettingsMenuBootstrap {
 
     public void load() {
         this.zmenu.bootstrap()
-            .buttons(registry -> registry.button(new LanguageButtonLoader(
-                this.plugin,
-                this.settingsService,
-                this.messages,
-                this.settingsConfig
-            )))
+            .buttons(registry -> {
+                registry.button(new LanguageButtonLoader(
+                    this.plugin,
+                    this.settingsService,
+                    this.messages,
+                    this.settingsConfig
+                ));
+                registry.button(new CountryFlagButtonLoader(
+                    this.plugin,
+                    this.settingsService,
+                    this.messages,
+                    this.settingsConfig
+                ));
+            })
             .defaultInventories("inventories/language.yml")
             .inventories("inventories")
             .dialogs("dialogs")
