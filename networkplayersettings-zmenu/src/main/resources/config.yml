@@ -9,5 +9,21 @@ command:
     type: "menu"
     key: "settings-main"
 
+nick-style-command:
+  name: "nickstyle"
+  aliases:
+    - "nickstyles"
+  open:
+    type: "menu"
+    key: "nick-styles"
+
+chat-style-command:
+  name: "chatstyle"
+  aliases:
+    - "chatstyles"
+  open:
+    type: "menu"
+    key: "chat-styles"
+
 settings:
   mutation-cooldown-millis: 750

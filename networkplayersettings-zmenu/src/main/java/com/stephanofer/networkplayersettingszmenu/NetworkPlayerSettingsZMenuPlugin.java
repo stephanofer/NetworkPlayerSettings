@@ -7,6 +7,7 @@ import com.hera.craftkit.zmenu.ZMenus;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.settings.api.PlayerStyleService;
 import com.stephanofer.networkplayersettingszmenu.command.GlobalSettingsCommand;
+import com.stephanofer.networkplayersettingszmenu.command.StyleMenuCommand;
 import com.stephanofer.networkplayersettingszmenu.config.AddonYamlLoader;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
@@ -95,6 +96,10 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
 
         new GlobalSettingsCommand(this.settingsService, settingsViewOpener, this.messages, this.config.command())
             .register(commandManager, minecraftHelp);
+        new StyleMenuCommand(this.settingsService, settingsViewOpener, this.messages, this.config.nickStyleCommand(), "Open your nick style menu")
+            .register(commandManager);
+        new StyleMenuCommand(this.settingsService, settingsViewOpener, this.messages, this.config.chatStyleCommand(), "Open your chat style menu")
+            .register(commandManager);
     }
 
     private <T> T requireService(final Class<T> serviceClass) {

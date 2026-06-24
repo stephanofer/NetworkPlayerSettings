@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 
 public record ZMenuPluginConfig(
     CommandSection command,
+    CommandSection nickStyleCommand,
+    CommandSection chatStyleCommand,
     SettingsSection settings
 ) {
 
@@ -18,12 +20,9 @@ public record ZMenuPluginConfig(
         final long mutationCooldownMillis = resolveMutationCooldownMillis(document);
 
         return new ZMenuPluginConfig(
-            new CommandSection(
-                normalizeCommandToken(document.getString("command.name", "globalsettings"), "globalsettings", "command.name", logger),
-                normalizeAliases(document.getStringList("command.aliases"), "globalsettings", logger),
-                CommandTargetType.fromConfig(document.getString("command.open.type", "menu"), logger),
-                normalizeTargetKey(document.getString("command.open.key", "settings-main"), "command.open.key", logger)
-            ),
+            commandSection(document, logger, "command", "globalsettings", List.of("settings", "prefs"), "settings-main"),
+            commandSection(document, logger, "nick-style-command", "nickstyle", List.of("nickstyles"), "nick-styles"),
+            commandSection(document, logger, "chat-style-command", "chatstyle", List.of("chatstyles"), "chat-styles"),
             new SettingsSection(
                 mutationCooldownMillis
             )
@@ -39,19 +38,13 @@ public record ZMenuPluginConfig(
         public CommandSection {
             final String normalizedName = name;
             aliases = aliases == null
-                ? List.of("settings", "prefs")
+                ? List.of()
                 : aliases.stream()
                     .map(alias -> normalizeCommandToken(alias, "", "command.aliases", null))
                     .filter(alias -> !alias.isBlank())
                     .filter(alias -> !alias.equalsIgnoreCase(normalizedName))
                     .distinct()
                     .toList();
-            if (aliases.isEmpty()) {
-                aliases = List.of("settings", "prefs").stream()
-                    .filter(alias -> !alias.equalsIgnoreCase(normalizedName))
-                    .distinct()
-                    .toList();
-            }
             openTargetType = openTargetType == null ? CommandTargetType.MENU : openTargetType;
         }
     }
@@ -79,9 +72,32 @@ public record ZMenuPluginConfig(
         }
     }
 
-    private static List<String> normalizeAliases(final List<String> rawAliases, final String commandName, final Logger logger) {
+    private static CommandSection commandSection(
+        final YamlDocument document,
+        final Logger logger,
+        final String path,
+        final String fallbackName,
+        final List<String> fallbackAliases,
+        final String fallbackTargetKey
+    ) {
+        final String name = normalizeCommandToken(document.getString(path + ".name", fallbackName), fallbackName, path + ".name", logger);
+        return new CommandSection(
+            name,
+            normalizeAliases(document.getStringList(path + ".aliases"), name, fallbackAliases, path + ".aliases", logger),
+            CommandTargetType.fromConfig(document.getString(path + ".open.type", "menu"), logger),
+            normalizeTargetKey(document.getString(path + ".open.key", fallbackTargetKey), path + ".open.key", logger)
+        );
+    }
+
+    private static List<String> normalizeAliases(
+        final List<String> rawAliases,
+        final String commandName,
+        final List<String> fallbackAliases,
+        final String path,
+        final Logger logger
+    ) {
         final List<String> aliases = rawAliases.stream()
-            .map(alias -> normalizeCommandToken(alias, "", "command.aliases", logger))
+            .map(alias -> normalizeCommandToken(alias, "", path, logger))
             .filter(alias -> !alias.isBlank())
             .filter(alias -> !alias.equalsIgnoreCase(commandName))
             .distinct()
@@ -89,7 +105,7 @@ public record ZMenuPluginConfig(
         if (!aliases.isEmpty()) {
             return aliases;
         }
-        return List.of("settings", "prefs").stream()
+        return fallbackAliases.stream()
             .filter(alias -> !alias.equalsIgnoreCase(commandName))
             .distinct()
             .toList();
