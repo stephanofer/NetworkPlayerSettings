@@ -35,150 +35,175 @@ items:
 
   red:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 10
       material: RED_DYE
       style-id: red
   green:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 11
       material: GREEN_DYE
       style-id: green
   blue:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 12
       material: BLUE_DYE
       style-id: blue
   gold:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 13
       material: GOLD_INGOT
       style-id: gold
   aqua:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 14
       material: CYAN_DYE
       style-id: aqua
   pink:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 15
       material: PINK_DYE
       style-id: pink
   white-bold:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 16
       material: PAPER
       style-id: white-bold
   graphite:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 19
       material: COAL
       style-id: graphite
   ruby-gradient:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 20
       material: REDSTONE
       style-id: ruby-gradient
   emerald-gradient:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 21
       material: EMERALD
       style-id: emerald-gradient
   ocean-gradient:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 22
       material: HEART_OF_THE_SEA
       style-id: ocean-gradient
   sunset-gradient:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 23
       material: ORANGE_DYE
       style-id: sunset-gradient
   amethyst-gradient:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 24
       material: AMETHYST_SHARD
       style-id: amethyst-gradient
   ice-gradient:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 25
       material: BLUE_ICE
       style-id: ice-gradient
   premium-gold:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 28
       material: GOLD_BLOCK
       style-id: premium-gold
   aurora:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 29
       material: ECHO_SHARD
       style-id: aurora
   cyberpunk:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 30
       material: SCULK_SENSOR
       style-id: cyberpunk
   royal:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 31
       material: NETHER_STAR
       style-id: royal
   inferno:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 32
       material: BLAZE_POWDER
       style-id: inferno
   galaxy:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 33
       material: END_CRYSTAL
       style-id: galaxy
   rainbow-soft:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 34
       material: PRISMARINE_CRYSTALS
       style-id: rainbow-soft
   rainbow-reverse:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 37
       material: GLOWSTONE_DUST
       style-id: rainbow-reverse
   pride:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 38
       material: WHITE_BANNER
       style-id: pride
   progress-pride:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 39
       material: BEACON
       style-id: progress-pride
   trans-pride:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-nick-style-button"
       slot: 40
       material: LIGHT_BLUE_DYE

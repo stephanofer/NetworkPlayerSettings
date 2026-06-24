@@ -35,120 +35,140 @@ items:
 
   gray-clean:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 10
       material: GRAY_DYE
       style-id: gray-clean
   white-clean:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 11
       material: PAPER
       style-id: white-clean
   green-chat:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 12
       material: GREEN_DYE
       style-id: green-chat
   blue-chat:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 13
       material: BLUE_DYE
       style-id: blue-chat
   gold-chat:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 14
       material: GOLD_NUGGET
       style-id: gold-chat
   pink-chat:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 15
       material: PINK_DYE
       style-id: pink-chat
   soft-emerald:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 19
       material: EMERALD
       style-id: soft-emerald
   deep-ocean:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 20
       material: HEART_OF_THE_SEA
       style-id: deep-ocean
   warm-sunset:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 21
       material: ORANGE_DYE
       style-id: warm-sunset
   violet-pulse:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 22
       material: AMETHYST_SHARD
       style-id: violet-pulse
   aqua-shadow:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 23
       material: CYAN_DYE
       style-id: aqua-shadow
   clean-bold:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 24
       material: BOOK
       style-id: clean-bold
   premium-gold:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 25
       material: GOLD_BLOCK
       style-id: premium-gold
   aurora-message:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 28
       material: ECHO_SHARD
       style-id: aurora-message
   galaxy-message:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 29
       material: END_CRYSTAL
       style-id: galaxy-message
   inferno-message:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 30
       material: BLAZE_POWDER
       style-id: inferno-message
   cyber-message:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 31
       material: SCULK_SENSOR
       style-id: cyber-message
   rainbow-message:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 32
       material: PRISMARINE_CRYSTALS
       style-id: rainbow-message
   pride-message:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 33
       material: WHITE_BANNER
       style-id: pride-message
   progress-pride-message:
     pattern:
+      plugin-name: "NetworkPlayerSettingsZMenu"
       file-name: "nps-chat-style-button"
       slot: 34
       material: BEACON
