@@ -40,7 +40,7 @@ class StyleResourcesTest {
     @Test
     void nickInventoryMatchesBundledCatalogExactly() {
         final Set<String> catalogIds = patternIds(document(Path.of("src/main/resources/styles/nick-patterns.yml")));
-        final Set<String> inventoryIds = inventoryPatternIds(document(Path.of("networkplayersettings-zmenu/src/main/resources/inventories/nick-styles.yml")), "NPS_NICK_STYLE");
+        final Set<String> inventoryIds = inventoryPatternIds(document(Path.of("networkplayersettings-zmenu/src/main/resources/inventories/nick-styles.yml")), "nps-nick-style-button");
 
         assertEquals(catalogIds, inventoryIds);
     }
@@ -48,7 +48,7 @@ class StyleResourcesTest {
     @Test
     void chatInventoryMatchesBundledCatalogExactly() {
         final Set<String> catalogIds = patternIds(document(Path.of("src/main/resources/styles/chat-patterns.yml")));
-        final Set<String> inventoryIds = inventoryPatternIds(document(Path.of("networkplayersettings-zmenu/src/main/resources/inventories/chat-styles.yml")), "NPS_CHAT_STYLE");
+        final Set<String> inventoryIds = inventoryPatternIds(document(Path.of("networkplayersettings-zmenu/src/main/resources/inventories/chat-styles.yml")), "nps-chat-style-button");
 
         assertEquals(catalogIds, inventoryIds);
     }
@@ -60,13 +60,14 @@ class StyleResourcesTest {
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private static Set<String> inventoryPatternIds(final YamlDocument document, final String expectedType) {
+    private static Set<String> inventoryPatternIds(final YamlDocument document, final String expectedPatternFile) {
         final Section items = document.getSection("items");
         return items.getKeys().stream()
             .map(String::valueOf)
             .map(key -> items.getSection(key))
-            .filter(section -> section != null && expectedType.equals(section.getString("type", "")))
-            .map(section -> section.getString("pattern", ""))
+            .map(section -> section == null ? null : section.getSection("pattern"))
+            .filter(pattern -> pattern != null && expectedPatternFile.equals(pattern.getString("file-name", "")))
+            .map(pattern -> pattern.getString("style-id", ""))
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 

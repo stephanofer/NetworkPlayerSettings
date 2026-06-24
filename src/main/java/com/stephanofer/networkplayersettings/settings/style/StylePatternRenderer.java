@@ -10,27 +10,7 @@ public final class StylePatternRenderer {
     private final MiniMessage miniMessage;
 
     public StylePatternRenderer() {
-            /*
-     * Antes se usaba:
-     *
-     * this.miniMessage = MiniMessage.miniMessage(MiniMessage.Preset.FORMATTED_TEXT);
-     *
-     * Problema:
-     * MiniMessage.Preset.FORMATTED_TEXT solo existe en versiones nuevas de Adventure/MiniMessage.
-     * En algunos servidores Paper, especialmente si usan Adventure 4.x, esa clase no está disponible
-     * en runtime y el plugin falla al iniciar con:
-     *
-     * NoClassDefFoundError: net/kyori/adventure/text/minimessage/MiniMessage$Preset
-     *
-     * Solución actual:
-     * Usamos MiniMessage.miniMessage(), que es compatible con Adventure 4.x y funciona con Paper.
-     *
-     * Más adelante cuanjdo subamos de version el servidor queremos volver a usar MiniMessage.Preset.FORMATTED_TEXT,
-     * debemos agregar Adventure/MiniMessage 5.x correctamente al plugin usando ShadowJar
-     * y revisar que no haya conflicto con las clases Adventure que ya trae Paper.
-     */
         this.miniMessage = MiniMessage.miniMessage();
-
     }
 
     public Component renderNick(final StylePattern pattern, final String playerName) {

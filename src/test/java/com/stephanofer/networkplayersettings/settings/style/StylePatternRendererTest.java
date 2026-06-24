@@ -32,27 +32,6 @@ class StylePatternRendererTest {
 
         assertEquals("<red>boom</red>", PLAIN_TEXT.serialize(component));
     }
-/* DESCOMENTAR EN UN FUTURO CUANDO ACTUALIZEMOS LA VERSION CORRETA DE MIENCRAFT
-    @Test
-    void formattedTextPresetKeepsInteractiveTagsLiteral() {
-        final StylePattern pattern = new StylePattern(
-            StylePatternType.NICK,
-            "literal-click",
-            "Literal Click",
-            "basic",
-            "",
-            "<click:run_command:/kill><name></click>",
-            "Vendimia"
-        );
-
-        final Component rendered = this.renderer.renderNick(pattern, "Vendimia");
-
-        assertEquals("<click:run_command:/kill>Vendimia</click>", PLAIN_TEXT.serialize(rendered));
-        assertNull(((TextComponent) rendered).clickEvent());
-        assertNull(((TextComponent) rendered).hoverEvent());
-    }
- */
-
     @Test
     void formattedTextPresetSupportsVisualTagsUsedByCatalog() {
         final StylePattern pattern = new StylePattern(
