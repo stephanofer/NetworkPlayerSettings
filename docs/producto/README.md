@@ -1,6 +1,6 @@
 # NetworkPlayerSettings: guía de integración para plugins consumidores
 
-NetworkPlayerSettings centraliza ajustes globales de jugador para una network Minecraft/Paper: idioma preferido, idioma resuelto, país detectado, override manual de país y assets de países. Esta documentación está escrita para autores de plugins consumidores que quieren depender de este proyecto sin usar clases internas ni asumir estados que todavía no están listos.
+NetworkPlayerSettings centraliza ajustes globales de jugador para una network Minecraft/Paper: idioma preferido, idioma resuelto, país detectado, override manual de país, assets de países y estilos persistidos de nick/chat. Esta documentación está escrita para autores de plugins consumidores que quieren depender de este proyecto sin usar clases internas ni asumir estados que todavía no están listos.
 
 ## Ruta rápida
 
@@ -22,7 +22,7 @@ if (settings == null) {
 
 | Área | Qué expone para consumidores |
 |---|---|
-| Ajustes de jugador | `com.stephanofer.networkplayersettings.settings.api`: `PlayerSettingsService`, `PlayerSettingsSnapshot`, `SettingKey`. |
+| Ajustes de jugador | `com.stephanofer.networkplayersettings.settings.api`: `PlayerSettingsService`, `PlayerSettingsSnapshot`, `PlayerStyleService`, `StylePatternInfo`, `SettingKey`. |
 | Idioma | `com.stephanofer.networkplayersettings.settings.language`: `LanguagePreference`, `Language`. |
 | Eventos | `com.stephanofer.networkplayersettings.settings.event`: `PlayerSettingsReadyEvent`, `PlayerSettingChangeEvent`. |
 | Países | `com.stephanofer.networkplayersettings.settings.country.CountryFlag`, `com.stephanofer.networkplayersettings.assets.api.CountryAsset`, `NetworkAssetService`. |
@@ -63,6 +63,7 @@ No lo uses para:
 
 - [`instalacion-integracion.md`](instalacion-integracion.md): dependencias, plugin metadata, lookup del servicio y timing de lifecycle.
 - [`api-publica.md`](api-publica.md): referencia completa de clases públicas de API y eventos.
+- [`estilos-nick-chat.md`](estilos-nick-chat.md): guía exhaustiva de nick styles y chat styles, su API, placeholders, comportamiento runtime, zMenu y extensión segura.
 - [`flujo-ajustes-eventos.md`](flujo-ajustes-eventos.md): carga, caché, persistencia, eventos y threading observado en el código.
 - [`configuracion.md`](configuracion.md): `config.yml`, `assets/countries.yml`, recursos, defaults y consecuencias operativas.
 - [`assets-placeholderapi.md`](assets-placeholderapi.md): assets de países, PlaceholderAPI y consumo desde interfaces externas.

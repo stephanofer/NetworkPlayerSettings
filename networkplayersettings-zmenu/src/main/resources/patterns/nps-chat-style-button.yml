@@ -1,0 +1,31 @@
+name: "nps-chat-style-button"
+type: BUTTON
+
+button:
+  type: NPS_CHAT_STYLE
+  style-id: "%style-id%"
+  slot: "%slot%"
+  item:
+    material: "%material%"
+    name:
+      default: "%style_selected_marker%%style_lock_marker%%style_name%"
+      locales:
+        es: "%style_selected_marker%%style_lock_marker%%style_name%"
+        en: "%style_selected_marker%%style_lock_marker%%style_name%"
+    lore:
+      default:
+        - "#8c8c8cPreview#8c8c8c: #ffffff%style_preview%"
+        - "#8c8c8cState#8c8c8c: #92ffff%style_state%"
+        - ""
+        - "#2CCED2Click #92ffff%style_action%"
+      locales:
+        es:
+          - "#8c8c8cVista#8c8c8c: #ffffff%style_preview%"
+          - "#8c8c8cEstado#8c8c8c: #92ffff%style_state%"
+          - ""
+          - "#2CCED2Click #92ffff%style_action%"
+        en:
+          - "#8c8c8cPreview#8c8c8c: #ffffff%style_preview%"
+          - "#8c8c8cState#8c8c8c: #92ffff%style_state%"
+          - ""
+          - "#2CCED2Click #92ffff%style_action%"

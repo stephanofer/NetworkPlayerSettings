@@ -48,7 +48,7 @@ public interface PlayerSettingsService {
 | `setCountryOverride(UUID, String)` | Normaliza ISO alpha-2. Rechaza `XX`/inválidos con future fallido. Persiste async; luego actualiza caché/evento en main thread. |
 | `clearCountryOverride(UUID)` | Persiste `country_override` vacío; luego actualiza caché/evento en main thread si cambia el país efectivo. |
 | `setShowCountryFlag(UUID, boolean)` | Persiste async la visibilidad de bandera; luego actualiza caché/evento en main thread si cambia. |
-| `setSetting(UUID, SettingKey, String)` | Solo acepta claves `playerWritable`. En el código actual soporta `LANGUAGE` y `SHOW_COUNTRY_FLAG`; booleanos inválidos fallan en vez de convertirse silenciosamente a `false`. |
+| `setSetting(UUID, SettingKey, String)` | Solo acepta claves `playerWritable`. En el código actual soporta `LANGUAGE`, `SHOW_COUNTRY_FLAG`, `NICK_STYLE` y `CHAT_STYLE`. Para styles es una escritura raw con trim, sin validar existencia de catálogo; para consumidores conviene usar `PlayerStyleService`. |
 | `getSetting(UUID, SettingKey)` | Lee del snapshot cache/default y devuelve `Optional.empty()` para valores blancos. |
 | `isReady(UUID)` | `true` después de que `handleJoin` marca al jugador listo y dispara `PlayerSettingsReadyEvent`; `false` tras quit o antes de ready. |
 
@@ -89,6 +89,8 @@ Defaults aplicados por constructor/snapshot:
 | `DETECTED_COUNTRY` | `XX` |
 | `COUNTRY_OVERRIDE` | `""` |
 | `SHOW_COUNTRY_FLAG` | `true` |
+| `NICK_STYLE` | `""` |
+| `CHAT_STYLE` | `""` |
 
 Detalles importantes:
 
@@ -108,7 +110,9 @@ public enum SettingKey {
     LANGUAGE("language", true, true, "auto"),
     DETECTED_COUNTRY("detected_country", true, false, "XX"),
     COUNTRY_OVERRIDE("country_override", true, false, ""),
-    SHOW_COUNTRY_FLAG("show_country_flag", true, true, "true");
+    SHOW_COUNTRY_FLAG("show_country_flag", true, true, "true"),
+    NICK_STYLE("nick_style", true, true, ""),
+    CHAT_STYLE("chat_style", true, true, "");
 }
 ```
 
@@ -116,7 +120,7 @@ public enum SettingKey {
 |---|---|
 | `storageKey()` | Nombre persistido en DB. |
 | `persisted()` | `true` para las claves actuales. |
-| `playerWritable()` | `true` para `LANGUAGE` y `SHOW_COUNTRY_FLAG`. |
+| `playerWritable()` | `true` para `LANGUAGE`, `SHOW_COUNTRY_FLAG`, `NICK_STYLE` y `CHAT_STYLE`. |
 | `defaultValue()` | Default por clave. |
 | `fromStorageKey(String)` | Busca case-insensitive; devuelve `null` si no reconoce la key. |
 
@@ -131,6 +135,65 @@ Antes de agregar una preferencia nueva al core, definí explícitamente:
 - Evento: cuándo debe disparar `PlayerSettingChangeEvent` y qué representan `oldResolvedValue`/`newResolvedValue`.
 
 Contrato actual importante: `country_override = ""` significa “sin override manual”. Si no hay override válido, `countryCode()` usa `detected_country`.
+
+## `PlayerStyleService`
+
+Paquete: `com.stephanofer.networkplayersettings.settings.api`.
+
+Servicio público para catálogo, render y persistencia de nick/chat styles.
+
+```java
+public interface PlayerStyleService {
+    List<StylePatternInfo> nickPatterns();
+    List<StylePatternInfo> chatPatterns();
+    Optional<StylePatternInfo> nickPattern(String patternId);
+    Optional<StylePatternInfo> chatPattern(String patternId);
+    Optional<String> nickStyleId(UUID playerId);
+    Optional<String> chatStyleId(UUID playerId);
+    boolean canUseNickStyle(Player player, String patternId);
+    boolean canUseChatStyle(Player player, String patternId);
+    boolean hasActiveNickStyle(Player player);
+    boolean hasActiveChatStyle(Player player);
+    Component formattedNick(Player player);
+    String formattedNickMiniMessage(Player player);
+    String nickPreviewMiniMessage(Player player, String patternId);
+    Optional<Component> formatChatMessage(Player player, Component message);
+    String chatPreviewMiniMessage(Player player);
+    String chatPreviewMiniMessage(String patternId);
+    CompletableFuture<Void> setNickStyle(UUID playerId, String patternId);
+    CompletableFuture<Void> clearNickStyle(UUID playerId);
+    CompletableFuture<Void> setChatStyle(UUID playerId, String patternId);
+    CompletableFuture<Void> clearChatStyle(UUID playerId);
+}
+```
+
+Reglas observables:
+
+- `nickPatterns()` y `chatPatterns()` exponen el catálogo público ya validado y cargado desde YAML.
+- `nickStyleId()` y `chatStyleId()` leen la selección persistida, no necesariamente un estilo activo por permisos.
+- `formattedNick()` y `formatChatMessage()` solo aplican el style si el jugador todavía puede usarlo.
+- `setNickStyle()` y `setChatStyle()` validan existencia de catálogo, pero no validan permisos.
+- `clearNickStyle()` y `clearChatStyle()` persisten `""`.
+
+## `StylePatternInfo`
+
+Paquete: `com.stephanofer.networkplayersettings.settings.api`.
+
+```java
+public record StylePatternInfo(
+    String id,
+    String displayName,
+    String category,
+    String permission,
+    String previewText
+) {}
+```
+
+Reglas observables:
+
+- `id`, `displayName`, `category` y `previewText` no pueden ser blancos.
+- `permission` se normaliza a `""` cuando viene `null`.
+- `displayName` puede contener MiniMessage; no asumir texto plano.
 
 ## `LanguagePreference`
 

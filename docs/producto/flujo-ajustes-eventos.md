@@ -98,6 +98,9 @@ PRIMARY KEY (player_uuid, setting_key)
 
 - `language = auto`
 - `detected_country = XX`
+- `show_country_flag = true`
+- `nick_style = ""`
+- `chat_style = ""`
 
 No garantiza una fila default para `country_override`; el snapshot la representa como `""` si no existe.
 
@@ -128,7 +131,27 @@ Las mutaciones públicas persistentes se serializan por jugador. Si dos cambios 
 
 ### `setSetting`
 
-Actualmente solo soporta `SettingKey.LANGUAGE` porque es la única clave con `playerWritable() == true`. Para cualquier otra clave devuelve future fallido.
+Hoy soporta cuatro claves `playerWritable()`:
+
+- `LANGUAGE`
+- `SHOW_COUNTRY_FLAG`
+- `NICK_STYLE`
+- `CHAT_STYLE`
+
+Para `NICK_STYLE` y `CHAT_STYLE` delega a una escritura raw que solo hace trim del valor y dispara `PlayerSettingChangeEvent`. No valida que el ID exista en el catálogo. Por eso la API recomendada para consumers sigue siendo `PlayerStyleService`.
+
+## Flujo real de chat styles
+
+`PlayerChatStyleListener` escucha `AsyncChatEvent` con prioridad `HIGH` e `ignoreCancelled = true`.
+
+Flujo:
+
+1. si `hasActiveChatStyle(player)` es `false`, no hace nada;
+2. si es `true`, serializa `event.message()` a texto plano;
+3. reaplica el style sobre `Component.text(safeText)`;
+4. reemplaza `event.message(...)`.
+
+Esto significa que el sistema actual de chat styles privilegia un resultado visual consistente del style por encima de preservar componentes avanzados previos del mensaje.
 
 ## Eventos y threading
 
@@ -145,4 +168,6 @@ Como consumidor, tratá eventos como señales de estado, no como transacciones d
 - No asumas que `cached(UUID)` existe antes del ready event.
 - No asumas que `getCachedOrDefault` implica que el jugador está cargado desde DB.
 - No asumas que `country_override` puede escribirse con `setSetting`; usá `setCountryOverride` o `clearCountryOverride`.
+- No asumas que `setSetting(..., NICK_STYLE/CHAT_STYLE, ...)` valida existencia de catálogo; para eso usá `PlayerStyleService`.
+- No asumas que un style guardado implica que el jugador todavía tiene permiso para usarlo.
 - No asumas que PlaceholderAPI carga desde DB para jugadores no cacheados; usa caché/defaults. Para jugadores cacheados, la expansión invalida sus entradas al recibir cambios o quit.

@@ -118,6 +118,49 @@ public final class SettingChangeListener implements Listener {
 }
 ```
 
+## Listar nick styles disponibles
+
+```java
+import com.stephanofer.networkplayersettings.settings.api.PlayerStyleService;
+import com.stephanofer.networkplayersettings.settings.api.StylePatternInfo;
+
+PlayerStyleService styles = Bukkit.getServicesManager().load(PlayerStyleService.class);
+if (styles != null) {
+    for (StylePatternInfo info : styles.nickPatterns()) {
+        boolean unlocked = info.permission().isBlank() || player.hasPermission(info.permission());
+        String preview = styles.nickPreviewMiniMessage(player, info.id());
+    }
+}
+```
+
+## Guardar un nick style correctamente
+
+```java
+if (!styles.canUseNickStyle(player, patternId)) {
+    player.sendMessage("You cannot use that style");
+    return;
+}
+
+styles.setNickStyle(player.getUniqueId(), patternId)
+    .exceptionally(error -> {
+        plugin.getLogger().warning("Could not save nick style: " + error.getMessage());
+        return null;
+    });
+```
+
+## Renderizar chat propio con el style activo
+
+```java
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+
+String safeText = PlainTextComponentSerializer.plainText().serialize(originalMessage);
+Component finalMessage = styles.formatChatMessage(player, Component.text(safeText))
+    .orElse(Component.text(safeText));
+```
+
+Este ejemplo replica la semántica real del listener del core: primero texto plano, después aplicar style.
+
 ## Acceder a assets de país
 
 ```java
@@ -140,9 +183,11 @@ if (assets != null) {
 | Esperá `PlayerSettingsReadyEvent` o `isReady(UUID)`. | No asumas datos listos en cualquier evento temprano de conexión. |
 | Encadená `CompletableFuture` para mutaciones. | No hagas `join()`/`get()` en main thread. |
 | Usá `setLanguage`, `setCountryOverride`, `clearCountryOverride`. | No escribas directo en MySQL ni uses `setSetting` para claves no escribibles. |
+| Usá `PlayerStyleService#setNickStyle` y `setChatStyle` para estilos. | No uses `PlayerSettingsService#setSetting` para styles si necesitás validación de existencia o previews coherentes. |
 | Tratá `cached(UUID)` como lectura best-effort. | No confundas snapshot default con datos persistidos. |
 | Manejás `null` al usar servicios con `softdepend`. | No crashees si NetworkPlayerSettings no está instalado cuando tu integración es opcional. |
 | Usá `CountryFlag.normalizeCode` y fallback `XX`. | No confíes en input externo de país sin normalizar. |
+| Tratá `%playersettings_nick_style_name%` y `%playersettings_chat_style_name%` como MiniMessage. | No asumas que esos placeholders son texto plano. |
 
 ## Fallos que debe manejar un consumidor
 

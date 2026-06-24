@@ -85,14 +85,32 @@ Identificador de expansión: `playersettings`.
 | `%playersettings_country_head_value%` | `Value` base64 de la textura del país efectivo, listo para `<craftkit_head:%playersettings_country_head_value%>`. Si el jugador desactivó la bandera, devuelve vacío. |
 | `%playersettings_country_head_tag%` | Tag MiniMessage completo `<craftkit_head:VALUE>`. Si el jugador desactivó la bandera, devuelve vacío. |
 | `%playersettings_show_country_flag%` | `true`/`false` según la preferencia guardada/cacheada del jugador. Si no hay jugador/UUID, fallback `true`. |
+| `%playersettings_nick_style_id%` | ID guardado del nick style o `""`. |
+| `%playersettings_nick_style_name%` | `displayName` del nick style guardado o `""`. Puede contener MiniMessage. |
+| `%playersettings_nick_style_category%` | Categoría del nick style guardado o `""`. |
+| `%playersettings_nick_style_permission%` | Permiso del nick style guardado o `""`. |
+| `%playersettings_nick_formatted%` | Nick renderizado como MiniMessage si el estilo está activo; si no, nombre del jugador. |
+| `%playersettings_nick_formatted_raw%` | Actualmente idéntico a `%playersettings_nick_formatted%`. |
+| `%playersettings_chat_style_id%` | ID guardado del chat style o `""`. |
+| `%playersettings_chat_style_name%` | `displayName` del chat style guardado o `""`. Puede contener MiniMessage. |
+| `%playersettings_chat_style_category%` | Categoría del chat style guardado o `""`. |
+| `%playersettings_chat_style_permission%` | Permiso del chat style guardado o `""`. |
+| `%playersettings_chat_preview%` | Preview MiniMessage del chat style guardado o `""`. |
 
-Los placeholders se cachean por `playerId:param` durante `placeholderapi.cache-ttl-millis` si el TTL es positivo. Con TTL `0` o negativo, no se cachean. La expansión invalida el caché del jugador cuando recibe `PlayerSettingChangeEvent` y también al salir el jugador.
+Matices de styles:
+
+- Los placeholders `*_style_id`, `*_style_name`, `*_style_category` y `*_style_permission` reflejan el valor guardado si el patrón existe, aunque el jugador ya no tenga permiso.
+- `%playersettings_nick_formatted%` sí respeta permisos porque usa la noción de estilo activo.
+- `%playersettings_chat_preview%` se basa en el ID guardado, no en `hasActiveChatStyle(...)`.
+
+Los placeholders se cachean por `playerId:param` durante `placeholderapi.cache-ttl-millis` si el TTL es positivo. Con TTL `0`, no se cachean. La expansión invalida el caché del jugador cuando recibe `PlayerSettingChangeEvent` y también al salir el jugador.
 
 ## Consumo desde interfaces externas
 
 NetworkPlayerSettings no expone comandos ni menús propios. Un plugin consumidor puede construir cualquier interfaz usando únicamente:
 
 - `PlayerSettingsService` para leer/mutar idioma y país;
+- `PlayerStyleService` para catálogo, render y persistencia de styles;
 - `NetworkAssetService` para renderizar assets de países;
 - `PlayerSettingsReadyEvent` para esperar datos listos;
 - `PlayerSettingChangeEvent` para reaccionar a cambios.

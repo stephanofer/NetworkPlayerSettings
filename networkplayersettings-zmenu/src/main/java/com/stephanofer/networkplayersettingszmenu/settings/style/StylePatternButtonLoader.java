@@ -46,7 +46,7 @@ public final class StylePatternButtonLoader extends ButtonLoader {
             this.messages,
             this.settingsConfig,
             this.kind,
-            configuration.getString(path + ".pattern", "")
+            configuration.getString(path + ".style-id", "")
         );
     }
 }

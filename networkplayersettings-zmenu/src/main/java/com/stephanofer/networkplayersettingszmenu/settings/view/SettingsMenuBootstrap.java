@@ -96,8 +96,13 @@ public final class SettingsMenuBootstrap {
                 "inventories/nick-styles.yml",
                 "inventories/chat-styles.yml"
             )
+            .defaultPatterns(
+                "patterns/nps-nick-style-button.yml",
+                "patterns/nps-chat-style-button.yml"
+            )
             .defaultDialogs("dialogs/language.yml")
             .inventories("inventories")
+            .patterns("patterns")
             .dialogs("dialogs")
             .load();
     }

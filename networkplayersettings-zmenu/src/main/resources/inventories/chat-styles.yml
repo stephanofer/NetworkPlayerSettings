@@ -33,26 +33,126 @@ items:
             - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_id%"
             - "#8c8c8cActive#8c8c8c: #92ffff%playersettings_chat_preview%"
 
-  gray-clean: {type: NPS_CHAT_STYLE, pattern: gray-clean, slot: 10, item: {material: GRAY_DYE, name: {default: "%style_selected_marker%%style_lock_marker%#aaaaaaGray Clean", locales: {es: "%style_selected_marker%%style_lock_marker%#aaaaaaGris limpio", en: "%style_selected_marker%%style_lock_marker%#aaaaaaGray Clean"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  white-clean: {type: NPS_CHAT_STYLE, pattern: white-clean, slot: 11, item: {material: PAPER, name: {default: "%style_selected_marker%%style_lock_marker%#ffffffWhite Clean", locales: {es: "%style_selected_marker%%style_lock_marker%#ffffffBlanco limpio", en: "%style_selected_marker%%style_lock_marker%#ffffffWhite Clean"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  green-chat: {type: NPS_CHAT_STYLE, pattern: green-chat, slot: 12, item: {material: GREEN_DYE, name: {default: "%style_selected_marker%%style_lock_marker%#55ff55Green Chat", locales: {es: "%style_selected_marker%%style_lock_marker%#55ff55Chat verde", en: "%style_selected_marker%%style_lock_marker%#55ff55Green Chat"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  blue-chat: {type: NPS_CHAT_STYLE, pattern: blue-chat, slot: 13, item: {material: BLUE_DYE, name: {default: "%style_selected_marker%%style_lock_marker%#5555ffBlue Chat", locales: {es: "%style_selected_marker%%style_lock_marker%#5555ffChat azul", en: "%style_selected_marker%%style_lock_marker%#5555ffBlue Chat"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  gold-chat: {type: NPS_CHAT_STYLE, pattern: gold-chat, slot: 14, item: {material: GOLD_NUGGET, name: {default: "%style_selected_marker%%style_lock_marker%#ffd166Gold Chat", locales: {es: "%style_selected_marker%%style_lock_marker%#ffd166Chat dorado", en: "%style_selected_marker%%style_lock_marker%#ffd166Gold Chat"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  pink-chat: {type: NPS_CHAT_STYLE, pattern: pink-chat, slot: 15, item: {material: PINK_DYE, name: {default: "%style_selected_marker%%style_lock_marker%#ff7ad9Pink Chat", locales: {es: "%style_selected_marker%%style_lock_marker%#ff7ad9Chat rosa", en: "%style_selected_marker%%style_lock_marker%#ff7ad9Pink Chat"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  soft-emerald: {type: NPS_CHAT_STYLE, pattern: soft-emerald, slot: 19, item: {material: EMERALD, name: {default: "%style_selected_marker%%style_lock_marker%#80ed99Soft Emerald", locales: {es: "%style_selected_marker%%style_lock_marker%#80ed99Esmeralda suave", en: "%style_selected_marker%%style_lock_marker%#80ed99Soft Emerald"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  deep-ocean: {type: NPS_CHAT_STYLE, pattern: deep-ocean, slot: 20, item: {material: HEART_OF_THE_SEA, name: {default: "%style_selected_marker%%style_lock_marker%#48cae4Deep Ocean", locales: {es: "%style_selected_marker%%style_lock_marker%#48cae4Océano profundo", en: "%style_selected_marker%%style_lock_marker%#48cae4Deep Ocean"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  warm-sunset: {type: NPS_CHAT_STYLE, pattern: warm-sunset, slot: 21, item: {material: ORANGE_DYE, name: {default: "%style_selected_marker%%style_lock_marker%#ffb703Warm Sunset", locales: {es: "%style_selected_marker%%style_lock_marker%#ffb703Atardecer cálido", en: "%style_selected_marker%%style_lock_marker%#ffb703Warm Sunset"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  violet-pulse: {type: NPS_CHAT_STYLE, pattern: violet-pulse, slot: 22, item: {material: AMETHYST_SHARD, name: {default: "%style_selected_marker%%style_lock_marker%#c77dffViolet Pulse", locales: {es: "%style_selected_marker%%style_lock_marker%#c77dffPulso violeta", en: "%style_selected_marker%%style_lock_marker%#c77dffViolet Pulse"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  aqua-shadow: {type: NPS_CHAT_STYLE, pattern: aqua-shadow, slot: 23, item: {material: CYAN_DYE, name: {default: "%style_selected_marker%%style_lock_marker%#55ffffAqua Shadow", locales: {es: "%style_selected_marker%%style_lock_marker%#55ffffSombra aqua", en: "%style_selected_marker%%style_lock_marker%#55ffffAqua Shadow"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  clean-bold: {type: NPS_CHAT_STYLE, pattern: clean-bold, slot: 24, item: {material: BOOK, name: {default: "%style_selected_marker%%style_lock_marker%#ffffffClean Bold", locales: {es: "%style_selected_marker%%style_lock_marker%#ffffffLimpio fuerte", en: "%style_selected_marker%%style_lock_marker%#ffffffClean Bold"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  premium-gold: {type: NPS_CHAT_STYLE, pattern: premium-gold, slot: 25, item: {material: GOLD_BLOCK, name: {default: "%style_selected_marker%%style_lock_marker%#f4d35ePremium Gold", locales: {es: "%style_selected_marker%%style_lock_marker%#f4d35eOro premium", en: "%style_selected_marker%%style_lock_marker%#f4d35ePremium Gold"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  aurora-message: {type: NPS_CHAT_STYLE, pattern: aurora-message, slot: 28, item: {material: ECHO_SHARD, name: {default: "%style_selected_marker%%style_lock_marker%#80ffdbAurora", locales: {es: "%style_selected_marker%%style_lock_marker%#80ffdbAurora", en: "%style_selected_marker%%style_lock_marker%#80ffdbAurora"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  galaxy-message: {type: NPS_CHAT_STYLE, pattern: galaxy-message, slot: 29, item: {material: END_CRYSTAL, name: {default: "%style_selected_marker%%style_lock_marker%#8a5cf6Galaxy", locales: {es: "%style_selected_marker%%style_lock_marker%#8a5cf6Galaxia", en: "%style_selected_marker%%style_lock_marker%#8a5cf6Galaxy"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  inferno-message: {type: NPS_CHAT_STYLE, pattern: inferno-message, slot: 30, item: {material: BLAZE_POWDER, name: {default: "%style_selected_marker%%style_lock_marker%#ffba08Inferno", locales: {es: "%style_selected_marker%%style_lock_marker%#ffba08Inferno", en: "%style_selected_marker%%style_lock_marker%#ffba08Inferno"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  cyber-message: {type: NPS_CHAT_STYLE, pattern: cyber-message, slot: 31, item: {material: SCULK_SENSOR, name: {default: "%style_selected_marker%%style_lock_marker%#ff00ffCyber", locales: {es: "%style_selected_marker%%style_lock_marker%#ff00ffCyber", en: "%style_selected_marker%%style_lock_marker%#ff00ffCyber"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  rainbow-message: {type: NPS_CHAT_STYLE, pattern: rainbow-message, slot: 32, item: {material: PRISMARINE_CRYSTALS, name: {default: "%style_selected_marker%%style_lock_marker%#ffffffRainbow", locales: {es: "%style_selected_marker%%style_lock_marker%#ffffffRainbow", en: "%style_selected_marker%%style_lock_marker%#ffffffRainbow"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  pride-message: {type: NPS_CHAT_STYLE, pattern: pride-message, slot: 33, item: {material: WHITE_BANNER, name: {default: "%style_selected_marker%%style_lock_marker%#ffffffPride", locales: {es: "%style_selected_marker%%style_lock_marker%#ffffffPride", en: "%style_selected_marker%%style_lock_marker%#ffffffPride"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
-  progress-pride-message: {type: NPS_CHAT_STYLE, pattern: progress-pride-message, slot: 34, item: {material: BEACON, name: {default: "%style_selected_marker%%style_lock_marker%#ffffffProgress Pride", locales: {es: "%style_selected_marker%%style_lock_marker%#ffffffProgress Pride", en: "%style_selected_marker%%style_lock_marker%#ffffffProgress Pride"}}, lore: {default: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], locales: {es: ["#8c8c8cVista#8c8c8c: #ffffff%style_preview%", "#8c8c8cEstado#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"], en: ["#8c8c8cPreview#8c8c8c: #ffffff%style_preview%", "#8c8c8cState#8c8c8c: #92ffff%style_state%", "", "#2CCED2Click #92ffff%style_action%"]}}}}
+  gray-clean:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 10
+      material: GRAY_DYE
+      style-id: gray-clean
+  white-clean:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 11
+      material: PAPER
+      style-id: white-clean
+  green-chat:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 12
+      material: GREEN_DYE
+      style-id: green-chat
+  blue-chat:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 13
+      material: BLUE_DYE
+      style-id: blue-chat
+  gold-chat:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 14
+      material: GOLD_NUGGET
+      style-id: gold-chat
+  pink-chat:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 15
+      material: PINK_DYE
+      style-id: pink-chat
+  soft-emerald:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 19
+      material: EMERALD
+      style-id: soft-emerald
+  deep-ocean:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 20
+      material: HEART_OF_THE_SEA
+      style-id: deep-ocean
+  warm-sunset:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 21
+      material: ORANGE_DYE
+      style-id: warm-sunset
+  violet-pulse:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 22
+      material: AMETHYST_SHARD
+      style-id: violet-pulse
+  aqua-shadow:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 23
+      material: CYAN_DYE
+      style-id: aqua-shadow
+  clean-bold:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 24
+      material: BOOK
+      style-id: clean-bold
+  premium-gold:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 25
+      material: GOLD_BLOCK
+      style-id: premium-gold
+  aurora-message:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 28
+      material: ECHO_SHARD
+      style-id: aurora-message
+  galaxy-message:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 29
+      material: END_CRYSTAL
+      style-id: galaxy-message
+  inferno-message:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 30
+      material: BLAZE_POWDER
+      style-id: inferno-message
+  cyber-message:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 31
+      material: SCULK_SENSOR
+      style-id: cyber-message
+  rainbow-message:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 32
+      material: PRISMARINE_CRYSTALS
+      style-id: rainbow-message
+  pride-message:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 33
+      material: WHITE_BANNER
+      style-id: pride-message
+  progress-pride-message:
+    pattern:
+      file-name: "nps-chat-style-button"
+      slot: 34
+      material: BEACON
+      style-id: progress-pride-message
 
   clear:
     type: NPS_CLEAR_CHAT_STYLE

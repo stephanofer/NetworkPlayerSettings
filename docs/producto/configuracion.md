@@ -90,9 +90,44 @@ Comportamiento operativo:
 | Key | Tipo | Default en código | Efecto |
 |---|---:|---|---|
 | `placeholderapi.enabled` | boolean | `true` | Si es `false`, no registra expansión. |
-| `placeholderapi.cache-ttl-millis` | long | `250` | TTL de cache interno de placeholders. Valores negativos se convierten en `Duration` negativa y no cachean porque el código solo cachea si no es cero ni negativo. |
+| `placeholderapi.cache-ttl-millis` | long | `250` | TTL de cache interno de placeholders. `PluginConfig` lo normaliza a mínimo `0`, así que `0` desactiva caché. |
+| `placeholderapi.cache-maximum-size` | long | `50000` | Tamaño máximo del caché de placeholders. Se normaliza a mínimo `1`. |
 
 Si PlaceholderAPI no está instalado pero la config está activa, NetworkPlayerSettings loguea warning y sigue sin expansión.
+
+## Catálogos de styles
+
+Recursos fuente:
+
+- `src/main/resources/styles/nick-patterns.yml`
+- `src/main/resources/styles/chat-patterns.yml`
+
+Reglas reales del loader:
+
+- Debe existir una sección `patterns` con entries.
+- Cada key se usa como ID del pattern y debe cumplir `[a-z0-9_-]{2,64}`.
+- `display-name`, `category`, `mini-message` y `preview` no pueden estar en blanco.
+- `category` se normaliza a minúsculas.
+- En nick styles, `mini-message` debe contener `<name>`.
+- En chat styles, `mini-message` debe contener `<message>`.
+- No puede haber IDs duplicados tras normalización.
+
+Si el catálogo es inválido, `initializeStyleService()` falla y el plugin core no habilita.
+
+## Configuración del addon zMenu para styles
+
+Archivo: `networkplayersettings-zmenu/src/main/resources/config.yml`
+
+```yaml
+settings:
+  mutation-cooldown-millis: 750
+```
+
+Efecto real:
+
+- el cooldown se comparte entre botones de settings del addon;
+- para styles, evita spam de clicks y mutaciones concurrentes desde UI;
+- valores menores que `0` se normalizan a `0`.
 
 ## `assets/countries.yml`
 
