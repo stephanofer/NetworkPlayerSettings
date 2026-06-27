@@ -46,8 +46,6 @@ Esta guía documenta la feature real de estilos de nick y estilos de chat implem
 
 - `networkplayersettings-zmenu/src/main/resources/inventories/nick-styles.yml`
 - `networkplayersettings-zmenu/src/main/resources/inventories/chat-styles.yml`
-- `networkplayersettings-zmenu/src/main/resources/patterns/nps-nick-style-button.yml`
-- `networkplayersettings-zmenu/src/main/resources/patterns/nps-chat-style-button.yml`
 - `networkplayersettings-zmenu/src/main/java/com/stephanofer/networkplayersettingszmenu/settings/style/*`
 
 ## Catálogo actual bundled
@@ -56,10 +54,10 @@ El core carga ambos catálogos durante el startup. Si uno es inválido, el plugi
 
 | Catálogo | Archivo | Cantidad actual | Placeholder obligatorio |
 |---|---|---:|---|
-| Nick styles | `styles/nick-patterns.yml` | 25 | `<name>` |
-| Chat styles | `styles/chat-patterns.yml` | 20 | `<message>` |
+| Nick styles | `styles/nick-patterns.yml` | 84 | `<name>` |
+| Chat styles | `styles/chat-patterns.yml` | 70 | `<message>` |
 
-Las categorías actuales son convencionales, no un enum duro. Hoy aparecen valores como `basic`, `clean`, `professional`, `premium` y `special`.
+Las categorías actuales son convencionales, no un enum duro. Hoy aparecen valores como `basic`, `clean`, `professional`, `competitive`, `dark`, `soft`, `luxury`, `premium`, `special` y `pride`.
 
 ## Contrato público principal: `PlayerStyleService`
 
@@ -364,16 +362,14 @@ patterns:
 
 Si incumplís estas reglas, el loader lanza una `IllegalStateException` de catálogo inválido y el plugin no habilita.
 
-## Paso 2: agregarlo a la UI zMenu si querés que sea seleccionable desde menú
+## Paso 2: UI zMenu
 
-Además del YAML core, tenés que añadir el botón correspondiente en:
+La UI zMenu de nick/chat styles está paginada y lee el catálogo desde `PlayerStyleService`. Para un pattern normal nuevo, alcanza con agregarlo al YAML core correspondiente:
 
-- `networkplayersettings-zmenu/src/main/resources/inventories/nick-styles.yml`
-- o `networkplayersettings-zmenu/src/main/resources/inventories/chat-styles.yml`
+- `src/main/resources/styles/nick-patterns.yml`
+- `src/main/resources/styles/chat-patterns.yml`
 
-El `style-id` del inventario debe coincidir EXACTAMENTE con el ID del catálogo core.
-
-Esto está testeado por `StyleResourcesTest`, que exige que el inventario y el catálogo coincidan exactamente.
+No agregues un botón por cada style en el inventario. `nick-styles.yml` y `chat-styles.yml` usan un único botón paginado (`NPS_NICK_STYLE` o `NPS_CHAT_STYLE`) con `slots`, y el addon renderiza cada entrada dinámicamente.
 
 ## Paso 3: no tocar loaders salvo que estés creando un nuevo tipo de botón
 
@@ -381,7 +377,8 @@ Para agregar patterns nuevos normales:
 
 - no hace falta crear nuevas clases Java;
 - no hace falta crear un nuevo loader;
-- solo agregás una entrada nueva al inventario y reutilizás `nps-nick-style-button` o `nps-chat-style-button`.
+- no hace falta editar el inventario zMenu;
+- solo agregás la entrada nueva al catálogo core.
 
 ## Integración del addon zMenu
 

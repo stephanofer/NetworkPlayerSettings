@@ -13,6 +13,8 @@ import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.junit.jupiter.api.Test;
 
 class StyleResourcesTest {
@@ -22,9 +24,10 @@ class StyleResourcesTest {
         final StylePatternCatalog catalog = new StylePatternCatalogLoader(StylePatternType.NICK)
             .load(document(Path.of("src/main/resources/styles/nick-patterns.yml")));
 
-        assertFalse(catalog.infos().isEmpty());
-        assertTrue(catalog.find("ruby-gradient").isPresent());
-        assertTrue(catalog.find("trans-pride").isPresent());
+        assertTrue(catalog.infos().size() >= 70);
+        assertTrue(catalog.find("aurora").isPresent());
+        assertTrue(catalog.find("ranked-red").isPresent());
+        assertTrue(catalog.find("pride-trans").isPresent());
     }
 
     @Test
@@ -32,42 +35,60 @@ class StyleResourcesTest {
         final StylePatternCatalog catalog = new StylePatternCatalogLoader(StylePatternType.CHAT)
             .load(document(Path.of("src/main/resources/styles/chat-patterns.yml")));
 
-        assertFalse(catalog.infos().isEmpty());
-        assertTrue(catalog.find("soft-emerald").isPresent());
-        assertTrue(catalog.find("progress-pride-message").isPresent());
+        assertTrue(catalog.infos().size() >= 60);
+        assertTrue(catalog.find("aurora-message").isPresent());
+        assertTrue(catalog.find("ranked-crimson").isPresent());
+        assertTrue(catalog.find("pride-progress-message").isPresent());
     }
 
     @Test
-    void nickInventoryMatchesBundledCatalogExactly() {
-        final Set<String> catalogIds = patternIds(document(Path.of("src/main/resources/styles/nick-patterns.yml")));
-        final Set<String> inventoryIds = inventoryPatternIds(document(Path.of("networkplayersettings-zmenu/src/main/resources/inventories/nick-styles.yml")), "nps-nick-style-button");
+    void nickInventoryUsesPaginatedCatalogButton() {
+        final YamlDocument inventory = document(Path.of("networkplayersettings-zmenu/src/main/resources/inventories/nick-styles.yml"));
 
-        assertEquals(catalogIds, inventoryIds);
+        assertPaginatedStyleButton(inventory, "NPS_NICK_STYLE");
+        assertEquals("NPS_NICK_STYLE_FILTER", inventory.getString("items.filter.type", ""));
     }
 
     @Test
-    void chatInventoryMatchesBundledCatalogExactly() {
-        final Set<String> catalogIds = patternIds(document(Path.of("src/main/resources/styles/chat-patterns.yml")));
-        final Set<String> inventoryIds = inventoryPatternIds(document(Path.of("networkplayersettings-zmenu/src/main/resources/inventories/chat-styles.yml")), "nps-chat-style-button");
+    void chatInventoryUsesPaginatedCatalogButton() {
+        final YamlDocument inventory = document(Path.of("networkplayersettings-zmenu/src/main/resources/inventories/chat-styles.yml"));
 
-        assertEquals(catalogIds, inventoryIds);
+        assertPaginatedStyleButton(inventory, "NPS_CHAT_STYLE");
+        assertEquals("NPS_CHAT_STYLE_FILTER", inventory.getString("items.filter.type", ""));
     }
 
+    @Test
+    void bundledCatalogVisualTagsParseWithMiniMessage() {
+        final MiniMessage miniMessage = MiniMessage.miniMessage();
+        final StylePatternRenderer renderer = new StylePatternRenderer();
+        final StylePatternCatalog nickCatalog = new StylePatternCatalogLoader(StylePatternType.NICK)
+            .load(document(Path.of("src/main/resources/styles/nick-patterns.yml")));
+        final StylePatternCatalog chatCatalog = new StylePatternCatalogLoader(StylePatternType.CHAT)
+            .load(document(Path.of("src/main/resources/styles/chat-patterns.yml")));
+
+        for (final String id : Set.of("aurora", "rainbow-clean", "pride-trans", "transition-ocean")) {
+            final String rendered = renderer.renderNickMiniMessage(nickCatalog.find(id).orElseThrow(), "Vendimia");
+            assertFalse(miniMessage.deserialize(rendered).equals(Component.empty()));
+        }
+        for (final String id : Set.of("aurora-message", "rainbow-message", "pride-progress-message", "transition-tide")) {
+            final String rendered = renderer.renderChatPreviewMiniMessage(chatCatalog.find(id).orElseThrow());
+            assertFalse(miniMessage.deserialize(rendered).equals(Component.empty()));
+        }
+    }
+
+    private static void assertPaginatedStyleButton(final YamlDocument document, final String expectedType) {
+        final Section items = document.getSection("items");
+        final Section styles = items.getSection("styles");
+        assertEquals(expectedType, styles.getString("type", ""));
+        assertFalse(styles.getStringList("slots").isEmpty());
+        assertTrue(styles.getString("style-id", "").isBlank());
+    }
+
+    @SuppressWarnings("unused")
     private static Set<String> patternIds(final YamlDocument document) {
         final Section patterns = document.getSection("patterns");
         return patterns.getKeys().stream()
             .map(String::valueOf)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    private static Set<String> inventoryPatternIds(final YamlDocument document, final String expectedPatternFile) {
-        final Section items = document.getSection("items");
-        return items.getKeys().stream()
-            .map(String::valueOf)
-            .map(key -> items.getSection(key))
-            .map(section -> section == null ? null : section.getSection("pattern"))
-            .filter(pattern -> pattern != null && expectedPatternFile.equals(pattern.getString("file-name", "")))
-            .map(pattern -> pattern.getString("style-id", ""))
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 

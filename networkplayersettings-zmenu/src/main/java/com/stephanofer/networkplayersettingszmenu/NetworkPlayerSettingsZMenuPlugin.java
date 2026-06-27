@@ -12,6 +12,7 @@ import com.stephanofer.networkplayersettingszmenu.config.AddonYamlLoader;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
 import com.stephanofer.networkplayersettingszmenu.settings.SettingMutationCooldowns;
+import com.stephanofer.networkplayersettingszmenu.settings.style.StylePatternFilterState;
 import com.stephanofer.networkplayersettingszmenu.settings.view.SettingsMenuBootstrap;
 import com.stephanofer.networkplayersettingszmenu.settings.view.SettingsViewOpener;
 import dev.dejvokep.boostedyaml.YamlDocument;
@@ -62,6 +63,7 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         SettingMutationCooldowns.clearAll();
+        StylePatternFilterState.clearAll();
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -123,6 +125,7 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
         @org.bukkit.event.EventHandler
         public void onPlayerQuit(final org.bukkit.event.player.PlayerQuitEvent event) {
             SettingMutationCooldowns.clear(event.getPlayer().getUniqueId());
+            StylePatternFilterState.clear(event.getPlayer().getUniqueId());
         }
     }
 }

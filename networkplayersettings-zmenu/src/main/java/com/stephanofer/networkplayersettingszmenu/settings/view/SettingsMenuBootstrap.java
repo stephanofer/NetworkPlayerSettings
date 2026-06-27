@@ -9,6 +9,7 @@ import com.stephanofer.networkplayersettingszmenu.settings.country.CountryFlagBu
 import com.stephanofer.networkplayersettingszmenu.settings.language.LanguageButtonLoader;
 import com.stephanofer.networkplayersettingszmenu.settings.style.ClearStyleButtonLoader;
 import com.stephanofer.networkplayersettingszmenu.settings.style.StyleButtonKind;
+import com.stephanofer.networkplayersettingszmenu.settings.style.StyleFilterButtonLoader;
 import com.stephanofer.networkplayersettingszmenu.settings.style.StylePatternButtonLoader;
 import java.util.Objects;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -89,6 +90,20 @@ public final class SettingsMenuBootstrap {
                     StyleButtonKind.CHAT,
                     "NPS_CLEAR_CHAT_STYLE"
                 ));
+                registry.button(new StyleFilterButtonLoader(
+                    this.plugin,
+                    this.settingsService,
+                    this.messages,
+                    StyleButtonKind.NICK,
+                    "NPS_NICK_STYLE_FILTER"
+                ));
+                registry.button(new StyleFilterButtonLoader(
+                    this.plugin,
+                    this.settingsService,
+                    this.messages,
+                    StyleButtonKind.CHAT,
+                    "NPS_CHAT_STYLE_FILTER"
+                ));
             })
             .defaultInventories(
                 "inventories/settings-main.yml",
@@ -96,13 +111,8 @@ public final class SettingsMenuBootstrap {
                 "inventories/nick-styles.yml",
                 "inventories/chat-styles.yml"
             )
-            .defaultPatterns(
-                "patterns/nps-nick-style-button.yml",
-                "patterns/nps-chat-style-button.yml"
-            )
             .defaultDialogs("dialogs/language.yml")
             .inventories("inventories")
-            .patterns("patterns")
             .dialogs("dialogs")
             .load();
     }

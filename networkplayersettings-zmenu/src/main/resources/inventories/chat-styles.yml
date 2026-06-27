@@ -1,10 +1,10 @@
-file-version: 1
+file-version: 2
 
 name:
-  default: "#102018Chat Styles"
+  default: "#102018Chat Styles #8c8c8c(%page%/%max-page%)"
   locales:
-    es: "#102018Estilos de chat"
-    en: "#102018Chat Styles"
+    es: "#102018Estilos de chat #8c8c8c(%page%/%max-page%)"
+    en: "#102018Chat Styles #8c8c8c(%page%/%max-page%)"
 size: 54
 
 fillItem:
@@ -33,150 +33,62 @@ items:
             - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_id%"
             - "#8c8c8cActive#8c8c8c: #92ffff%playersettings_chat_preview%"
 
-  gray-clean:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 10
-      material: GRAY_DYE
-      style-id: gray-clean
-  white-clean:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 11
-      material: PAPER
-      style-id: white-clean
-  green-chat:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 12
-      material: GREEN_DYE
-      style-id: green-chat
-  blue-chat:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 13
-      material: BLUE_DYE
-      style-id: blue-chat
-  gold-chat:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 14
-      material: GOLD_NUGGET
-      style-id: gold-chat
-  pink-chat:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 15
-      material: PINK_DYE
-      style-id: pink-chat
-  soft-emerald:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 19
-      material: EMERALD
-      style-id: soft-emerald
-  deep-ocean:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 20
-      material: HEART_OF_THE_SEA
-      style-id: deep-ocean
-  warm-sunset:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 21
-      material: ORANGE_DYE
-      style-id: warm-sunset
-  violet-pulse:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 22
-      material: AMETHYST_SHARD
-      style-id: violet-pulse
-  aqua-shadow:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 23
-      material: CYAN_DYE
-      style-id: aqua-shadow
-  clean-bold:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 24
-      material: BOOK
-      style-id: clean-bold
-  premium-gold:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 25
-      material: GOLD_BLOCK
-      style-id: premium-gold
-  aurora-message:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 28
-      material: ECHO_SHARD
-      style-id: aurora-message
-  galaxy-message:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 29
-      material: END_CRYSTAL
-      style-id: galaxy-message
-  inferno-message:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 30
-      material: BLAZE_POWDER
-      style-id: inferno-message
-  cyber-message:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 31
-      material: SCULK_SENSOR
-      style-id: cyber-message
-  rainbow-message:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 32
-      material: PRISMARINE_CRYSTALS
-      style-id: rainbow-message
-  pride-message:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 33
-      material: WHITE_BANNER
-      style-id: pride-message
-  progress-pride-message:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-chat-style-button"
-      slot: 34
-      material: BEACON
-      style-id: progress-pride-message
+  styles:
+    type: NPS_CHAT_STYLE
+    slots:
+      - 10-16
+      - 19-25
+      - 28-34
+      - 37-43
+    item:
+      material: WRITABLE_BOOK
+      name:
+        default: "%style_selected_marker%%style_lock_marker%%style_name%"
+        locales:
+          es: "%style_selected_marker%%style_lock_marker%%style_name%"
+          en: "%style_selected_marker%%style_lock_marker%%style_name%"
+      lore:
+        default:
+          - "#8c8c8cCategory#8c8c8c: #92ffff%style_category%"
+          - "#8c8c8cPreview#8c8c8c: #ffffff%style_preview%"
+          - "#8c8c8cState#8c8c8c: #92ffff%style_state%"
+          - ""
+          - "#2CCED2Click #92ffff%style_action%"
+        locales:
+          es:
+            - "#8c8c8cCategoria#8c8c8c: #92ffff%style_category%"
+            - "#8c8c8cVista#8c8c8c: #ffffff%style_preview%"
+            - "#8c8c8cEstado#8c8c8c: #92ffff%style_state%"
+            - ""
+            - "#2CCED2Click #92ffff%style_action%"
+          en:
+            - "#8c8c8cCategory#8c8c8c: #92ffff%style_category%"
+            - "#8c8c8cPreview#8c8c8c: #ffffff%style_preview%"
+            - "#8c8c8cState#8c8c8c: #92ffff%style_state%"
+            - ""
+            - "#2CCED2Click #92ffff%style_action%"
 
+  previous:
+    type: PREVIOUS
+    slot: 47
+    item:
+      material: ARROW
+      name:
+        default: "#92ffffPrevious Page"
+        locales:
+          es: "#92ffffPagina anterior"
+          en: "#92ffffPrevious Page"
+      lore:
+        default:
+          - "#8c8c8cGo to page #92ffff%player_previous_page%"
+        locales:
+          es:
+            - "#8c8c8cIr a la pagina #92ffff%player_previous_page%"
+          en:
+            - "#8c8c8cGo to page #92ffff%player_previous_page%"
   clear:
     type: NPS_CLEAR_CHAT_STYLE
-    slot: 45
+    slot: 48
     item:
       material: BARRIER
       name:
@@ -209,3 +121,39 @@ items:
         locales:
           es: "#92ffffVolver"
           en: "#92ffffBack"
+  filter:
+    type: NPS_CHAT_STYLE_FILTER
+    slot: 50
+    item:
+      material: HOPPER
+      name:
+        default: "#92ffffFilter: #ffffff%style_filter%"
+        locales:
+          es: "#92ffffFiltro: #ffffff%style_filter%"
+          en: "#92ffffFilter: #ffffff%style_filter%"
+      lore:
+        default:
+          - "#8c8c8cClick #92ffffto %style_filter_action%"
+        locales:
+          es:
+            - "#8c8c8cClick #92ffffpara %style_filter_action%"
+          en:
+            - "#8c8c8cClick #92ffffto %style_filter_action%"
+  next:
+    type: NEXT
+    slot: 51
+    item:
+      material: ARROW
+      name:
+        default: "#92ffffNext Page"
+        locales:
+          es: "#92ffffPagina siguiente"
+          en: "#92ffffNext Page"
+      lore:
+        default:
+          - "#8c8c8cGo to page #92ffff%player_next_page%"
+        locales:
+          es:
+            - "#8c8c8cIr a la pagina #92ffff%player_next_page%"
+          en:
+            - "#8c8c8cGo to page #92ffff%player_next_page%"

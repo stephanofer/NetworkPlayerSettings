@@ -1,10 +1,10 @@
-file-version: 1
+file-version: 2
 
 name:
-  default: "#161022Nick Styles"
+  default: "#161022Nick Styles #8c8c8c(%page%/%max-page%)"
   locales:
-    es: "#161022Estilos de nick"
-    en: "#161022Nick Styles"
+    es: "#161022Estilos de nick #8c8c8c(%page%/%max-page%)"
+    en: "#161022Nick Styles #8c8c8c(%page%/%max-page%)"
 size: 54
 
 fillItem:
@@ -33,185 +33,62 @@ items:
             - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_nick_style_id%"
             - "#8c8c8cRendered#8c8c8c: #92ffff%playersettings_nick_formatted%"
 
-  red:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 10
-      material: RED_DYE
-      style-id: red
-  green:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 11
-      material: GREEN_DYE
-      style-id: green
-  blue:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 12
-      material: BLUE_DYE
-      style-id: blue
-  gold:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 13
-      material: GOLD_INGOT
-      style-id: gold
-  aqua:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 14
-      material: CYAN_DYE
-      style-id: aqua
-  pink:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 15
-      material: PINK_DYE
-      style-id: pink
-  white-bold:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 16
-      material: PAPER
-      style-id: white-bold
-  graphite:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 19
-      material: COAL
-      style-id: graphite
-  ruby-gradient:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 20
-      material: REDSTONE
-      style-id: ruby-gradient
-  emerald-gradient:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 21
-      material: EMERALD
-      style-id: emerald-gradient
-  ocean-gradient:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 22
-      material: HEART_OF_THE_SEA
-      style-id: ocean-gradient
-  sunset-gradient:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 23
-      material: ORANGE_DYE
-      style-id: sunset-gradient
-  amethyst-gradient:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 24
-      material: AMETHYST_SHARD
-      style-id: amethyst-gradient
-  ice-gradient:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 25
-      material: BLUE_ICE
-      style-id: ice-gradient
-  premium-gold:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 28
-      material: GOLD_BLOCK
-      style-id: premium-gold
-  aurora:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 29
-      material: ECHO_SHARD
-      style-id: aurora
-  cyberpunk:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 30
-      material: SCULK_SENSOR
-      style-id: cyberpunk
-  royal:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 31
-      material: NETHER_STAR
-      style-id: royal
-  inferno:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 32
-      material: BLAZE_POWDER
-      style-id: inferno
-  galaxy:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 33
-      material: END_CRYSTAL
-      style-id: galaxy
-  rainbow-soft:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 34
-      material: PRISMARINE_CRYSTALS
-      style-id: rainbow-soft
-  rainbow-reverse:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 37
-      material: GLOWSTONE_DUST
-      style-id: rainbow-reverse
-  pride:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 38
-      material: WHITE_BANNER
-      style-id: pride
-  progress-pride:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 39
-      material: BEACON
-      style-id: progress-pride
-  trans-pride:
-    pattern:
-      plugin-name: "NetworkPlayerSettingsZMenu"
-      file-name: "nps-nick-style-button"
-      slot: 40
-      material: LIGHT_BLUE_DYE
-      style-id: trans-pride
+  styles:
+    type: NPS_NICK_STYLE
+    slots:
+      - 10-16
+      - 19-25
+      - 28-34
+      - 37-43
+    item:
+      material: NAME_TAG
+      name:
+        default: "%style_selected_marker%%style_lock_marker%%style_name%"
+        locales:
+          es: "%style_selected_marker%%style_lock_marker%%style_name%"
+          en: "%style_selected_marker%%style_lock_marker%%style_name%"
+      lore:
+        default:
+          - "#8c8c8cCategory#8c8c8c: #92ffff%style_category%"
+          - "#8c8c8cPreview#8c8c8c: #ffffff%style_preview%"
+          - "#8c8c8cState#8c8c8c: #92ffff%style_state%"
+          - ""
+          - "#2CCED2Click #92ffff%style_action%"
+        locales:
+          es:
+            - "#8c8c8cCategoria#8c8c8c: #92ffff%style_category%"
+            - "#8c8c8cVista#8c8c8c: #ffffff%style_preview%"
+            - "#8c8c8cEstado#8c8c8c: #92ffff%style_state%"
+            - ""
+            - "#2CCED2Click #92ffff%style_action%"
+          en:
+            - "#8c8c8cCategory#8c8c8c: #92ffff%style_category%"
+            - "#8c8c8cPreview#8c8c8c: #ffffff%style_preview%"
+            - "#8c8c8cState#8c8c8c: #92ffff%style_state%"
+            - ""
+            - "#2CCED2Click #92ffff%style_action%"
 
+  previous:
+    type: PREVIOUS
+    slot: 47
+    item:
+      material: ARROW
+      name:
+        default: "#92ffffPrevious Page"
+        locales:
+          es: "#92ffffPagina anterior"
+          en: "#92ffffPrevious Page"
+      lore:
+        default:
+          - "#8c8c8cGo to page #92ffff%player_previous_page%"
+        locales:
+          es:
+            - "#8c8c8cIr a la pagina #92ffff%player_previous_page%"
+          en:
+            - "#8c8c8cGo to page #92ffff%player_previous_page%"
   clear:
     type: NPS_CLEAR_NICK_STYLE
-    slot: 45
+    slot: 48
     item:
       material: BARRIER
       name:
@@ -244,3 +121,39 @@ items:
         locales:
           es: "#92ffffVolver"
           en: "#92ffffBack"
+  filter:
+    type: NPS_NICK_STYLE_FILTER
+    slot: 50
+    item:
+      material: HOPPER
+      name:
+        default: "#92ffffFilter: #ffffff%style_filter%"
+        locales:
+          es: "#92ffffFiltro: #ffffff%style_filter%"
+          en: "#92ffffFilter: #ffffff%style_filter%"
+      lore:
+        default:
+          - "#8c8c8cClick #92ffffto %style_filter_action%"
+        locales:
+          es:
+            - "#8c8c8cClick #92ffffpara %style_filter_action%"
+          en:
+            - "#8c8c8cClick #92ffffto %style_filter_action%"
+  next:
+    type: NEXT
+    slot: 51
+    item:
+      material: ARROW
+      name:
+        default: "#92ffffNext Page"
+        locales:
+          es: "#92ffffPagina siguiente"
+          en: "#92ffffNext Page"
+      lore:
+        default:
+          - "#8c8c8cGo to page #92ffff%player_next_page%"
+        locales:
+          es:
+            - "#8c8c8cIr a la pagina #92ffff%player_next_page%"
+          en:
+            - "#8c8c8cGo to page #92ffff%player_next_page%"

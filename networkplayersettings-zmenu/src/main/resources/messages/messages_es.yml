@@ -47,3 +47,7 @@ menu:
     locked-action: "requiere permiso"
     clear-available: "Disponible"
     clear-empty: "Sin estilo activo"
+    filter-all: "Todos"
+    filter-available: "Disponibles"
+    filter-action-all: "mostrar todos"
+    filter-action-available: "mostrar disponibles"
