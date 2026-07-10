@@ -1,8 +1,11 @@
 package com.stephanofer.networkplayersettings.settings.style;
 
+import com.stephanofer.networkplayersettings.settings.api.NickStyleRenderRequest;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
+import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsSnapshot;
 import com.stephanofer.networkplayersettings.settings.api.PlayerStyleService;
 import com.stephanofer.networkplayersettings.settings.api.SettingKey;
+import com.stephanofer.networkplayersettings.settings.api.StylePermissionChecker;
 import com.stephanofer.networkplayersettings.settings.api.StylePatternInfo;
 import java.util.List;
 import java.util.Objects;
@@ -89,6 +92,16 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
     }
 
     @Override
+    public CompletableFuture<Component> formattedNick(final NickStyleRenderRequest request) {
+        Objects.requireNonNull(request, "request");
+        return this.settingsService.load(request.playerId())
+            .thenApply(snapshot -> activeNickPattern(snapshot, request.permissionChecker())
+                .map(pattern -> this.renderer.renderNick(pattern, request.username()))
+                .orElseGet(() -> Component.text(request.username()))
+            );
+    }
+
+    @Override
     public String formattedNickMiniMessage(final Player player) {
         return activeNickPattern(player)
             .map(pattern -> this.renderer.renderNickMiniMessage(pattern, player.getName()))
@@ -150,25 +163,52 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
     }
 
     private Optional<StylePattern> activeNickPattern(final Player player) {
-        return activePattern(player, SettingKey.NICK_STYLE, this.nickCatalog);
+        Objects.requireNonNull(player, "player");
+        return activePattern(
+            this.settingsService.getCachedOrDefault(player.getUniqueId()),
+            SettingKey.NICK_STYLE,
+            this.nickCatalog,
+            player::hasPermission
+        );
     }
 
     private Optional<StylePattern> activeChatPattern(final Player player) {
-        return activePattern(player, SettingKey.CHAT_STYLE, this.chatCatalog);
+        Objects.requireNonNull(player, "player");
+        return activePattern(
+            this.settingsService.getCachedOrDefault(player.getUniqueId()),
+            SettingKey.CHAT_STYLE,
+            this.chatCatalog,
+            player::hasPermission
+        );
     }
 
-    private Optional<StylePattern> activePattern(final Player player, final SettingKey key, final StylePatternCatalog catalog) {
-        Objects.requireNonNull(player, "player");
-        final Optional<StylePattern> pattern = this.settingsService.getSetting(player.getUniqueId(), key).flatMap(catalog::find);
-        return pattern.filter(value -> canUse(player, Optional.of(value)));
+    private Optional<StylePattern> activeNickPattern(
+        final PlayerSettingsSnapshot snapshot,
+        final StylePermissionChecker permissionChecker
+    ) {
+        return activePattern(snapshot, SettingKey.NICK_STYLE, this.nickCatalog, permissionChecker);
+    }
+
+    private static Optional<StylePattern> activePattern(
+        final PlayerSettingsSnapshot snapshot,
+        final SettingKey key,
+        final StylePatternCatalog catalog,
+        final StylePermissionChecker permissionChecker
+    ) {
+        Objects.requireNonNull(snapshot, "snapshot");
+        return snapshot.setting(key)
+            .flatMap(catalog::find)
+            .filter(pattern -> canUse(permissionChecker, pattern));
     }
 
     private static boolean canUse(final Player player, final Optional<StylePattern> pattern) {
-        if (player == null || pattern.isEmpty()) {
-            return false;
-        }
-        final String permission = pattern.get().permission();
-        return permission.isBlank() || player.hasPermission(permission);
+        return player != null && pattern.filter(value -> canUse(player::hasPermission, value)).isPresent();
+    }
+
+    private static boolean canUse(final StylePermissionChecker permissionChecker, final StylePattern pattern) {
+        Objects.requireNonNull(permissionChecker, "permissionChecker");
+        Objects.requireNonNull(pattern, "pattern");
+        return pattern.permission().isBlank() || permissionChecker.hasPermission(pattern.permission());
     }
 
     private static String normalizePatternId(final String patternId) {

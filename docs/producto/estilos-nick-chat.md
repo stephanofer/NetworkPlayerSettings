@@ -9,7 +9,8 @@ Esta guía documenta la feature real de estilos de nick y estilos de chat implem
 3. Usá `setNickStyle(...)` y `setChatStyle(...)` para mutar estilos. No uses `PlayerSettingsService#setSetting(...)` para esto salvo que realmente quieras escribir un valor raw.
 4. Antes de permitir que un jugador seleccione un estilo, validá permisos con `canUseNickStyle(...)` o `canUseChatStyle(...)`.
 5. Para renderizar, usá `formattedNick(...)`, `formattedNickMiniMessage(...)` y `formatChatMessage(...)`.
-6. Si tu plugin consume PlaceholderAPI, usá los placeholders `%playersettings_*%` documentados abajo.
+6. Para un jugador offline, usá `formattedNick(NickStyleRenderRequest)` y resolvé permisos externamente.
+7. Si tu plugin consume PlaceholderAPI, usá los placeholders `%playersettings_*%` documentados abajo.
 
 ## Qué expone el sistema
 
@@ -74,6 +75,7 @@ public interface PlayerStyleService {
     boolean hasActiveNickStyle(Player player);
     boolean hasActiveChatStyle(Player player);
     Component formattedNick(Player player);
+    CompletableFuture<Component> formattedNick(NickStyleRenderRequest request);
     String formattedNickMiniMessage(Player player);
     String nickPreviewMiniMessage(Player player, String patternId);
     Optional<Component> formatChatMessage(Player player, Component message);
@@ -110,6 +112,25 @@ public interface PlayerStyleService {
 - Si no hay estilo activo, devuelve `Component.text(player.getName())`.
 - `formattedNickMiniMessage(player)` devuelve un string MiniMessage listo para otra pipeline que consuma MiniMessage.
 - `nickPreviewMiniMessage(player, patternId)` renderiza la preview del patrón pedido usando el nombre actual del jugador, aunque ese patrón no sea su selección activa.
+
+### Render de nick offline
+
+```java
+styleService.formattedNick(new NickStyleRenderRequest(
+    playerId,
+    knownUsername,
+    permission -> resolvedOfflinePermissions.has(permission)
+)).thenAccept(nick -> {
+    // Componer y enviar el mensaje desde la estrategia de scheduling del consumidor.
+});
+```
+
+- La operación carga settings desde caché o base de datos de manera asíncrona.
+- Una lectura offline no crea filas default para UUIDs sin settings.
+- Consultas concurrentes para el mismo UUID comparten una única carga.
+- Si no hay un estilo activo, el patrón persistido ya no existe o el permiso offline es denegado, devuelve el username como `Component` sin estilo.
+- El `permissionChecker` solo se invoca cuando el patrón activo define un permiso. Si falla, el future falla para no confundir un error de autorización con una denegación real.
+- `NetworkPlayerSettings` no resuelve LuckPerms. El consumidor debe entregar un resolvedor de permisos con el contexto correcto.
 
 ### Render de chat
 

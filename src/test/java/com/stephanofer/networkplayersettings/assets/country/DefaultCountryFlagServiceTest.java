@@ -80,6 +80,25 @@ class DefaultCountryFlagServiceTest {
         assertTrue(contents.hat());
     }
 
+    @Test
+    void resolvesOfflineFlagFromLoadedSettings() {
+        final UUID playerId = UUID.randomUUID();
+        final CountryFlagService service = service(playerId, "PE", true);
+
+        final ObjectComponent component = assertInstanceOf(ObjectComponent.class, service.flagAsync(playerId).join());
+        final PlayerHeadObjectContents contents = assertInstanceOf(PlayerHeadObjectContents.class, component.contents());
+
+        assertEquals(PERU_TEXTURE, contents.profileProperties().getFirst().value());
+    }
+
+    @Test
+    void hidesOfflineFlagWhenLoadedSettingsDisableIt() {
+        final UUID playerId = UUID.randomUUID();
+        final CountryFlagService service = service(playerId, "PE", false);
+
+        assertEquals(Component.empty(), service.flagAsync(playerId).join());
+    }
+
     private static CountryFlagService service(final UUID playerId, final String countryCode, final boolean showFlag) {
         final CountryAsset unknown = new CountryAsset("XX", "Unknown", UNKNOWN_TEXTURE, Set.of("unknown"));
         final CountryAsset peru = new CountryAsset("PE", "Peru", PERU_TEXTURE, Set.of("peru"));

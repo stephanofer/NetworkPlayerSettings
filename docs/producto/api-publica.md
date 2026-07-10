@@ -37,7 +37,7 @@ public interface PlayerSettingsService {
 
 | Método | Contrato observable |
 |---|---|
-| `load(UUID)` | Si hay caché, devuelve `CompletableFuture` ya completado. Si no, carga/crea desde repositorio async y actualiza caché. |
+| `load(UUID)` | Si hay caché, devuelve `CompletableFuture` ya completado. Si no, lee desde repositorio async y actualiza caché sin crear defaults persistidos. Las cargas simultáneas del mismo UUID comparten una sola consulta. |
 | `cached(UUID)` | Devuelve `Optional` con snapshot en caché o vacío. No fuerza carga. |
 | `getCachedOrDefault(UUID)` | Devuelve caché o `PlayerSettingsSnapshot.defaults(playerId)`. No persiste defaults por sí mismo. |
 | `resolvedLanguage(Player)` | Resuelve idioma efectivo usando snapshot cache/default y locale actual del jugador si `settings.detect-client-locale` está activo. |
@@ -155,6 +155,7 @@ public interface PlayerStyleService {
     boolean hasActiveNickStyle(Player player);
     boolean hasActiveChatStyle(Player player);
     Component formattedNick(Player player);
+    CompletableFuture<Component> formattedNick(NickStyleRenderRequest request);
     String formattedNickMiniMessage(Player player);
     String nickPreviewMiniMessage(Player player, String patternId);
     Optional<Component> formatChatMessage(Player player, Component message);
@@ -172,8 +173,33 @@ Reglas observables:
 - `nickPatterns()` y `chatPatterns()` exponen el catálogo público ya validado y cargado desde YAML.
 - `nickStyleId()` y `chatStyleId()` leen la selección persistida, no necesariamente un estilo activo por permisos.
 - `formattedNick()` y `formatChatMessage()` solo aplican el style si el jugador todavía puede usarlo.
+- `formattedNick(NickStyleRenderRequest)` carga los settings necesarios para renderizar un nick offline y respeta el permiso provisto por el consumidor.
 - `setNickStyle()` y `setChatStyle()` validan existencia de catálogo, pero no validan permisos.
 - `clearNickStyle()` y `clearChatStyle()` persisten `""`.
+
+### Render offline de nick
+
+`NickStyleRenderRequest` permite renderizar una identidad sin una instancia Bukkit `Player`:
+
+```java
+public record NickStyleRenderRequest(
+    UUID playerId,
+    String username,
+    StylePermissionChecker permissionChecker
+) {}
+
+@FunctionalInterface
+public interface StylePermissionChecker {
+    boolean hasPermission(String permission);
+}
+```
+
+- `playerId`, `username` y `permissionChecker` son obligatorios; el username no puede ser blanco.
+- El core consulta el nick style persistido, busca el patrón vigente y solo invoca `permissionChecker` cuando el patrón requiere permiso.
+- Si no hay style, el ID ya no existe o el permiso es denegado, devuelve `Component.text(username)`.
+- Si falla la lectura de settings o el resolvedor de permisos lanza una excepción, el `CompletableFuture` falla.
+- El consumidor resuelve permisos offline, incluido su contexto de LuckPerms si corresponde. `NetworkPlayerSettings` no integra LuckPerms.
+- La salida canónica es `Component`. Si una integración necesita MiniMessage, debe serializar el componente en su propio borde de integración.
 
 ## `StylePatternInfo`
 
@@ -293,6 +319,7 @@ public interface CountryFlagService {
     String miniMessageTag(UUID playerId);
     String miniMessageTagForCountry(String countryCodeOrAlias);
     Component flag(UUID playerId);
+    CompletableFuture<Component> flagAsync(UUID playerId);
     Component flagForCountry(String countryCodeOrAlias);
     TagResolver resolver(UUID playerId);
     TagResolver resolverForCountry(String countryCodeOrAlias);
@@ -302,6 +329,7 @@ public interface CountryFlagService {
 - Métodos con `UUID playerId` respetan `show_country_flag`.
 - Métodos `ForCountry` son helpers directos del catálogo y no leen settings de jugador.
 - `flag(UUID)` devuelve `Component.empty()` cuando el jugador desactiva la bandera.
+- `flagAsync(UUID)` carga settings si no están en caché y devuelve la bandera efectiva respetando `show_country_flag`; no crea defaults en persistencia.
 - `resolver(UUID)` registra `<country_flag>` para MiniMessage.
 - `miniMessageTag(...)` devuelve `<craftkit_head:VALUE>` para pipelines que primero resuelven PlaceholderAPI y luego MiniMessage con CraftKit.
 

@@ -31,6 +31,8 @@ public interface PlayerStyleService {
 
     Component formattedNick(Player player);
 
+    CompletableFuture<Component> formattedNick(NickStyleRenderRequest request);
+
     String formattedNickMiniMessage(Player player);
 
     String nickPreviewMiniMessage(Player player, String patternId);

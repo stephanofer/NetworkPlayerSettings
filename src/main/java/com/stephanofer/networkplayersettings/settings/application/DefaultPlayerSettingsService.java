@@ -45,6 +45,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     private final Cache<UUID, PlayerSettingsSnapshot> cache;
     private final Cache<UUID, String> localeCache;
     private final ConcurrentHashMap<UUID, CompletableFuture<Void>> mutationChains = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, CompletableFuture<PlayerSettingsSnapshot>> pendingLoads = new ConcurrentHashMap<>();
     private final Set<UUID> readyPlayers = ConcurrentHashMap.newKeySet();
 
     public DefaultPlayerSettingsService(
@@ -169,16 +170,35 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
 
     @Override
     public CompletableFuture<PlayerSettingsSnapshot> load(final UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
         final PlayerSettingsSnapshot cached = this.cache.getIfPresent(playerId);
         if (cached != null) {
             return CompletableFuture.completedFuture(cached);
         }
 
-        return this.repository.loadOrCreateAsync(playerId)
-            .thenApply(loadResult -> {
-                this.cache.put(playerId, loadResult.snapshot());
-                return loadResult.snapshot();
+        final CompletableFuture<PlayerSettingsSnapshot> pending = new CompletableFuture<>();
+        final CompletableFuture<PlayerSettingsSnapshot> existing = this.pendingLoads.putIfAbsent(playerId, pending);
+        if (existing != null) {
+            return existing;
+        }
+
+        try {
+            this.repository.loadAsync(playerId).whenComplete((loaded, throwable) -> {
+                this.pendingLoads.remove(playerId, pending);
+                if (throwable != null) {
+                    pending.completeExceptionally(throwable);
+                    return;
+                }
+
+                // A mutation may have populated a newer snapshot while this read was in flight.
+                final PlayerSettingsSnapshot current = this.cache.asMap().putIfAbsent(playerId, loaded);
+                pending.complete(current == null ? loaded : current);
             });
+        } catch (final Exception exception) {
+            this.pendingLoads.remove(playerId, pending);
+            pending.completeExceptionally(exception);
+        }
+        return pending;
     }
 
     @Override

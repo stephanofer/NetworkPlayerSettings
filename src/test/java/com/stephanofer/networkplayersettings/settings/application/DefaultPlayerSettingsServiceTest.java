@@ -2,6 +2,7 @@ package com.stephanofer.networkplayersettings.settings.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.stephanofer.networkplayersettings.config.PluginConfig;
@@ -50,6 +51,39 @@ class DefaultPlayerSettingsServiceTest {
         final DefaultPlayerSettingsService service = serviceWith(PlayerSettingsSnapshot.defaults(playerId));
 
         assertEquals(true, service.showCountryFlag(playerId));
+    }
+
+    @Test
+    void loadsOfflineSettingsWithoutCreatingDefaults() {
+        final UUID playerId = UUID.randomUUID();
+        final RecordingPlayerSettingsRepository repository = new RecordingPlayerSettingsRepository(PlayerSettingsSnapshot.defaults(playerId));
+        final DefaultPlayerSettingsService service = serviceWith(repository, GeoIpCountryResolver.disabled(LOGGER), pluginConfig());
+
+        final PlayerSettingsSnapshot loaded = service.load(playerId).join();
+
+        assertEquals(playerId, loaded.playerId());
+        assertEquals(1, repository.asyncLoadCalls);
+        assertEquals(List.of(), repository.syncUpserts);
+        assertEquals(List.of(), repository.asyncUpserts);
+    }
+
+    @Test
+    void coalescesConcurrentOfflineLoadsForTheSamePlayer() {
+        final UUID playerId = UUID.randomUUID();
+        final RecordingPlayerSettingsRepository repository = new RecordingPlayerSettingsRepository(PlayerSettingsSnapshot.defaults(playerId));
+        final CompletableFuture<PlayerSettingsSnapshot> databaseRead = repository.enqueueAsyncLoad();
+        final DefaultPlayerSettingsService service = serviceWith(repository, GeoIpCountryResolver.disabled(LOGGER), pluginConfig());
+
+        final CompletableFuture<PlayerSettingsSnapshot> first = service.load(playerId);
+        final CompletableFuture<PlayerSettingsSnapshot> second = service.load(playerId);
+
+        assertSame(first, second);
+        assertEquals(1, repository.asyncLoadCalls);
+
+        databaseRead.complete(PlayerSettingsSnapshot.defaults(playerId));
+
+        assertEquals(playerId, first.join().playerId());
+        assertEquals(1, repository.asyncLoadCalls);
     }
 
     @Test
@@ -649,6 +683,8 @@ class DefaultPlayerSettingsServiceTest {
         private final List<PersistedSetting> syncUpserts = new ArrayList<>();
         private final List<PersistedSetting> asyncUpserts = new ArrayList<>();
         private final List<CompletableFuture<Void>> queuedAsyncUpserts = new ArrayList<>();
+        private final List<CompletableFuture<PlayerSettingsSnapshot>> queuedAsyncLoads = new ArrayList<>();
+        private int asyncLoadCalls;
 
         private RecordingPlayerSettingsRepository(final PlayerSettingsSnapshot snapshot) {
             this(snapshot, false);
@@ -671,6 +707,10 @@ class DefaultPlayerSettingsServiceTest {
 
         @Override
         public CompletableFuture<PlayerSettingsSnapshot> loadAsync(final UUID playerId) {
+            this.asyncLoadCalls++;
+            if (!this.queuedAsyncLoads.isEmpty()) {
+                return this.queuedAsyncLoads.remove(0);
+            }
             return CompletableFuture.completedFuture(this.snapshot);
         }
 
@@ -703,6 +743,12 @@ class DefaultPlayerSettingsServiceTest {
             final CompletableFuture<Void> persistence = new CompletableFuture<>();
             this.queuedAsyncUpserts.add(persistence);
             return persistence;
+        }
+
+        private CompletableFuture<PlayerSettingsSnapshot> enqueueAsyncLoad() {
+            final CompletableFuture<PlayerSettingsSnapshot> load = new CompletableFuture<>();
+            this.queuedAsyncLoads.add(load);
+            return load;
         }
 
         private void updateSnapshot(final SettingKey key, final String value) {

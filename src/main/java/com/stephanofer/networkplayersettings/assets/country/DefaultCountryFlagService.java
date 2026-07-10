@@ -6,6 +6,7 @@ import com.stephanofer.networkplayersettings.assets.api.NetworkAssetService;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -64,6 +65,16 @@ public final class DefaultCountryFlagService implements CountryFlagService {
     public Component flag(final UUID playerId) {
         final String value = headTextureValue(playerId);
         return value.isEmpty() ? Component.empty() : flagForTexture(value);
+    }
+
+    @Override
+    public CompletableFuture<Component> flagAsync(final UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        return this.settingsService.load(playerId)
+            .thenApply(snapshot -> snapshot.showCountryFlag()
+                ? flagForTexture(this.assetService.countryAsset(snapshot.countryCode()).headTextureBase64())
+                : Component.empty()
+            );
     }
 
     @Override

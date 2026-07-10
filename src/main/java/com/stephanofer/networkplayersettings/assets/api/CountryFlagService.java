@@ -1,6 +1,7 @@
 package com.stephanofer.networkplayersettings.assets.api;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
@@ -21,6 +22,8 @@ public interface CountryFlagService {
     String miniMessageTagForCountry(String countryCodeOrAlias);
 
     Component flag(UUID playerId);
+
+    CompletableFuture<Component> flagAsync(UUID playerId);
 
     Component flagForCountry(String countryCodeOrAlias);
 

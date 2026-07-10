@@ -61,6 +61,7 @@ Responsabilidades:
 - entregar el `Value` base64 correcto para la bandera del jugador;
 - entregar un tag MiniMessage listo para CraftKit;
 - entregar un `Component` Adventure listo para enviar/renderizar;
+- cargar y renderizar de forma asíncrona una bandera de un jugador offline;
 - entregar un `TagResolver` MiniMessage listo para código Java.
 
 ## Registro de servicios públicos
@@ -149,6 +150,21 @@ Para métodos player-aware de `CountryFlagService`:
 - `miniMessageTag(UUID)` devuelve `""`
 - `flag(UUID)` devuelve `Component.empty()`
 - `resolver(UUID)` resuelve `<country_flag>` a `Component.empty()`
+
+### Render offline
+
+`flag(UUID)` es síncrono y consulta el estado ya disponible en caché. Para una identidad de jugador offline, usá `flagAsync(UUID)`:
+
+```java
+flags.flagAsync(playerId).thenAccept(flag -> {
+    // flag es la bandera persistida o Component.empty() si está desactivada.
+});
+```
+
+- carga el snapshot desde caché o almacenamiento de manera asíncrona;
+- respeta `country_override`, `detected_country` y `show_country_flag`;
+- no crea filas default al consultar un UUID que no tiene settings;
+- completa excepcionalmente si falla la lectura de settings.
 
 ### Si el país efectivo es `XX`
 
