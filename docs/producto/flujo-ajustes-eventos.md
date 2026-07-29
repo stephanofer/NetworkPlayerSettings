@@ -46,12 +46,14 @@ Para un plugin consumidor, el camino seguro es escuchar `PlayerSettingsReadyEven
 
 | Caché | Contenido | Limpieza |
 |---|---|---|
-| `cache` | `UUID -> PlayerSettingsSnapshot` | En quit solo si `settings.cache-cleanup-on-quit: true`. |
-| `localeCache` | locale normalizado del jugador | Siempre se limpia en quit. |
+| `cache` | `UUID -> PlayerSettingsSnapshot` | Límite `settings.cache-maximum-size`; en quit solo se invalida explícitamente si `settings.cache-cleanup-on-quit: true`. |
+| `localeCache` | locale normalizado del jugador | Mismo límite máximo, expiración por acceso configurable y limpieza explícita siempre en quit. |
 | `readyPlayers` | UUIDs listos | Siempre se limpia en quit. |
 | `mutationChains` | cola por jugador para mutaciones persistentes | Se remueve cuando la cola del jugador queda completa o al evict del jugador. |
 
 `getCachedOrDefault(UUID)` no fuerza DB; si no hay caché devuelve defaults. Si necesitás cargar desde DB cuando no hay caché, usá `load(UUID)` y encadená el future.
+
+El locale se captura en el main thread durante `PlayerJoinEvent` y se reemplaza durante `PlayerLocaleChangeEvent`. En quit se elimina siempre, aunque el snapshot permanezca por `cache-cleanup-on-quit: false`; con detección activa, `cachedResolvedLanguage(UUID)` devuelve vacío para `AUTO` offline, mientras una preferencia explícita todavía puede resolverse si el snapshot sigue cacheado. Si la detección está desactivada, un snapshot `AUTO` resuelve al idioma default sin necesitar locale. En reconnect no se reutiliza el locale anterior: con detección activa, la consulta permanece vacía para `AUTO` hasta el nuevo join. Al deshabilitar o recargar el plugin se cierra la instancia del servicio, se limpian snapshots, locales y estado ready, y se impide que operaciones asíncronas tardías repueblen esos caches. Los consumidores deben volver a obtener `PlayerSettingsService` desde `ServicesManager` después del reload.
 
 ## Idioma efectivo
 
@@ -66,6 +68,8 @@ La preferencia persistida puede ser:
 Locales `es`, `es_*`, `en`, `en_*` se reconocen. Otros locales caen en el idioma default configurado.
 
 Si `settings.detect-client-locale: false`, el locale se trata como vacío y `AUTO` cae en `settings.default-language`.
+
+La consulta pública `cachedResolvedLanguage(UUID)` solo lee estructuras concurrentes en memoria. No accede a Bukkit, no carga desde DB, no agenda tareas y no espera futures. Si la detección está activa, `AUTO` necesita un locale todavía presente en caché; puede faltar antes del quit por `settings.locale-cache-expire-after-access-millis` o por el límite `settings.cache-maximum-size`. Un locale presente pero distinto de `es*`/`en*` usa el idioma default configurado.
 
 ## País efectivo
 

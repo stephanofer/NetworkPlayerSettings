@@ -18,6 +18,10 @@ public interface PlayerSettingsService {
 
     Language resolvedLanguage(Player player);
 
+    default Optional<Language> cachedResolvedLanguage(final UUID playerId) {
+        return Optional.empty();
+    }
+
     LanguagePreference languagePreference(UUID playerId);
 
     String countryCode(UUID playerId);

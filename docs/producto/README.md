@@ -5,7 +5,7 @@ NetworkPlayerSettings centraliza ajustes globales de jugador para una network Mi
 ## Ruta rápida
 
 1. Declarar dependencia del plugin `NetworkPlayerSettings` en tu metadata de Paper/Bukkit.
-2. Agregar la dependencia de compilación desde Maven Local: `com.stephanofer:networkplayersettings:2.0.0`.
+2. Agregar la dependencia de compilación desde Maven Local: `com.stephanofer:networkplayersettings:2.1.0`.
 3. Obtener `PlayerSettingsService` desde `ServicesManager` cuando tu plugin esté habilitado.
 4. Esperar `PlayerSettingsReadyEvent` o comprobar `PlayerSettingsService#isReady(UUID)` antes de leer datos de un jugador conectado.
 5. Usar solo los paquetes públicos por dominio: `settings/api`, `settings/event`, `settings/language`, `settings/country` y `assets/api`.
@@ -73,7 +73,7 @@ No lo uses para:
 
 ## Límites documentados explícitamente
 
-- El repositorio publica para desarrollo local con `maven-publish`: `com.stephanofer:networkplayersettings:2.0.0` mediante `publishToMavenLocal`.
+- El repositorio publica para desarrollo local con `maven-publish`: `com.stephanofer:networkplayersettings:2.1.0` mediante `publishToMavenLocal`.
 - No hay repositorio Maven remoto configurado en el proyecto. Para builds compartidos fuera de la máquina local, publicá el artefacto en un Maven privado o usá otra estrategia controlada por tu pipeline.
 - La metadata del core usa `softdepend: [PlaceholderAPI]`; no declara dependencia hacia zMenu ni registra comandos de UI.
 - El proyecto registra servicios Bukkit con `ServicePriority.Normal`; no hay API propia de bootstrap fuera de `ServicesManager`.

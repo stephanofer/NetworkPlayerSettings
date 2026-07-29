@@ -42,11 +42,13 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     private final Logger logger;
     private final Consumer<Runnable> mainThreadExecutor;
     private final Consumer<PlayerSettingChangeEvent> settingChangeEventDispatcher;
+    private final Consumer<PlayerSettingsReadyEvent> settingsReadyEventDispatcher;
     private final Cache<UUID, PlayerSettingsSnapshot> cache;
     private final Cache<UUID, String> localeCache;
     private final ConcurrentHashMap<UUID, CompletableFuture<Void>> mutationChains = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, CompletableFuture<PlayerSettingsSnapshot>> pendingLoads = new ConcurrentHashMap<>();
     private final Set<UUID> readyPlayers = ConcurrentHashMap.newKeySet();
+    private volatile boolean acceptingOperations = true;
 
     public DefaultPlayerSettingsService(
         final PlayerSettingsRepository repository,
@@ -63,7 +65,8 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
             countryResolver,
             logger,
             task -> plugin.getServer().getScheduler().runTask(plugin, task),
-            PlayerSettingChangeEvent::callEvent
+            PlayerSettingChangeEvent::callEvent,
+            PlayerSettingsReadyEvent::callEvent
         );
     }
 
@@ -74,7 +77,8 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         final GeoIpCountryResolver countryResolver,
         final Logger logger,
         final Consumer<Runnable> mainThreadExecutor,
-        final Consumer<PlayerSettingChangeEvent> settingChangeEventDispatcher
+        final Consumer<PlayerSettingChangeEvent> settingChangeEventDispatcher,
+        final Consumer<PlayerSettingsReadyEvent> settingsReadyEventDispatcher
     ) {
         this.repository = Objects.requireNonNull(repository, "repository");
         this.languageResolver = Objects.requireNonNull(languageResolver, "languageResolver");
@@ -83,6 +87,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         this.logger = Objects.requireNonNull(logger, "logger");
         this.mainThreadExecutor = Objects.requireNonNull(mainThreadExecutor, "mainThreadExecutor");
         this.settingChangeEventDispatcher = Objects.requireNonNull(settingChangeEventDispatcher, "settingChangeEventDispatcher");
+        this.settingsReadyEventDispatcher = Objects.requireNonNull(settingsReadyEventDispatcher, "settingsReadyEventDispatcher");
         this.cache = Caffeine.newBuilder()
             .maximumSize(this.config.settings().cacheMaximumSize())
             .build();
@@ -97,11 +102,11 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     public void preloadForLogin(final UUID playerId) {
         try {
             final RepositoryLoadResult loadResult = this.repository.loadOrCreate(playerId);
-            this.cache.put(playerId, loadResult.snapshot());
+            cacheSnapshot(playerId, loadResult.snapshot());
             this.readyPlayers.remove(playerId);
         } catch (final Exception exception) {
             this.logger.log(Level.SEVERE, "Failed to preload player settings for " + playerId + ". Falling back to defaults.", exception);
-            this.cache.put(playerId, PlayerSettingsSnapshot.defaults(playerId));
+            cacheSnapshot(playerId, PlayerSettingsSnapshot.defaults(playerId));
             this.readyPlayers.remove(playerId);
         }
     }
@@ -110,35 +115,46 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         try {
             final RepositoryLoadResult loadResult = this.repository.loadOrCreate(playerId);
             if (!this.countryResolver.enabled()) {
-                this.cache.put(playerId, loadResult.snapshot());
+                cacheSnapshot(playerId, loadResult.snapshot());
                 this.readyPlayers.remove(playerId);
                 return;
             }
 
             final CountryLookup countryLookup = this.countryResolver.resolveCountry(address);
             final PlayerSettingsSnapshot updated = updateDetectedCountrySnapshot(playerId, loadResult.snapshot(), countryLookup, true);
-            this.cache.put(playerId, updated);
+            cacheSnapshot(playerId, updated);
             this.readyPlayers.remove(playerId);
         } catch (final Exception exception) {
             this.logger.log(Level.SEVERE, "Failed to preload player settings for " + playerId + ". Falling back to defaults.", exception);
             final PlayerSettingsSnapshot fallback = PlayerSettingsSnapshot.defaults(playerId)
                 .withSetting(SettingKey.DETECTED_COUNTRY, CountryFlag.UNKNOWN_CODE);
-            this.cache.put(playerId, fallback);
+            cacheSnapshot(playerId, fallback);
             this.readyPlayers.remove(playerId);
         }
     }
 
     public void handleJoin(final Player player) {
+        if (!this.acceptingOperations) {
+            return;
+        }
         final UUID playerId = player.getUniqueId();
         final PlayerSettingsSnapshot snapshot = getCachedOrDefault(playerId);
         final String locale = currentLocale(player);
         rememberLocale(playerId, locale);
         final Language resolved = resolveLanguage(snapshot, locale);
         this.readyPlayers.add(playerId);
-        new PlayerSettingsReadyEvent(player, snapshot, resolved).callEvent();
+        if (!this.acceptingOperations) {
+            this.readyPlayers.remove(playerId);
+            this.localeCache.invalidate(playerId);
+            return;
+        }
+        this.settingsReadyEventDispatcher.accept(new PlayerSettingsReadyEvent(player, snapshot, resolved));
     }
 
     public void handleLocaleChange(final Player player, final String newLocaleRaw) {
+        if (!this.acceptingOperations) {
+            return;
+        }
         final UUID playerId = player.getUniqueId();
         final PlayerSettingsSnapshot snapshot = getCachedOrDefault(playerId);
         final String oldLocale = Objects.requireNonNullElse(this.localeCache.getIfPresent(playerId), currentLocale(player));
@@ -168,9 +184,23 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         this.mutationChains.remove(playerId);
     }
 
+    public void clearCachedState() {
+        this.acceptingOperations = false;
+        this.readyPlayers.clear();
+        this.localeCache.invalidateAll();
+        this.cache.invalidateAll();
+        this.mutationChains.clear();
+        final IllegalStateException shutdown = new IllegalStateException("player settings service is no longer active");
+        this.pendingLoads.values().forEach(pending -> pending.completeExceptionally(shutdown));
+        this.pendingLoads.clear();
+    }
+
     @Override
     public CompletableFuture<PlayerSettingsSnapshot> load(final UUID playerId) {
         Objects.requireNonNull(playerId, "playerId");
+        if (!this.acceptingOperations) {
+            return inactiveFuture();
+        }
         final PlayerSettingsSnapshot cached = this.cache.getIfPresent(playerId);
         if (cached != null) {
             return CompletableFuture.completedFuture(cached);
@@ -181,17 +211,30 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         if (existing != null) {
             return existing;
         }
+        if (!this.acceptingOperations) {
+            this.pendingLoads.remove(playerId, pending);
+            pending.completeExceptionally(new IllegalStateException("player settings service is no longer active"));
+            return pending;
+        }
 
         try {
             this.repository.loadAsync(playerId).whenComplete((loaded, throwable) -> {
-                this.pendingLoads.remove(playerId, pending);
+                final boolean activeLoad = this.pendingLoads.remove(playerId, pending);
                 if (throwable != null) {
                     pending.completeExceptionally(throwable);
+                    return;
+                }
+                if (!activeLoad || !this.acceptingOperations) {
                     return;
                 }
 
                 // A mutation may have populated a newer snapshot while this read was in flight.
                 final PlayerSettingsSnapshot current = this.cache.asMap().putIfAbsent(playerId, loaded);
+                if (!this.acceptingOperations) {
+                    this.cache.invalidate(playerId);
+                    pending.completeExceptionally(new IllegalStateException("player settings service is no longer active"));
+                    return;
+                }
                 pending.complete(current == null ? loaded : current);
             });
         } catch (final Exception exception) {
@@ -216,6 +259,22 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     public Language resolvedLanguage(final Player player) {
         final PlayerSettingsSnapshot snapshot = getCachedOrDefault(player.getUniqueId());
         return resolveLanguage(snapshot, currentLocale(player));
+    }
+
+    @Override
+    public Optional<Language> cachedResolvedLanguage(final UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        final PlayerSettingsSnapshot snapshot = this.cache.getIfPresent(playerId);
+        if (snapshot == null) {
+            return Optional.empty();
+        }
+
+        if (snapshot.languagePreference() != LanguagePreference.AUTO || !this.config.settings().detectClientLocale()) {
+            return Optional.of(resolveLanguage(snapshot, ""));
+        }
+
+        final String locale = this.localeCache.getIfPresent(playerId);
+        return locale == null ? Optional.empty() : Optional.of(resolveLanguage(snapshot, locale));
     }
 
     @Override
@@ -254,7 +313,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
                     this.logger.log(Level.SEVERE, "Failed to persist language setting for " + playerId, throwable);
                 })
                 .thenCompose(unused -> runOnMainThread(() -> {
-                    this.cache.put(playerId, updated);
+                    cacheSnapshot(playerId, updated);
                     if (!previous.valueOrDefault(SettingKey.LANGUAGE).equals(updated.valueOrDefault(SettingKey.LANGUAGE)) || oldResolved != newResolved) {
                         dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
                             playerId,
@@ -288,7 +347,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
                     this.logger.log(Level.SEVERE, "Failed to persist country override for " + playerId, throwable);
                 })
                 .thenCompose(unused -> runOnMainThread(() -> {
-                    this.cache.put(playerId, updated);
+                    cacheSnapshot(playerId, updated);
                     if (!Objects.equals(previous.countryCode(), updated.countryCode())) {
                         dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
                             playerId,
@@ -317,7 +376,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
                     this.logger.log(Level.SEVERE, "Failed to clear country override for " + playerId, throwable);
                 })
                 .thenCompose(unused -> runOnMainThread(() -> {
-                    this.cache.put(playerId, updated);
+                    cacheSnapshot(playerId, updated);
                     if (!Objects.equals(previous.countryCode(), updated.countryCode())) {
                         dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
                             playerId,
@@ -351,7 +410,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
                     this.logger.log(Level.SEVERE, "Failed to persist country flag visibility for " + playerId, throwable);
                 })
                 .thenCompose(unused -> runOnMainThread(() -> {
-                    this.cache.put(playerId, updated);
+                    cacheSnapshot(playerId, updated);
                     dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
                         playerId,
                         SettingKey.SHOW_COUNTRY_FLAG,
@@ -410,7 +469,7 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
                     }
                 })
                 .thenCompose(unused -> runOnMainThread(() -> {
-                    this.cache.put(playerId, updated);
+                    cacheSnapshot(playerId, updated);
                     dispatchSettingChangeEvent(new PlayerSettingChangeEvent(
                         playerId,
                         key,
@@ -492,6 +551,9 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
         try {
             this.mainThreadExecutor.accept(() -> {
                 try {
+                    if (!this.acceptingOperations) {
+                        throw new IllegalStateException("player settings service is no longer active");
+                    }
                     task.run();
                     result.complete(null);
                 } catch (final Throwable throwable) {
@@ -505,16 +567,35 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     }
 
     private CompletableFuture<Void> enqueueMutation(final UUID playerId, final Supplier<CompletableFuture<Void>> mutation) {
+        if (!this.acceptingOperations) {
+            return inactiveFuture();
+        }
         final AtomicReference<CompletableFuture<Void>> queued = new AtomicReference<>();
         this.mutationChains.compute(playerId, (unused, previous) -> {
             final CompletableFuture<Void> base = previous == null
                 ? CompletableFuture.completedFuture(null)
                 : previous.handle((result, throwable) -> null);
-            final CompletableFuture<Void> next = base.thenCompose(ignored -> mutation.get());
+            final CompletableFuture<Void> next = base.thenCompose(ignored -> this.acceptingOperations
+                ? mutation.get()
+                : inactiveFuture());
             queued.set(next);
             return next.whenComplete((result, throwable) -> this.mutationChains.remove(playerId, next));
         });
         return queued.get();
+    }
+
+    private static <T> CompletableFuture<T> inactiveFuture() {
+        return CompletableFuture.failedFuture(new IllegalStateException("player settings service is no longer active"));
+    }
+
+    private void cacheSnapshot(final UUID playerId, final PlayerSettingsSnapshot snapshot) {
+        if (!this.acceptingOperations) {
+            return;
+        }
+        this.cache.put(playerId, snapshot);
+        if (!this.acceptingOperations) {
+            this.cache.invalidate(playerId);
+        }
     }
 
     private void dispatchSettingChangeEvent(final PlayerSettingChangeEvent event) {
@@ -529,11 +610,14 @@ public final class DefaultPlayerSettingsService implements PlayerSettingsService
     }
 
     private void rememberLocale(final UUID playerId, final String locale) {
-        if (!this.config.settings().detectClientLocale() || locale == null || locale.isBlank()) {
+        if (!this.acceptingOperations || !this.config.settings().detectClientLocale() || locale == null || locale.isBlank()) {
             this.localeCache.invalidate(playerId);
             return;
         }
         this.localeCache.put(playerId, locale);
+        if (!this.acceptingOperations) {
+            this.localeCache.invalidate(playerId);
+        }
     }
 
     private Language resolveLanguage(final PlayerSettingsSnapshot snapshot, final String locale) {

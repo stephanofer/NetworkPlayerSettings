@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.stephanofer.networkplayersettings.config.PluginConfig;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsSnapshot;
@@ -25,9 +26,12 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
@@ -199,6 +203,151 @@ class DefaultPlayerSettingsServiceTest {
         service.preloadForLogin(playerId);
 
         assertEquals(Language.SPANISH, service.resolvedLanguage(player(playerId, Locale.US)));
+    }
+
+    @Test
+    void resolvesCachedExplicitLanguageWithoutPlayerOrLocale() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(snapshotWith(playerId, Map.of(
+            SettingKey.LANGUAGE, LanguagePreference.SPANISH.storageValue()
+        )));
+
+        service.preloadForLogin(playerId);
+
+        assertEquals(Optional.of(Language.SPANISH), service.cachedResolvedLanguage(playerId));
+    }
+
+    @Test
+    void resolvesCachedAutoLanguageFromLocaleCapturedOnJoin() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(snapshotWith(playerId, Map.of(
+            SettingKey.LANGUAGE, LanguagePreference.AUTO.storageValue()
+        )));
+        service.preloadForLogin(playerId);
+
+        service.handleJoin(player(playerId, Locale.forLanguageTag("es-AR")));
+
+        assertEquals(Optional.of(Language.SPANISH), service.cachedResolvedLanguage(playerId));
+    }
+
+    @Test
+    void cachedLanguageIsEmptyWhenRequiredStateIsAbsent() {
+        final UUID playerId = UUID.randomUUID();
+        final RecordingPlayerSettingsRepository repository = new RecordingPlayerSettingsRepository(PlayerSettingsSnapshot.defaults(playerId));
+        final DefaultPlayerSettingsService service = serviceWith(repository, GeoIpCountryResolver.disabled(LOGGER), pluginConfig());
+
+        assertEquals(Optional.empty(), service.cachedResolvedLanguage(playerId));
+        assertEquals(0, repository.asyncLoadCalls);
+    }
+
+    @Test
+    void cachedAutoLanguageUsesConfiguredDefaultWhenLocaleDetectionIsDisabled() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(
+            new RecordingPlayerSettingsRepository(PlayerSettingsSnapshot.defaults(playerId)),
+            GeoIpCountryResolver.disabled(LOGGER),
+            localeDetectionDisabledConfig()
+        );
+
+        service.preloadForLogin(playerId);
+
+        assertEquals(Optional.of(Language.ENGLISH), service.cachedResolvedLanguage(playerId));
+    }
+
+    @Test
+    void cachedAutoLanguageUsesConfiguredDefaultForUnsupportedCapturedLocale() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(PlayerSettingsSnapshot.defaults(playerId));
+        service.preloadForLogin(playerId);
+
+        service.handleJoin(player(playerId, Locale.FRENCH));
+
+        assertEquals(Optional.of(Language.ENGLISH), service.cachedResolvedLanguage(playerId));
+    }
+
+    @Test
+    void updatesCachedAutoLanguageWhenLocaleChanges() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(PlayerSettingsSnapshot.defaults(playerId));
+        service.preloadForLogin(playerId);
+        service.handleJoin(player(playerId, Locale.US));
+
+        service.handleLocaleChange(player(playerId, Locale.forLanguageTag("es-AR")), "es-AR");
+
+        assertEquals(Optional.of(Language.SPANISH), service.cachedResolvedLanguage(playerId));
+    }
+
+    @Test
+    void clearsLocaleOnQuitAndCapturesFreshLocaleOnReconnect() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(PlayerSettingsSnapshot.defaults(playerId));
+        service.preloadForLogin(playerId);
+        service.handleJoin(player(playerId, Locale.forLanguageTag("es-AR")));
+
+        service.evict(playerId, true);
+
+        assertEquals(Optional.empty(), service.cachedResolvedLanguage(playerId));
+        service.preloadForLogin(playerId);
+        assertEquals(Optional.empty(), service.cachedResolvedLanguage(playerId));
+        service.handleJoin(player(playerId, Locale.US));
+        assertEquals(Optional.of(Language.ENGLISH), service.cachedResolvedLanguage(playerId));
+    }
+
+    @Test
+    void clearsCachedLanguageStateForReload() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(PlayerSettingsSnapshot.defaults(playerId));
+        service.preloadForLogin(playerId);
+        service.handleJoin(player(playerId, Locale.US));
+
+        service.clearCachedState();
+
+        assertEquals(Optional.empty(), service.cachedResolvedLanguage(playerId));
+        assertFalse(service.isReady(playerId));
+    }
+
+    @Test
+    void doesNotRestoreCachedStateWhenPendingLoadCompletesAfterShutdown() {
+        final UUID playerId = UUID.randomUUID();
+        final RecordingPlayerSettingsRepository repository = new RecordingPlayerSettingsRepository(PlayerSettingsSnapshot.defaults(playerId));
+        final CompletableFuture<PlayerSettingsSnapshot> databaseRead = repository.enqueueAsyncLoad();
+        final DefaultPlayerSettingsService service = serviceWith(repository, GeoIpCountryResolver.disabled(LOGGER), pluginConfig());
+        final CompletableFuture<PlayerSettingsSnapshot> load = service.load(playerId);
+
+        service.clearCachedState();
+        databaseRead.complete(PlayerSettingsSnapshot.defaults(playerId));
+
+        assertThrows(CompletionException.class, load::join);
+        assertEquals(Optional.empty(), service.cached(playerId));
+        assertThrows(CompletionException.class, () -> service.load(playerId).join());
+    }
+
+    @Test
+    void supportsConcurrentCachedLanguageReadsDuringLocaleChanges() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerSettingsService service = serviceWith(PlayerSettingsSnapshot.defaults(playerId));
+        service.preloadForLogin(playerId);
+        service.handleJoin(player(playerId, Locale.US));
+        final ExecutorService readers = Executors.newFixedThreadPool(8);
+
+        try {
+            final List<CompletableFuture<Boolean>> reads = java.util.stream.IntStream.range(0, 200)
+                .mapToObj(index -> CompletableFuture.supplyAsync(
+                    () -> service.cachedResolvedLanguage(playerId).isPresent(),
+                    readers
+                ))
+                .toList();
+
+            for (int index = 0; index < 200; index++) {
+                final String locale = index % 2 == 0 ? "es-AR" : "en-US";
+                service.handleLocaleChange(player(playerId, Locale.forLanguageTag(locale)), locale);
+            }
+
+            CompletableFuture.allOf(reads.toArray(CompletableFuture[]::new)).join();
+            assertTrue(reads.stream().allMatch(CompletableFuture::join));
+        } finally {
+            readers.shutdownNow();
+        }
     }
 
     @Test
@@ -579,7 +728,9 @@ class DefaultPlayerSettingsServiceTest {
             countryResolver,
             LOGGER,
             mainThreadExecutor,
-            events::add
+            events::add,
+            event -> {
+            }
         );
     }
 

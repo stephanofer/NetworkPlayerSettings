@@ -22,6 +22,7 @@ public interface PlayerSettingsService {
     Optional<PlayerSettingsSnapshot> cached(UUID playerId);
     PlayerSettingsSnapshot getCachedOrDefault(UUID playerId);
     Language resolvedLanguage(Player player);
+    Optional<Language> cachedResolvedLanguage(UUID playerId);
     LanguagePreference languagePreference(UUID playerId);
     String countryCode(UUID playerId);
     boolean showCountryFlag(UUID playerId);
@@ -41,6 +42,7 @@ public interface PlayerSettingsService {
 | `cached(UUID)` | Devuelve `Optional` con snapshot en caché o vacío. No fuerza carga. |
 | `getCachedOrDefault(UUID)` | Devuelve caché o `PlayerSettingsSnapshot.defaults(playerId)`. No persiste defaults por sí mismo. |
 | `resolvedLanguage(Player)` | Resuelve idioma efectivo usando snapshot cache/default y locale actual del jugador si `settings.detect-client-locale` está activo. |
+| `cachedResolvedLanguage(UUID)` | Consulta thread-safe y cache-only para callbacks que pueden ejecutarse fuera del main thread. No usa `Player`, I/O, scheduler ni bloqueo. Devuelve vacío si falta el snapshot o si la preferencia es `AUTO`, la detección está activa y no hay locale capturado. Una preferencia explícita no requiere locale; un locale capturado pero no soportado usa `settings.default-language`. El método tiene un fallback `default` vacío para conservar compatibilidad con proveedores externos compilados contra versiones anteriores; el proveedor oficial implementa la resolución completa. |
 | `languagePreference(UUID)` | Devuelve preferencia guardada/cacheada o `AUTO` por default. |
 | `countryCode(UUID)` | Devuelve país efectivo: `country_override` válido si existe; si no `detected_country`; fallback `XX`. |
 | `showCountryFlag(UUID)` | Devuelve si el jugador permite renderizar su bandera de país. Default `true`. |
@@ -57,6 +59,8 @@ public interface PlayerSettingsService {
 Las mutaciones devuelven `CompletableFuture<Void>`. Si falla la persistencia, el future falla y el caché no se actualiza. No bloquees el main thread con `join()`/`get()`.
 
 Las mutaciones persistentes se serializan por jugador para evitar que dos cambios concurrentes completen fuera de orden y dejen el caché con un snapshot viejo.
+
+`cachedResolvedLanguage(UUID)` es la lectura indicada para PlaceholderAPI y consumidores async. El consumidor decide el fallback de `Optional.empty()`; la API no inventa un idioma cuando faltan datos. `resolvedLanguage(Player)` requiere un `Player` válido y queda reservado para código que ya está ejecutándose de forma segura en el contexto Bukkit correspondiente.
 
 ## `PlayerSettingsSnapshot`
 

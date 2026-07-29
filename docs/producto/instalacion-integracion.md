@@ -22,7 +22,7 @@ El proyecto define estas coordenadas Maven locales:
 
 ```kotlin
 group = "com.stephanofer"
-version = "2.0.0"
+version = "2.1.0"
 artifactId = "networkplayersettings"
 ```
 
@@ -48,7 +48,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.stephanofer:networkplayersettings:2.0.0")
+    compileOnly("com.stephanofer:networkplayersettings:2.1.0")
     compileOnly("io.papermc.paper:paper-api:26.2.build.25-alpha")
 }
 ```
@@ -85,7 +85,7 @@ Shadow genera el JAR final del core en `target/`:
 
 | Archivo | Plugin |
 |---|---|
-| `target/NetworkPlayerSettings-2.0.0.jar` | Core de settings, sin zMenu. |
+| `target/NetworkPlayerSettings-2.1.0.jar` | Core de settings, sin zMenu. |
 
 Si el repo contiene plugins consumidores adicionales, pueden generar sus propios JARs en la misma carpeta, pero no forman parte del contrato público de `NetworkPlayerSettings`.
 

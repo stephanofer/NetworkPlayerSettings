@@ -7,7 +7,6 @@ import com.stephanofer.networkplayersettings.settings.api.PlayerStyleService;
 import com.stephanofer.networkplayersettings.settings.api.StylePatternInfo;
 import com.stephanofer.networkplayersettings.settings.event.PlayerSettingChangeEvent;
 import com.stephanofer.networkplayersettings.settings.language.Language;
-import com.stephanofer.networkplayersettings.settings.language.LanguagePreference;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
@@ -97,10 +96,7 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
 
     private @Nullable String resolvePlaceholder(final OfflinePlayer player, final String normalizedParam) {
         if (normalizedParam.equals("language")) {
-            if (player != null && player.isOnline() && player.getPlayer() != null) {
-                return this.settingsService.resolvedLanguage(player.getPlayer()).code();
-            }
-            return offlineLanguage(player).code();
+            return cachedLanguage(player).code();
         }
 
         if (normalizedParam.equals("language_preference")) {
@@ -111,11 +107,7 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
         }
 
         if (normalizedParam.equals("language_name")) {
-            if (player != null && player.isOnline() && player.getPlayer() != null) {
-                final Language language = this.settingsService.resolvedLanguage(player.getPlayer());
-                return language.displayName(language);
-            }
-            final Language language = offlineLanguage(player);
+            final Language language = cachedLanguage(player);
             return language.displayName(language);
         }
 
@@ -256,15 +248,9 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
         this.cache.asMap().keySet().removeIf(key -> key.startsWith(prefix));
     }
 
-    private Language offlineLanguage(final OfflinePlayer player) {
-        if (player == null || player.getUniqueId() == null) {
-            return this.defaultLanguage;
-        }
-        final LanguagePreference preference = this.settingsService.languagePreference(player.getUniqueId());
-        return switch (preference) {
-            case SPANISH -> Language.SPANISH;
-            case ENGLISH -> Language.ENGLISH;
-            case AUTO -> this.defaultLanguage;
-        };
+    private Language cachedLanguage(final OfflinePlayer player) {
+        return playerId(player)
+            .flatMap(this.settingsService::cachedResolvedLanguage)
+            .orElse(this.defaultLanguage);
     }
 }

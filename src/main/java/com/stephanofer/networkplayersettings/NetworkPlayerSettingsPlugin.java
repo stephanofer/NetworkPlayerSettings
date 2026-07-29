@@ -68,6 +68,9 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         unregisterPlaceholderExpansion();
+        if (this.settingsService != null) {
+            this.settingsService.clearCachedState();
+        }
         if (getServer() != null) {
             getServer().getServicesManager().unregisterAll(this);
         }

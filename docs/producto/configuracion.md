@@ -26,6 +26,8 @@ settings:
   default-language: "en"
   detect-client-locale: true
   cache-cleanup-on-quit: true
+  cache-maximum-size: 10000
+  locale-cache-expire-after-access-millis: 600000
 
 geoip:
   enabled: true
@@ -65,10 +67,13 @@ Consecuencias para consumidores:
 | `settings.default-language` | String | `en` | Se convierte con `Language.fromCode`; solo `es` produce `SPANISH`, todo lo demás produce `ENGLISH`. |
 | `settings.detect-client-locale` | boolean | `true` | Si está activo, `AUTO` usa el locale del cliente (`es*`/`en*`). Si está apagado, `AUTO` cae en `default-language`. |
 | `settings.cache-cleanup-on-quit` | boolean | `true` | Si está activo, al salir el jugador se elimina su snapshot cacheado. Si está apagado, queda cacheado pero `ready=false`. |
+| `settings.cache-maximum-size` | long | `10000` | Cantidad máxima de snapshots y locales en sus respectivos caches. Se normaliza a mínimo `1`. Cada caché aplica el límite de forma independiente. |
+| `settings.locale-cache-expire-after-access-millis` | long | `600000` | Expiración del locale tras el último acceso. Se normaliza a mínimo `0`; `0` desactiva la expiración temporal, pero no el límite de tamaño ni la limpieza en quit. |
 
 Impacto para consumidores:
 
 - `resolvedLanguage(Player)` puede cambiar cuando el cliente cambia locale si la preferencia es `AUTO`.
+- Con detección activa, `cachedResolvedLanguage(UUID)` devuelve vacío para `AUTO` si el locale fue expulsado por expiración o límite de tamaño; una preferencia explícita solo necesita que el snapshot siga cacheado.
 - Con `cache-cleanup-on-quit: false`, `cached(UUID)` puede seguir devolviendo snapshot de un jugador desconectado, pero `isReady(UUID)` será `false`.
 
 ### `geoip`
