@@ -3,6 +3,7 @@ package com.stephanofer.networkplayersettingszmenu;
 import static net.kyori.adventure.text.Component.text;
 
 import com.hera.craftkit.zmenu.ZMenuIntegration;
+import com.hera.craftkit.zmenu.ZMenuReloadPlan;
 import com.hera.craftkit.zmenu.ZMenus;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.settings.api.PlayerStyleService;
@@ -35,6 +36,7 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
     private PlayerSettingsService settingsService;
     private PlayerStyleService styleService;
     private ZMenuIntegration zmenu;
+    private ZMenuReloadPlan zmenuPlan;
 
     @Override
     public void onEnable() {
@@ -50,7 +52,14 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
             this.styleService = requireService(PlayerStyleService.class);
             this.zmenu = ZMenus.require(this);
 
-            new SettingsMenuBootstrap(this, this.zmenu, this.settingsService, this.styleService, this.messages, this.config.settings()).load();
+            this.zmenuPlan = new SettingsMenuBootstrap(
+                this,
+                this.zmenu,
+                this.settingsService,
+                this.styleService,
+                this.messages,
+                this.config.settings()
+            ).load();
             registerCommands(new SettingsViewOpener(this, this.zmenu, getLogger()));
             getServer().getPluginManager().registerEvents(new PlayerQuitCooldownListener(), this);
         } catch (final Exception exception) {
@@ -62,6 +71,9 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (this.zmenuPlan != null) {
+            this.zmenuPlan.close();
+        }
         SettingMutationCooldowns.clearAll();
         StylePatternFilterState.clearAll();
     }

@@ -19,7 +19,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.25-alpha")
     compileOnly("me.clip:placeholderapi:2.12.2")
 
-    implementation("com.hera.craftkit:craftkit-database:1.1.0")
+    implementation("com.hera.craftkit:craftkit-database:2.0.0")
     implementation("com.stephanofer.boostedyaml:boosted-yaml:1.3.7")
     implementation("com.maxmind.geoip2:geoip2:5.1.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
@@ -74,6 +74,26 @@ tasks {
         relocate(
             "com.zaxxer",
             "com.stephanofer.networkplayersettings.libs.zaxxer"
+        )
+        relocate(
+            "org.flywaydb",
+            "com.stephanofer.networkplayersettings.libs.flyway"
+        )
+        relocate(
+            "tools.jackson",
+            "com.stephanofer.networkplayersettings.libs.jackson3"
+        )
+        relocate(
+            "com.fasterxml.jackson",
+            "com.stephanofer.networkplayersettings.libs.jackson"
+        )
+        relocate(
+            "com.mysql",
+            "com.stephanofer.networkplayersettings.libs.mysql"
+        )
+        relocate(
+            "com.google.protobuf",
+            "com.stephanofer.networkplayersettings.libs.protobuf"
         )
         relocate(
             "com.github.benmanes.caffeine",

@@ -1,6 +1,7 @@
 package com.stephanofer.networkplayersettingszmenu.settings.view;
 
 import com.hera.craftkit.zmenu.ZMenuIntegration;
+import com.hera.craftkit.zmenu.ZMenuReloadPlan;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.settings.api.PlayerStyleService;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
@@ -39,8 +40,8 @@ public final class SettingsMenuBootstrap {
         this.settingsConfig = Objects.requireNonNull(settingsConfig, "settingsConfig");
     }
 
-    public void load() {
-        this.zmenu.bootstrap()
+    public ZMenuReloadPlan load() {
+        return this.zmenu.bootstrap()
             .buttons(registry -> {
                 registry.button(new LanguageButtonLoader(
                     this.plugin,

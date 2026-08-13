@@ -17,7 +17,8 @@ dependencies {
     compileOnly(project(":"))
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.69-stable")
 
-    implementation("com.hera.craftkit:craftkit-zmenu:1.1.0")
+    implementation("com.hera.craftkit:craftkit-zmenu:2.0.0")
+    compileOnly("fr.maxlego08.menu:zmenu-api:1.1.1.7")
     implementation("com.stephanofer.boostedyaml:boosted-yaml:1.3.7")
     implementation("org.incendo:cloud-paper:2.0.0-beta.17")
     implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.17")
