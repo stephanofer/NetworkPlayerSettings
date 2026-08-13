@@ -113,6 +113,7 @@ items:
   back:
     type: INVENTORY
     inventory: "settings-main"
+    plugin: "NetworkPlayerSettingsZMenu"
     slot: 49
     item:
       material: ARROW

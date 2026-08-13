@@ -133,6 +133,7 @@ items:
   back:
     type: INVENTORY
     inventory: "settings-main"
+    plugin: "NetworkPlayerSettingsZMenu"
     is-permanent: true
     slot: 18
     item:

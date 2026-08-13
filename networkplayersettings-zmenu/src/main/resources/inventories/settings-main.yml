@@ -36,6 +36,7 @@ items:
   settings:
     type: INVENTORY
     inventory: "language"
+    plugin: "NetworkPlayerSettingsZMenu"
     slot: 11
     sound: UI_BUTTON_CLICK
     item:
@@ -63,6 +64,7 @@ items:
   nick:
     type: INVENTORY
     inventory: "nick-styles"
+    plugin: "NetworkPlayerSettingsZMenu"
     slot: 13
     sound: BLOCK_AMETHYST_BLOCK_CHIME
     item:
@@ -93,6 +95,7 @@ items:
   chat:
     type: INVENTORY
     inventory: "chat-styles"
+    plugin: "NetworkPlayerSettingsZMenu"
     slot: 15
     sound: BLOCK_NOTE_BLOCK_CHIME
     item:
