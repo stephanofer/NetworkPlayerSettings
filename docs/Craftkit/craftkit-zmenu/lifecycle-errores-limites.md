@@ -17,7 +17,7 @@ this.zmenu = ZMenus.require(this);
 3. Ejecutar bootstrap reload-safe:
 
 ```java
-this.zmenu.bootstrap()
+this.zmenuPlan = this.zmenu.bootstrap()
     .buttons(...)
     .patterns("patterns")
     .inventories("inventories")
@@ -37,7 +37,15 @@ No volver a registrar enable-only features en reload.
 
 ### `onDisable`
 
-La versión actual no expone un método `close()` o `shutdown()` porque CraftKit no es dueño del lifecycle de zMenu. Si el plugin consumidor necesita cleanup propio, debe hacerlo en su código.
+```java
+if (this.zmenuPlan != null) {
+    this.zmenuPlan.close();
+}
+```
+
+`close()` ejecuta únicamente cleanup para el plugin consumidor: no recarga archivos ni toca registros plugin-scope de otros plugins. Es idempotente después de completar correctamente y deja el plan cerrado; llamar `reload()` después lanza `IllegalStateException`.
+
+Si el bootstrap falla parcialmente, CraftKit intenta rollback de todos los recursos alcanzados antes de propagar el error original. Un fallo de rollback queda como excepción suprimida y el plan permanece disponible mediante `zmenu.reloadPlan()` para reintentar cleanup. Si falla un paso de cleanup, se intentan igualmente los pasos restantes y el tracking se conserva hasta que un reintento complete correctamente.
 
 ## Errores principales
 
@@ -67,7 +75,7 @@ Acción recomendada:
 
 - revisar versión de zMenu;
 - revisar si zMenu falló parcialmente en `onEnable`;
-- confirmar compatibilidad con `zmenu-api:1.1.1.4`.
+- confirmar compatibilidad con `zmenu-api:1.1.1.7`.
 
 ### `ZMenuException`
 

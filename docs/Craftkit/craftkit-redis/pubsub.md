@@ -65,7 +65,9 @@ RedisSubscription subscription = redis.subscriber().subscribe(channel, message -
 
 `RedisMessage.pattern()` será `null` en suscripciones exactas.
 
-`subscribe(...)` registra el handler localmente y solicita la suscripción async a Redis. Si la suscripción async falla, CraftKit cierra esa `RedisSubscription` internamente.
+`subscribe(...)` registra el handler localmente y devuelve `RedisSubscription`.
+
+`subscription.initialRegistration()` completa cuando Redis confirma el primer `SUBSCRIBE`. Si falla el registro inicial, el future completa excepcionalmente. La suscripción puede seguir existiendo como deseada para recuperación posterior mientras no se cierre.
 
 ## Suscribirse por patrón
 
@@ -82,7 +84,9 @@ RedisSubscription subscription = redis.subscriber().subscribePattern(
 
 Los patterns permiten `*`, pero no espacios. La longitud máxima sigue siendo 256 caracteres.
 
-`subscribePattern(...)` sigue el mismo comportamiento: registra el handler y solicita `PSUBSCRIBE` de forma async.
+`subscribePattern(...)` sigue el mismo comportamiento para `PSUBSCRIBE`.
+
+`subscription.isActive()` solo es `true` después del ACK real de Redis. Durante una caída o reconexión puede volver a `false` hasta que Redis restaure la suscripción.
 
 ## Cerrar suscripciones
 
@@ -99,6 +103,10 @@ subscription.close();
 ## Conexión Pub/Sub lazy
 
 La conexión Pub/Sub se abre en el primer subscribe. Se mantiene separada de la conexión de comandos.
+
+Si la conexión se pierde, CraftKit marca las suscripciones como inactivas y espera nuevos ACK antes de volver a reportar estado operativo.
+
+Si Redis no confirma una suscripción dentro de `commandTimeout`, CraftKit reinicia la conexión Pub/Sub y reintenta los topics deseados. Esto evita que una conexión activa pero sin suscripciones restauradas permanezca degradada indefinidamente.
 
 ## Threading y Paper
 

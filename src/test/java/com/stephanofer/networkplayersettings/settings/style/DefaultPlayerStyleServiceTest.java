@@ -117,6 +117,25 @@ class DefaultPlayerStyleServiceTest {
         );
     }
 
+    @Test
+    void replacesBothCatalogsWithoutReplacingTheService() {
+        final UUID playerId = UUID.randomUUID();
+        final DefaultPlayerStyleService service = service(snapshot(playerId, "replacement"));
+        service.replaceCatalogs(
+            new StylePatternCatalog(StylePatternType.NICK, List.of(new StylePattern(
+                StylePatternType.NICK, "replacement", "Replacement", "basic", "", "[<name>]", "Preview"
+            ))),
+            catalog(StylePatternType.CHAT)
+        );
+
+        final Component rendered = service.formattedNick(new NickStyleRenderRequest(
+            playerId, "Vendimia", permission -> true
+        )).join();
+
+        assertEquals("[Vendimia]", PLAIN_TEXT.serialize(rendered));
+        assertEquals("replacement", service.nickPatterns().getFirst().id());
+    }
+
     private static DefaultPlayerStyleService service(final PlayerSettingsSnapshot snapshot) {
         return service(CompletableFuture.completedFuture(snapshot));
     }

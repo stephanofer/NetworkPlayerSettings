@@ -243,6 +243,10 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
         invalidate(event.getPlayer().getUniqueId());
     }
 
+    public void clearCache() {
+        this.cache.invalidateAll();
+    }
+
     private void invalidate(final UUID playerId) {
         final String prefix = playerId + ":";
         this.cache.asMap().keySet().removeIf(key -> key.startsWith(prefix));

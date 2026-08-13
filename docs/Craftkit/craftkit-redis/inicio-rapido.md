@@ -34,7 +34,7 @@ Campos recomendados por plugin:
 RedisClient redis = RedisClients.lettuce(config);
 ```
 
-`RedisClients.lettuce(...)` crea internamente:
+`RedisClients.lettuce(config)` usa modo fail-fast y crea internamente:
 
 - `DefaultClientResources` de Lettuce;
 - `io.lettuce.core.RedisClient`;
@@ -42,6 +42,14 @@ RedisClient redis = RedisClients.lettuce(config);
 - `RedisCoordinator` para leases.
 
 La conexión Pub/Sub se crea de forma lazy en el primer `subscribe(...)` o `subscribePattern(...)`.
+
+Si Redis es opcional, usar el modo recuperable:
+
+```java
+RedisClient redis = RedisClients.lettuce(config, RedisStartupMode.RECOVER);
+```
+
+Este modo devuelve el cliente de inmediato. Mientras Redis no esté disponible, las operaciones que requieren Redis devuelven futures fallidos y `operationalStatus()` permite reaccionar sin polling. Ver [Estado operativo y recuperación](./estado-operativo.md).
 
 ## Usar keys convencionales
 
@@ -84,6 +92,24 @@ redis.cache().get(key).thenAccept(value -> {
 
 La API actual devuelve `CompletableFuture<String>`. Redis puede devolver `null` cuando la key no existe.
 
+## Mantener un índice distribuido
+
+```java
+String indexKey = redis.key("gamekit", "server-index", "bedwars", "arena");
+
+redis.set().add(indexKey, "bedwars-arena-01");
+
+redis.set().members(indexKey).thenCompose(serverIds -> {
+    List<String> serverKeys = serverIds.stream()
+        .map(serverId -> redis.key("gamekit", "server", serverId))
+        .toList();
+
+    return redis.cache().getMany(serverKeys);
+});
+```
+
+`RedisSet` usa sets reales de Redis para membership concurrente. No usar strings separados por coma para índices compartidos entre servidores.
+
 ## Publicar evento
 
 ```java
@@ -99,6 +125,10 @@ RedisSubscription subscription = redis.subscriber().subscribe(channel, message -
     String payload = message.payload();
 
     // Callback async: no tocar Paper API directamente aquí.
+});
+
+subscription.initialRegistration().thenRun(() -> {
+    // Redis confirmó el SUBSCRIBE.
 });
 ```
 

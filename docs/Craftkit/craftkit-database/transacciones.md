@@ -59,13 +59,14 @@ CompletableFuture<Boolean> purchase = database.transaction(connection -> {
 
 ## Isolation y read-only
 
-`TransactionOptions` permite configurar isolation/read-only por transacción.
+`TransactionOptions` permite configurar isolation/read-only y retry por transacción.
 
 ```java
 database.transaction(
     TransactionOptions.builder()
         .isolation(TransactionIsolation.READ_COMMITTED)
         .readOnly(false)
+        .retryPolicy(TransactionRetryPolicy.none())
         .build(),
     connection -> {
         // SQL transaccional
@@ -100,6 +101,7 @@ Default actual:
 ```text
 TransactionIsolation.DEFAULT
 readOnly = false
+retryPolicy = TransactionRetryPolicy.none()
 ```
 
 ## Qué hace CraftKit internamente
@@ -117,8 +119,123 @@ readOnly = false
 9. Hace `rollback()` si falla el callback o el commit.
 10. Restaura `autoCommit`, `readOnly` e isolation.
 11. Cierra la conexión, devolviéndola al pool.
+12. Si hay retry opt-in y el fallo es seguro de reintentar, programa un nuevo intento con conexión nueva.
 
 Si rollback o restauración fallan, esos errores se agregan como `suppressed` al error principal cuando corresponde.
+
+## Retry transaccional opt-in
+
+Los plugins con transacciones concurrentes pueden habilitar retry para fallos transitorios conocidos:
+
+```java
+TransactionOptions options = TransactionOptions.builder()
+    .isolation(TransactionIsolation.READ_COMMITTED)
+    .retryPolicy(TransactionRetryPolicy.mysqlTransient())
+    .build();
+
+CompletableFuture<Boolean> result = database.transaction(options, connection -> {
+    // This callback may run more than once.
+    return activateBooster(connection, playerId, boosterId);
+});
+```
+
+`TransactionRetryPolicy.mysqlTransient()` cubre MySQL/InnoDB:
+
+| Condición | Error code | SQLState habitual |
+| --- | ---: | --- |
+| Deadlock | `1213` | `40001` |
+| Lock wait timeout | `1205` | `HY000` |
+
+El classifier revisa la `SQLException` principal y la cadena `SQLException#getNextException()`.
+
+Defaults:
+
+```text
+maxAttempts = 3
+initialDelayMillis = 25 ms
+maxDelayMillis = 250 ms
+multiplier = 2.0
+jitterFactor = 0.25
+```
+
+`maxAttempts` incluye el primer intento.
+
+El retry transaccional es independiente del monitor operativo y de `RECOVERING`. El estado no habilita, cancela ni altera intentos; cada transacción conserva su política y sus errores.
+
+### Garantías
+
+- Se reintenta la transacción completa.
+- Cada intento obtiene una conexión nueva.
+- La conexión del intento fallido se restaura y cierra antes del backoff.
+- El backoff no ocupa threads del executor DB.
+- El `CompletableFuture` solo se completa con éxito después de callback exitoso, `commit()` exitoso y cierre correcto del intento.
+- Si se agotan los intentos, se propaga el último fallo; fallos previos pueden aparecer como `suppressed`.
+
+### Qué no se reintenta
+
+CraftKit no reintenta:
+
+- fallos de `commit()`;
+- fallos de `rollback()`;
+- fallos restaurando `autoCommit`, `readOnly` o isolation;
+- fallos cerrando la conexión;
+- fallos obteniendo/configurando la conexión;
+- errores runtime del consumidor;
+- errores SQL no clasificados como transitorios.
+
+La regla de `commit()` es crítica: si el cliente pierde la respuesta del commit, no siempre puede saber si MySQL aplicó o no la transacción. Reintentar en ese estado puede duplicar una operación económica.
+
+La misma ambigüedad aplica si una transacción ya en vuelo coincide con `Database.close()`: el cierre no permite asumir automáticamente que sus efectos fueron revertidos.
+
+### Observabilidad
+
+```java
+TransactionRetryPolicy policy = TransactionRetryPolicy.builder()
+    .maxAttempts(3)
+    .initialDelayMillis(25)
+    .maxDelayMillis(250)
+    .multiplier(2.0)
+    .jitterFactor(0.25)
+    .classifier(SqlRetryClassifier.mysqlTransient())
+    .listener(event -> logger.warn(
+        "Retrying transaction after attempt {}/{} in {} ms. SQLState={}, code={}",
+        event.failedAttempt(),
+        event.maxAttempts(),
+        event.nextDelayMillis(),
+        event.failure().getSQLState(),
+        event.failure().getErrorCode()
+    ))
+    .build();
+```
+
+El listener es observacional. Si lanza una excepción, el retry continúa.
+
+### Side effects
+
+El callback puede ejecutarse más de una vez. Por eso no debe hacer side effects externos irreversibles.
+
+Incorrecto:
+
+```java
+database.transaction(options, connection -> {
+    economyApi.withdraw(player, amount);
+    sendRedisMessage(player);
+    updateDatabase(connection);
+    return null;
+});
+```
+
+Correcto:
+
+```java
+database.transaction(options, connection -> {
+    updateBalance(connection, playerId, amount);
+    insertOutboxEvent(connection, playerId, "booster-activated");
+    return null;
+});
+```
+
+Los efectos externos deben ocurrir después del éxito confirmado o modelarse con transactional outbox.
 
 ## Regla más importante
 

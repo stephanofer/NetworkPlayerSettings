@@ -5,3 +5,8 @@ main: com.stephanofer.networkplayersettingszmenu.NetworkPlayerSettingsZMenuPlugi
 api-version: '26.1.2'
 load: POSTWORLD
 depend: [NetworkPlayerSettings, zMenu]
+
+permissions:
+  networkplayersettingszmenu.command.reload:
+    description: Reloads safe NetworkPlayerSettingsZMenu runtime resources
+    default: op

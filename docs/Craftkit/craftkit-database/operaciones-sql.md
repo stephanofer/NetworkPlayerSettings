@@ -10,6 +10,10 @@ CompletableFuture<Void> execute(SqlOperation operation);
 
 Todas corren en el executor DB configurado y usan una conexión obtenida desde Hikari con try-with-resources.
 
+El estado operativo no bloquea, reintenta ni modifica estas operaciones. No existe un circuit breaker: cada `CompletableFuture` conserva el resultado o error real de su propia ejecución, incluso en `UNAVAILABLE` o `RECOVERING`.
+
+Cancelar un future antes de que su tarea comience impide que esa tarea llegue a ejecutar JDBC. Cancelarlo cuando la operación ya está en vuelo no cancela automáticamente el statement ni garantiza que una escritura no produzca efectos.
+
 ## `query(...)`
 
 Para lecturas que devuelven un valor.
@@ -87,6 +91,8 @@ DataSource dataSource = database.dataSource();
 
 Existe para integraciones avanzadas. Si el consumidor usa `DataSource` directo, también asume la responsabilidad de no bloquear el main thread y de cerrar `Connection`, `PreparedStatement` y `ResultSet` correctamente.
 
+La actividad directa usa el mismo pool que observa el monitor. Cerrar o corromper el datasource directamente no ejecuta `Database.close()`, pero terminará reflejándose como indisponibilidad observada.
+
 `dataSource()` falla con `DatabaseException` si la base ya está cerrada.
 
 ## Reglas de uso
@@ -106,3 +112,5 @@ Existe para integraciones avanzadas. Si el consumidor usa `DataSource` directo, 
 - No llamar `query/update/execute` después de `database.close()`.
 
 Después de `close()`, `query`, `update` y `execute` devuelven un `CompletableFuture` fallido con `DatabaseException`.
+
+El snapshot de [estado operativo](./estado-operativo.md) sirve para observabilidad, no para predecir ni sustituir el manejo del future de cada operación.

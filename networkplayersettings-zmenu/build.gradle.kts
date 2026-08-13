@@ -20,8 +20,9 @@ dependencies {
     implementation("com.hera.craftkit:craftkit-zmenu:2.0.0")
     compileOnly("fr.maxlego08.menu:zmenu-api:1.1.1.7")
     implementation("com.stephanofer.boostedyaml:boosted-yaml:1.3.7")
-    implementation("org.incendo:cloud-paper:2.0.0-beta.17")
-    implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.17")
+    implementation(platform("org.incendo:cloud-minecraft-bom:2.0.0"))
+    implementation("org.incendo:cloud-paper")
+    implementation("org.incendo:cloud-minecraft-extras")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
 
     testImplementation(platform("org.junit:junit-bom:5.12.2"))

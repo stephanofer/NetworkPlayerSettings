@@ -19,7 +19,7 @@ ese plugin debe llamar métodos de zMenu para cargar esos archivos. `craftkit-zm
 ## API de bootstrap
 
 ```java
-zmenu.bootstrap()
+ZMenuReloadPlan plan = zmenu.bootstrap()
     .buttons(registry -> {
         registry.button(new NoneLoader(this, MyButton.class, "MY_BUTTON"));
         registry.button(new MyButtonLoader(this));
@@ -40,6 +40,8 @@ zmenu.bootstrap()
 ```
 
 Cada método es explícito. Si no se declara una carpeta o default, CraftKit no lo carga.
+
+El consumidor debe conservar el plan para llamar `close()` durante `onDisable`. El plan es también el snapshot que usa `reload()`.
 
 ## Orden de carga
 

@@ -11,6 +11,7 @@ com.hera.craftkit.redis
   RedisConfig
   RedisCache
   RedisState
+  RedisSet
   RedisPublisher
   RedisSubscriber
   RedisSubscription
@@ -18,6 +19,12 @@ com.hera.craftkit.redis
   RedisMessageHandler
   RedisCoordinator
   RedisLease
+  RedisStartupMode
+  RedisOperationalState
+  RedisConnectionState
+  RedisOperationalStatus
+  RedisOperationalStatusListener
+  RedisStatusRegistration
   RedisException
 
 com.hera.craftkit.redis.internal
@@ -27,6 +34,7 @@ com.hera.craftkit.redis.internal
   PubSubSubscriptions
   RedisNames
   RedisCommandExecutor
+  RedisOperationalTracker
 ```
 
 ## Entrada pública
@@ -37,7 +45,7 @@ La entrada del módulo es:
 RedisClient redis = RedisClients.lettuce(config);
 ```
 
-`RedisClients` solo valida que `RedisConfig` no sea `null` y delega la creación a `LettuceRedisClient.create(...)`.
+`RedisClients` valida `RedisConfig` y, en el overload recuperable, `RedisStartupMode`; luego delega la creación a `LettuceRedisClient.create(...)`.
 
 ## Cliente principal
 
@@ -46,6 +54,7 @@ RedisClient redis = RedisClients.lettuce(config);
 - `RedisClient`
 - `RedisCache`
 - `RedisState`
+- `RedisSet`
 - `RedisPublisher`
 - `RedisSubscriber`
 - `RedisCommandExecutor` interno
@@ -55,6 +64,7 @@ Por eso las vistas públicas devuelven el mismo objeto bajo interfaces específi
 ```java
 redis.cache();
 redis.state();
+redis.set();
 redis.publisher();
 redis.subscriber();
 redis.coordinator();
@@ -66,7 +76,7 @@ La implementación usa dos conexiones Lettuce separadas.
 
 ### Conexión de comandos
 
-Creada al construir el cliente:
+Creada al construir el cliente en modo `FAIL_FAST`. En modo `RECOVER`, se abre async y puede iniciar no disponible.
 
 ```text
 StatefulRedisConnection<String, String>
@@ -85,6 +95,11 @@ Se usa para:
 - `increment`
 - `incrementBy`
 - `getAndDelete`
+- `set.add` / `SADD`
+- `set.remove` / `SREM`
+- `set.members` / `SMEMBERS`
+- `set.size` / `SCARD`
+- `set.contains` / `SISMEMBER`
 - `publish`
 - Lua interno de leases
 
@@ -97,6 +112,14 @@ StatefulRedisPubSubConnection<String, String>
 ```
 
 Se usa solo para suscripciones. No se mezcla con comandos normales.
+
+CraftKit considera Pub/Sub operativo únicamente cuando la conexión está activa y todos los topics solicitados fueron confirmados por ACK de Redis.
+
+## Estado operativo
+
+`RedisOperationalTracker` reduce eventos de conexión, Pub/Sub y suscripciones a snapshots públicos `RedisOperationalStatus`. También serializa observers y asigna una secuencia monotónica a cada transición.
+
+La consulta es no bloqueante y los observers se ejecutan fuera de callbacks Lettuce directos. Si un `SUBSCRIBE` falla o no recibe ACK dentro de `commandTimeout`, `LettuceRedisClient` reinicia la conexión Pub/Sub y reintenta los topics deseados.
 
 ## Recursos Lettuce
 

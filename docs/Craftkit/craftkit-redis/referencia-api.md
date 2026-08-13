@@ -7,18 +7,26 @@ Referencia de las interfaces públicas actuales del módulo.
 ```java
 public final class RedisClients {
     public static RedisClient lettuce(RedisConfig config);
+    public static RedisClient lettuce(RedisConfig config, RedisStartupMode startupMode);
 }
 ```
 
 Factory pública para crear `RedisClient` con implementación Lettuce.
 
+`RedisStartupMode.FAIL_FAST` es el comportamiento default. `RedisStartupMode.RECOVER` permite iniciar degradado y recuperarse sin reiniciar el consumidor.
+
+`RECOVER` requiere que `RedisConfig.autoReconnect()` sea `true`.
+
 ## `RedisClient`
 
 ```java
 public interface RedisClient extends AutoCloseable {
+    RedisOperationalStatus operationalStatus();
+    RedisStatusRegistration observeOperationalStatus(RedisOperationalStatusListener listener);
     CompletableFuture<Boolean> ping();
     RedisCache cache();
     RedisState state();
+    RedisSet set();
     RedisPublisher publisher();
     RedisSubscriber subscriber();
     RedisCoordinator coordinator();
@@ -32,6 +40,72 @@ public interface RedisClient extends AutoCloseable {
 ### `ping()`
 
 Ejecuta `PING`. Devuelve `true` si Redis responde `PONG`.
+
+### `operationalStatus()`
+
+Devuelve el snapshot operativo actual sin bloquear.
+
+### `observeOperationalStatus(...)`
+
+Registra un observer y devuelve un `RedisStatusRegistration` idempotente para desregistrarlo. Recibe primero el snapshot actual y luego cambios en secuencia monotónica. Los callbacks se serializan fuera de callbacks directos de Lettuce y no tienen afinidad con Paper.
+
+## Estado operativo
+
+```java
+public enum RedisStartupMode {
+    FAIL_FAST,
+    RECOVER
+}
+
+public enum RedisOperationalState {
+    STARTING,
+    OPERATIONAL,
+    DEGRADED,
+    RECOVERING,
+    CLOSED
+}
+
+public enum RedisConnectionState {
+    NOT_STARTED,
+    CONNECTING,
+    CONNECTED,
+    DISCONNECTED,
+    RECONNECTING,
+    CLOSED
+}
+```
+
+```java
+public record RedisOperationalStatus(
+    long sequence,
+    RedisOperationalState state,
+    RedisConnectionState commandConnection,
+    RedisConnectionState pubSubConnection,
+    int requestedSubscriptions,
+    int activeSubscriptions,
+    RedisException lastFailure
+) {
+    boolean isOperational();
+}
+```
+
+`isOperational()` solo es `true` cuando la conexión de comandos está activa y, si existen topics solicitados, Pub/Sub está activo con todos sus ACK confirmados.
+
+`lastFailure()` contiene el último fallo observable mientras el cliente no está operativo y vuelve a `null` al recuperar `OPERATIONAL`.
+
+```java
+@FunctionalInterface
+public interface RedisOperationalStatusListener {
+    void onStatusChanged(RedisOperationalStatus status);
+}
+
+public interface RedisStatusRegistration extends AutoCloseable {
+    boolean isClosed();
+    void close();
+}
+```
+
+`RedisStatusRegistration.close()` es idempotente. Un callback de estado que ya comenzó puede finalizar, pero no comienza uno nuevo después de cerrarlo.
 
 ### `key(String domain, String... parts)`
 
@@ -130,6 +204,28 @@ public interface RedisState {
 
 `getAndDelete(...)` usa `GETDEL` y puede completar con `null`.
 
+## `RedisSet`
+
+```java
+public interface RedisSet {
+    CompletableFuture<Long> add(String key, String... members);
+    CompletableFuture<Long> remove(String key, String... members);
+    CompletableFuture<Set<String>> members(String key);
+    CompletableFuture<Long> size(String key);
+    CompletableFuture<Boolean> contains(String key, String member);
+    CompletableFuture<Boolean> expire(String key, Duration ttl);
+}
+```
+
+Notas:
+
+- `add(...)` usa `SADD` y requiere al menos un member.
+- `remove(...)` usa `SREM` y requiere al menos un member.
+- `members(...)` usa `SMEMBERS` y devuelve un `Set` no modificable.
+- `size(...)` usa `SCARD`.
+- `contains(...)` usa `SISMEMBER`.
+- `expire(...)` usa `PEXPIRE` sobre la key del set y requiere TTL positivo.
+
 ## `RedisPublisher`
 
 ```java
@@ -153,10 +249,14 @@ public interface RedisSubscriber {
 
 ```java
 public interface RedisSubscription extends AutoCloseable {
+    CompletableFuture<Void> initialRegistration();
+    boolean isActive();
     boolean isClosed();
     void close();
 }
 ```
+
+`initialRegistration()` completa con el primer ACK de Redis y completa excepcionalmente si el primer registro falla. `isActive()` representa si la suscripción está actualmente confirmada; puede volver a `false` durante una reconexión.
 
 `close()` es idempotente.
 

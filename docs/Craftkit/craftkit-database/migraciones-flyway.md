@@ -33,6 +33,10 @@ database.migrate().join();
 
 Si se construye con `MigrationConfig.builder().enabled(false).build()`, `migrate()` devuelve un `CompletableFuture` ya completado y no ejecuta Flyway.
 
+La excepción es una instancia cerrada: después de `Database.close()`, `migrate()` devuelve un future fallido aunque las migraciones estén deshabilitadas.
+
+El monitor operativo no ejecuta ni valida migraciones. `OPERATIONAL` indica que el pool pudo adquirir y validar una conexión, no que el schema esté listo; la readiness del schema depende del éxito de `migrate()`. Consulte [Estado operativo](./estado-operativo.md).
+
 ## Placeholders
 
 `FlywayMigrator` combina los placeholders del consumidor con uno automático:

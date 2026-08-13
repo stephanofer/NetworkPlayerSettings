@@ -5,3 +5,14 @@ main: com.stephanofer.networkplayersettings.NetworkPlayerSettingsPlugin
 api-version: '26.1.2'
 load: POSTWORLD
 softdepend: [PlaceholderAPI]
+
+commands:
+  networkplayersettings:
+    description: Administrative commands for NetworkPlayerSettings
+    usage: /networkplayersettings reload
+    permission: networkplayersettings.command.reload
+
+permissions:
+  networkplayersettings.command.reload:
+    description: Reloads safe NetworkPlayerSettings runtime resources
+    default: op

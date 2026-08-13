@@ -11,11 +11,13 @@ Ejemplo conceptual en Gradle del plugin consumidor:
 ```kotlin
 dependencies {
     implementation("com.hera.craftkit:craftkit-zmenu:$craftkitVersion")
-    compileOnly("fr.maxlego08.menu:zmenu-api:1.1.1.4")
+    compileOnly("fr.maxlego08.menu:zmenu-api:1.1.1.7")
 }
 ```
 
-El servidor debe tener el plugin `zMenu` instalado y habilitado.
+El servidor debe tener el plugin `zMenu` instalado y habilitado en Paper, un fork compatible de Paper o Folia. zMenu `1.1.1.7` no funciona en Spigot.
+
+Si el plugin consumidor invoca directamente métodos de `BedrockManager`, también debe declarar `compileOnly("org.geysermc.cumulus:cumulus:1.1.2")` y el repositorio `https://repo.opencollab.dev/maven-releases`. zMenu expone esos tipos en su API Bedrock, pero no los publica como dependencia transitiva.
 
 ## 2. Resolver la integración
 
@@ -37,7 +39,7 @@ Si zMenu no está instalado, no expone `MenuPlugin` o faltan servicios obligator
 El bootstrap dice qué recursos del plugin consumidor debe cargar CraftKit.
 
 ```java
-this.zmenu.bootstrap()
+this.zmenuPlan = this.zmenu.bootstrap()
     .buttons(registry -> {
         registry.button(new NoneLoader(this, ProfileButton.class, "HERA_PROFILE"));
         registry.button(new ShopCategoryButtonLoader(this));
@@ -83,6 +85,21 @@ public void reloadPlugin() {
 
 `zmenu.reload()` limpia lo reload-safe y vuelve a ejecutar el último bootstrap cargado.
 
+## 6. Cerrar durante shutdown
+
+Guardar el plan devuelto por `load()` y cerrarlo en `onDisable`:
+
+```java
+@Override
+public void onDisable() {
+    if (this.zmenuPlan != null) {
+        this.zmenuPlan.close();
+    }
+}
+```
+
+`close()` limpia los registros soportados del plugin sin volver a cargar archivos. Después de un cierre exitoso, llamadas adicionales no hacen nada y el plan ya no puede recargarse.
+
 ## Checklist rápido
 
 - [ ] zMenu está instalado en el servidor.
@@ -91,3 +108,4 @@ public void reloadPlugin() {
 - [ ] Los defaults se declaran explícitamente.
 - [ ] Las carpetas configuradas existen o pueden ser creadas por CraftKit.
 - [ ] El reload del plugin llama `zmenu.reload()` después de recargar su propia config.
+- [ ] El plugin conserva el `ZMenuReloadPlan` y llama `close()` en `onDisable`.

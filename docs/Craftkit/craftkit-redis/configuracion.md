@@ -44,6 +44,8 @@ RedisConfig config = RedisConfig.builder()
 | `environment` | `default` | componente válido |
 | `serverId` | `unknown` | componente válido |
 
+`RedisStartupMode.RECOVER` requiere `autoReconnect = true`. La validación ocurre al crear el cliente, no al construir `RedisConfig`.
+
 ## Identidad de entorno
 
 Estos campos afectan keys, channels y leases:
@@ -119,7 +121,9 @@ password=<hidden>
 
 ## Queue size
 
-`requestQueueSize` controla cuántos comandos puede encolar Lettuce durante desconexiones o backpressure.
+`requestQueueSize` controla el límite interno de comandos que Lettuce puede encolar durante desconexiones o backpressure.
+
+CraftKit no acepta comandos nuevos cuando su conexión principal no está `CONNECTED`: esos métodos devuelven un `CompletableFuture` fallido. El límite sigue protegiendo operaciones ya entregadas a Lettuce antes de una desconexión.
 
 CraftKit no permite valores mayores a `RedisConfig.MAX_REQUEST_QUEUE_SIZE`, actualmente `100_000`, para evitar colas efectivamente ilimitadas.
 

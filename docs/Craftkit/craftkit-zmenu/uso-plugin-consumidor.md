@@ -40,12 +40,13 @@ Solo se copian defaults declarados explícitamente.
 public final class MyPlugin extends JavaPlugin {
 
     private ZMenuIntegration zmenu;
+    private ZMenuReloadPlan zmenuPlan;
 
     @Override
     public void onEnable() {
         this.zmenu = ZMenus.require(this);
 
-        this.zmenu.bootstrap()
+        this.zmenuPlan = this.zmenu.bootstrap()
             .buttons(registry -> {
                 registry.button(new NoneLoader(this, ProfileButton.class, "HERA_PROFILE"));
                 registry.button(new ShopCategoryButtonLoader(this));
@@ -64,6 +65,13 @@ public final class MyPlugin extends JavaPlugin {
             .dialogs("dialogs")
             .bedrock("bedrock")
             .load();
+    }
+
+    @Override
+    public void onDisable() {
+        if (this.zmenuPlan != null) {
+            this.zmenuPlan.close();
+        }
     }
 
     public void reloadPlugin() {
@@ -160,7 +168,7 @@ public void onEnable() {
     // Enable-only: zMenu no expone unregister público para esto.
     this.zmenu.buttons().registerAction(new MyActionLoader());
 
-    this.zmenu.bootstrap()
+    this.zmenuPlan = this.zmenu.bootstrap()
         .inventories("inventories")
         .load();
 }

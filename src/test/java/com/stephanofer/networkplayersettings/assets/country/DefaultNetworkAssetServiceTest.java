@@ -11,6 +11,17 @@ import org.junit.jupiter.api.Test;
 
 class DefaultNetworkAssetServiceTest {
 
+    @Test
+    void replacesCatalogWithoutReplacingTheService() {
+        final CountryAsset unknown = new CountryAsset("XX", "Unknown", VALID_BASE64, Set.of("unknown"));
+        final CountryAsset argentina = new CountryAsset("AR", "Argentina", VALID_BASE64, Set.of("argentina"));
+        final DefaultNetworkAssetService service = new DefaultNetworkAssetService(new CountryAssetCatalog(List.of(unknown)));
+
+        service.replaceCatalog(new CountryAssetCatalog(List.of(unknown, argentina)));
+
+        assertEquals(argentina, service.countryAsset("AR"));
+    }
+
     private static final String VALID_BASE64 = "eyJ0ZXh0dXJlcyI6e319";
 
     @Test

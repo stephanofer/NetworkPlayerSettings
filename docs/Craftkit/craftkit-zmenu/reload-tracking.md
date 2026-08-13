@@ -66,6 +66,14 @@ tracker.clear();
 loadFresh();
 ```
 
+El plan también implementa `AutoCloseable`. `close()` ejecuta el mismo cleanup sin `loadFresh()`, por lo que es la operación correcta para `onDisable` y para abortar un startup posterior a una carga exitosa.
+
+Solo puede existir un plan activo por `ZMenuIntegration`. Cargar otro bootstrap cierra primero el anterior, evitando que una referencia vieja pueda limpiar registros cargados por su reemplazo.
+
+El cleanup es best-effort: una excepción no impide intentar los recursos restantes. El tracker solo se limpia cuando todos los pasos terminan bien, de modo que `close()` puede reintentarse. Un bootstrap o reload que falla durante carga intenta rollback inmediato y agrega cualquier fallo de rollback como excepción suprimida al error de carga.
+
+Los patterns requieren una protección adicional porque zMenu los guarda en una registry global y su unregister elimina por nombre. CraftKit solo elimina el pattern si la instancia actualmente registrada es la misma que cargó el plan; si otro plugin la reemplazó por una instancia homónima, se preserva.
+
 ## Reload-safe
 
 Estas features tienen cleanup público en zMenu y son compatibles con reload controlado por CraftKit:

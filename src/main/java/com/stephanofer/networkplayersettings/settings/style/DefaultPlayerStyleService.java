@@ -18,8 +18,7 @@ import org.bukkit.entity.Player;
 public final class DefaultPlayerStyleService implements PlayerStyleService {
 
     private final PlayerSettingsService settingsService;
-    private final StylePatternCatalog nickCatalog;
-    private final StylePatternCatalog chatCatalog;
+    private volatile Catalogs catalogs;
     private final StylePatternRenderer renderer;
 
     public DefaultPlayerStyleService(
@@ -29,29 +28,42 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
         final StylePatternRenderer renderer
     ) {
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
-        this.nickCatalog = Objects.requireNonNull(nickCatalog, "nickCatalog");
-        this.chatCatalog = Objects.requireNonNull(chatCatalog, "chatCatalog");
+        this.catalogs = validatedCatalogs(nickCatalog, chatCatalog);
         this.renderer = Objects.requireNonNull(renderer, "renderer");
     }
 
     @Override
     public List<StylePatternInfo> nickPatterns() {
-        return this.nickCatalog.infos();
+        return this.catalogs.nick().infos();
     }
 
     @Override
     public List<StylePatternInfo> chatPatterns() {
-        return this.chatCatalog.infos();
+        return this.catalogs.chat().infos();
+    }
+
+    public void replaceCatalogs(final StylePatternCatalog nickCatalog, final StylePatternCatalog chatCatalog) {
+        this.catalogs = validatedCatalogs(nickCatalog, chatCatalog);
+    }
+
+    private static Catalogs validatedCatalogs(final StylePatternCatalog nickCatalog, final StylePatternCatalog chatCatalog) {
+        if (Objects.requireNonNull(nickCatalog, "nickCatalog").type() != StylePatternType.NICK) {
+            throw new IllegalArgumentException("nickCatalog must contain nick patterns");
+        }
+        if (Objects.requireNonNull(chatCatalog, "chatCatalog").type() != StylePatternType.CHAT) {
+            throw new IllegalArgumentException("chatCatalog must contain chat patterns");
+        }
+        return new Catalogs(nickCatalog, chatCatalog);
     }
 
     @Override
     public Optional<StylePatternInfo> nickPattern(final String patternId) {
-        return this.nickCatalog.find(patternId).map(StylePattern::toInfo);
+        return this.catalogs.nick().find(patternId).map(StylePattern::toInfo);
     }
 
     @Override
     public Optional<StylePatternInfo> chatPattern(final String patternId) {
-        return this.chatCatalog.find(patternId).map(StylePattern::toInfo);
+        return this.catalogs.chat().find(patternId).map(StylePattern::toInfo);
     }
 
     @Override
@@ -66,12 +78,12 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
 
     @Override
     public boolean canUseNickStyle(final Player player, final String patternId) {
-        return canUse(player, this.nickCatalog.find(patternId));
+        return canUse(player, this.catalogs.nick().find(patternId));
     }
 
     @Override
     public boolean canUseChatStyle(final Player player, final String patternId) {
-        return canUse(player, this.chatCatalog.find(patternId));
+        return canUse(player, this.catalogs.chat().find(patternId));
     }
 
     @Override
@@ -110,7 +122,7 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
 
     @Override
     public String nickPreviewMiniMessage(final Player player, final String patternId) {
-        return this.nickCatalog.find(patternId)
+        return this.catalogs.nick().find(patternId)
             .map(pattern -> this.renderer.renderNickMiniMessage(pattern, player.getName()))
             .orElseGet(player::getName);
     }
@@ -129,7 +141,7 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
 
     @Override
     public String chatPreviewMiniMessage(final String patternId) {
-        return this.chatCatalog.find(patternId)
+        return this.catalogs.chat().find(patternId)
             .map(this.renderer::renderChatPreviewMiniMessage)
             .orElse("");
     }
@@ -137,7 +149,7 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
     @Override
     public CompletableFuture<Void> setNickStyle(final UUID playerId, final String patternId) {
         final String normalized = normalizePatternId(patternId);
-        if (this.nickCatalog.find(normalized).isEmpty()) {
+        if (this.catalogs.nick().find(normalized).isEmpty()) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("unknown nick style: " + patternId));
         }
         return this.settingsService.setSetting(playerId, SettingKey.NICK_STYLE, normalized);
@@ -151,7 +163,7 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
     @Override
     public CompletableFuture<Void> setChatStyle(final UUID playerId, final String patternId) {
         final String normalized = normalizePatternId(patternId);
-        if (this.chatCatalog.find(normalized).isEmpty()) {
+        if (this.catalogs.chat().find(normalized).isEmpty()) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("unknown chat style: " + patternId));
         }
         return this.settingsService.setSetting(playerId, SettingKey.CHAT_STYLE, normalized);
@@ -167,7 +179,7 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
         return activePattern(
             this.settingsService.getCachedOrDefault(player.getUniqueId()),
             SettingKey.NICK_STYLE,
-            this.nickCatalog,
+            this.catalogs.nick(),
             player::hasPermission
         );
     }
@@ -177,7 +189,7 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
         return activePattern(
             this.settingsService.getCachedOrDefault(player.getUniqueId()),
             SettingKey.CHAT_STYLE,
-            this.chatCatalog,
+            this.catalogs.chat(),
             player::hasPermission
         );
     }
@@ -186,7 +198,7 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
         final PlayerSettingsSnapshot snapshot,
         final StylePermissionChecker permissionChecker
     ) {
-        return activePattern(snapshot, SettingKey.NICK_STYLE, this.nickCatalog, permissionChecker);
+        return activePattern(snapshot, SettingKey.NICK_STYLE, this.catalogs.nick(), permissionChecker);
     }
 
     private static Optional<StylePattern> activePattern(
@@ -213,5 +225,8 @@ public final class DefaultPlayerStyleService implements PlayerStyleService {
 
     private static String normalizePatternId(final String patternId) {
         return patternId == null ? "" : patternId.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private record Catalogs(StylePatternCatalog nick, StylePatternCatalog chat) {
     }
 }

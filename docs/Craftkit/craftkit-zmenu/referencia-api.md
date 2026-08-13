@@ -108,7 +108,7 @@ inventoryManager.openInventoryWithOldInventories(player, inventory, page);
 
 Crea un nuevo bootstrap mutable.
 
-Al llamar `load()`, ese bootstrap se convierte en snapshot para reload.
+Al llamar `load()`, ese bootstrap se convierte en snapshot para reload y ownership cerrable de sus registros reload-safe.
 
 ### `reloadPlan()`
 
@@ -229,21 +229,26 @@ Carga recursivamente `.yml` como bedrock inventories si existe `BedrockManager`.
 
 ### `load()`
 
-Ejecuta el bootstrap, guarda el plan para reload y devuelve `ZMenuReloadPlan`.
+Guarda el plan, ejecuta el bootstrap y devuelve `ZMenuReloadPlan`. Publicarlo antes de cargar permite recuperar el plan con `reloadPlan()` si la carga o su rollback fallan parcialmente.
+
+Si ya existe un plan, `load()` lo cierra antes de instalar el reemplazo. Cuando ese cierre falla, el plan anterior continúa activo y el nuevo bootstrap no se ejecuta.
 
 ## `ZMenuReloadPlan`
 
 ```java
-public interface ZMenuReloadPlan {
+public interface ZMenuReloadPlan extends AutoCloseable {
     void reload();
+    void close();
 }
 ```
 
-Recarga el último snapshot del bootstrap:
+`reload()` recarga el último snapshot del bootstrap:
 
 1. limpia recursos reload-safe;
 2. limpia tracker;
 3. ejecuta nuevamente la carga.
+
+`close()` hace solamente los pasos 1 y 2. Un cierre exitoso es idempotente y terminal. Si algún cleanup falla, CraftKit intenta los demás, lanza `ZMenuException` y conserva el tracking para poder reintentar `close()`.
 
 ## Excepciones
 

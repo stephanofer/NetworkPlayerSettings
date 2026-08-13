@@ -9,11 +9,15 @@ import java.util.logging.Logger;
 
 public final class PluginMessages {
 
-    private final Map<Language, YamlDocument> documents;
+    private volatile Map<Language, YamlDocument> documents;
     private final Logger logger;
 
     public PluginMessages(final Logger logger, final YamlDocument spanish, final YamlDocument english) {
         this.logger = Objects.requireNonNull(logger, "logger");
+        replaceDocuments(spanish, english);
+    }
+
+    public void replaceDocuments(final YamlDocument spanish, final YamlDocument english) {
         this.documents = Map.of(
             Language.SPANISH, Objects.requireNonNull(spanish, "spanish"),
             Language.ENGLISH, Objects.requireNonNull(english, "english")
@@ -21,21 +25,22 @@ public final class PluginMessages {
     }
 
     public String get(final Language language, final String key, final Object... args) {
-        final YamlDocument document = this.documents.getOrDefault(
+        final Map<Language, YamlDocument> documents = this.documents;
+        final YamlDocument document = documents.getOrDefault(
             Objects.requireNonNull(language, "language"),
-            this.documents.get(Language.ENGLISH)
+            documents.get(Language.ENGLISH)
         );
-        final String pattern = messagePattern(document, key);
+        final String pattern = messagePattern(documents, document, key);
         return MessageFormat.format(pattern, args);
     }
 
-    private String messagePattern(final YamlDocument document, final String key) {
+    private String messagePattern(final Map<Language, YamlDocument> documents, final YamlDocument document, final String key) {
         final String direct = document.getString(key, null);
         if (direct != null) {
             return direct;
         }
 
-        final YamlDocument english = this.documents.get(Language.ENGLISH);
+        final YamlDocument english = documents.get(Language.ENGLISH);
         if (english != null && english != document) {
             final String fallback = english.getString(key, null);
             if (fallback != null) {

@@ -85,11 +85,12 @@ El bootstrap es explícito. No busca recursos automáticamente en el JAR.
 
 ### `ZMenuReloadPlan`
 
-Representa el último plan de carga que puede repetirse durante reload.
+Representa el plan activo de carga, reload y cleanup del plugin consumidor.
 
 ```java
 ZMenuReloadPlan plan = zmenu.bootstrap().inventories("inventories").load();
 plan.reload();
+plan.close();
 ```
 
 Normalmente el consumidor usa directamente:
@@ -122,7 +123,7 @@ También implementa los helpers de apertura:
 
 Acumula la configuración declarada por el consumidor y crea un snapshot inmutable al llamar `load()`.
 
-Ese snapshot permite que `reload()` repita exactamente el mismo plan.
+Ese snapshot permite que `reload()` repita exactamente el mismo plan. Cargar otro bootstrap cierra primero el plan activo; si ese cleanup falla, el reemplazo no se instala ni se carga.
 
 ### `ZMenuFileLoader`
 
@@ -140,7 +141,7 @@ Siempre llama métodos reales de zMenu.
 
 ### `DefaultZMenuReloadPlan`
 
-Ejecuta cleanup y luego vuelve a cargar:
+Ejecuta cleanup y luego vuelve a cargar. `close()` ejecuta el mismo cleanup sin volver a cargar y deja el plan en estado terminal:
 
 1. unregister buttons del plugin;
 2. delete inventories del plugin;
@@ -152,7 +153,9 @@ Ejecuta cleanup y luego vuelve a cargar:
 8. delete dialogs del plugin si existe manager;
 9. delete bedrock inventories del plugin si existe manager;
 10. limpia tracker;
-11. ejecuta nuevamente el loader.
+11. ejecuta nuevamente el loader solo para `reload()`.
+
+El cleanup intenta todos los pasos aunque uno falle. Los patterns y action patterns solo se eliminan si la instancia global actual sigue siendo la misma que cargó CraftKit, para no borrar un reemplazo homónimo de otro plugin.
 
 ### `ZMenuRegistrationTracker`
 
@@ -192,6 +195,15 @@ zmenu.reload()
   -> cleanup reload-safe
   -> tracker.clear()
   -> ZMenuFileLoader.load()
+```
+
+Shutdown:
+
+```text
+ZMenuReloadPlan.close()
+  -> cleanup reload-safe
+  -> tracker.clear()
+  -> plan cerrado
 ```
 
 ## Principio arquitectónico

@@ -8,6 +8,7 @@ import com.hera.craftkit.zmenu.ZMenus;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.settings.api.PlayerStyleService;
 import com.stephanofer.networkplayersettingszmenu.command.GlobalSettingsCommand;
+import com.stephanofer.networkplayersettingszmenu.command.ReloadCommand;
 import com.stephanofer.networkplayersettingszmenu.command.StyleMenuCommand;
 import com.stephanofer.networkplayersettingszmenu.config.AddonYamlLoader;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
@@ -37,14 +38,15 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
     private PlayerStyleService styleService;
     private ZMenuIntegration zmenu;
     private ZMenuReloadPlan zmenuPlan;
+    private AddonYamlLoader yamlLoader;
 
     @Override
     public void onEnable() {
         try {
-            final AddonYamlLoader yamlLoader = new AddonYamlLoader(this);
-            final YamlDocument configDocument = yamlLoader.load("config.yml");
-            final YamlDocument spanishMessages = yamlLoader.load("messages/messages_es.yml");
-            final YamlDocument englishMessages = yamlLoader.load("messages/messages_en.yml");
+            this.yamlLoader = new AddonYamlLoader(this);
+            final YamlDocument configDocument = this.yamlLoader.load("config.yml");
+            final YamlDocument spanishMessages = this.yamlLoader.load("messages/messages_es.yml");
+            final YamlDocument englishMessages = this.yamlLoader.load("messages/messages_en.yml");
 
             this.config = ZMenuPluginConfig.fromDocument(configDocument, getLogger());
             this.messages = new PluginMessages(getLogger(), spanishMessages, englishMessages);
@@ -114,6 +116,16 @@ public final class NetworkPlayerSettingsZMenuPlugin extends JavaPlugin {
             .register(commandManager);
         new StyleMenuCommand(this.settingsService, settingsViewOpener, this.messages, this.config.chatStyleCommand(), "Open your chat style menu")
             .register(commandManager);
+        new ReloadCommand(this).register(commandManager);
+    }
+
+    public void reloadRuntimeResources() {
+        final YamlDocument spanishMessages = this.yamlLoader.load("messages/messages_es.yml");
+        final YamlDocument englishMessages = this.yamlLoader.load("messages/messages_en.yml");
+        this.zmenuPlan.reload();
+        this.messages.replaceDocuments(spanishMessages, englishMessages);
+        SettingMutationCooldowns.clearAll();
+        StylePatternFilterState.clearAll();
     }
 
     private <T> T requireService(final Class<T> serviceClass) {

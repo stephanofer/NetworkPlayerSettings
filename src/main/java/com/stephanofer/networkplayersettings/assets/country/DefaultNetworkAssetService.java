@@ -7,9 +7,13 @@ import java.util.Objects;
 
 public final class DefaultNetworkAssetService implements NetworkAssetService {
 
-    private final CountryAssetCatalog catalog;
+    private volatile CountryAssetCatalog catalog;
 
     public DefaultNetworkAssetService(final CountryAssetCatalog catalog) {
+        this.catalog = Objects.requireNonNull(catalog, "catalog");
+    }
+
+    public void replaceCatalog(final CountryAssetCatalog catalog) {
         this.catalog = Objects.requireNonNull(catalog, "catalog");
     }
 

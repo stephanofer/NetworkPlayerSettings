@@ -13,7 +13,8 @@ Maven
 Gradle (Kotlin)
 Gradle (Groovy)
 
-implementation("org.incendo:cloud-paper:2.0.0-beta.15")
+implementation(platform("org.incendo:cloud-minecraft-bom:2.0.0"))
+implementation("org.incendo:cloud-paper")
 
 Usage#
 cloud-paper has two different command manager implementations:

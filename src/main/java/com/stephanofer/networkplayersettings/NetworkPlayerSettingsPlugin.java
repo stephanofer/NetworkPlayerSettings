@@ -6,8 +6,10 @@ import com.stephanofer.networkplayersettings.assets.api.CountryFlagService;
 import com.stephanofer.networkplayersettings.assets.api.NetworkAssetService;
 import com.stephanofer.networkplayersettings.assets.country.CountryAssetLoader;
 import com.stephanofer.networkplayersettings.assets.country.DefaultCountryFlagService;
+import com.stephanofer.networkplayersettings.assets.country.DefaultNetworkAssetService;
 import com.stephanofer.networkplayersettings.assets.country.NetworkAssetBootstrap;
 import com.stephanofer.networkplayersettings.config.PluginConfig;
+import com.stephanofer.networkplayersettings.platform.bukkit.NetworkPlayerSettingsCommand;
 import com.stephanofer.networkplayersettings.platform.bukkit.PlayerConnectionListener;
 import com.stephanofer.networkplayersettings.platform.bukkit.PlayerChatStyleListener;
 import com.stephanofer.networkplayersettings.platform.bukkit.PlayerSettingsPlaceholderExpansion;
@@ -38,11 +40,11 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     private Database database;
     private PluginYamlLoader yamlLoader;
     private PluginConfig config;
-    private NetworkAssetService networkAssetService;
+    private DefaultNetworkAssetService networkAssetService;
     private CountryFlagService countryFlagService;
     private GeoIpCountryResolver countryResolver;
     private DefaultPlayerSettingsService settingsService;
-    private PlayerStyleService styleService;
+    private DefaultPlayerStyleService styleService;
     private PlayerSettingsPlaceholderExpansion placeholderExpansion;
 
     @Override
@@ -56,6 +58,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
             registerServices();
             registerPlaceholderExpansion();
             registerListeners();
+            registerCommands();
         } catch (final Exception exception) {
             getLogger().severe("Failed to enable NetworkPlayerSettings: " + rootCauseMessage(exception));
             getLogger().log(java.util.logging.Level.SEVERE, "Startup failure details", exception);
@@ -85,7 +88,7 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
 
     private void initializeAssets() {
         final YamlDocument countryDocument = this.yamlLoader.load("assets/countries.yml");
-        this.networkAssetService = new NetworkAssetBootstrap(new CountryAssetLoader())
+        this.networkAssetService = (DefaultNetworkAssetService) new NetworkAssetBootstrap(new CountryAssetLoader())
             .initialize(countryDocument, getServer().getServicesManager(), this);
     }
 
@@ -162,6 +165,30 @@ public final class NetworkPlayerSettingsPlugin extends JavaPlugin {
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this.settingsService, this.config), this);
         getServer().getPluginManager().registerEvents(new PlayerChatStyleListener(this.styleService), this);
+    }
+
+    private void registerCommands() {
+        final NetworkPlayerSettingsCommand command = new NetworkPlayerSettingsCommand(this);
+        final org.bukkit.command.PluginCommand pluginCommand = Objects.requireNonNull(
+            getCommand("networkplayersettings"),
+            "networkplayersettings command is missing from plugin.yml"
+        );
+        pluginCommand.setExecutor(command);
+        pluginCommand.setTabCompleter(command);
+    }
+
+    public void reloadRuntimeResources() {
+        final var countryCatalog = new CountryAssetLoader().load(this.yamlLoader.load("assets/countries.yml"));
+        final StylePatternCatalog nickCatalog = new StylePatternCatalogLoader(StylePatternType.NICK)
+            .load(this.yamlLoader.load("styles/nick-patterns.yml"));
+        final StylePatternCatalog chatCatalog = new StylePatternCatalogLoader(StylePatternType.CHAT)
+            .load(this.yamlLoader.load("styles/chat-patterns.yml"));
+
+        this.networkAssetService.replaceCatalog(countryCatalog);
+        this.styleService.replaceCatalogs(nickCatalog, chatCatalog);
+        if (this.placeholderExpansion != null) {
+            this.placeholderExpansion.clearCache();
+        }
     }
 
     private GeoIpCountryResolver openCountryResolver() {

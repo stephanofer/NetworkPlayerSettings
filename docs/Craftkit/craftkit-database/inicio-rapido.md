@@ -33,9 +33,21 @@ Con esta variante CraftKit crea y posee:
 
 - `HikariDataSource`;
 - executor dedicado de base de datos;
+- monitor de estado operativo y executor daemon de callbacks;
 - integración Flyway.
 
-Cuando el plugin llame `database.close()`, CraftKit cerrará el datasource y el executor interno.
+Cuando el plugin llame `database.close()`, CraftKit cerrará el datasource y todos sus recursos internos.
+
+El monitor está siempre habilitado y realiza el primer probe inmediatamente. El snapshot inicial puede seguir en `STARTING`; consultarlo no bloquea:
+
+```java
+DatabaseOperationalStatus status = database.operationalStatus();
+if (!status.isOperational()) {
+    logger.warn("Database state: {}", status.state());
+}
+```
+
+El estado observado no reemplaza la gestión de errores de cada operación ni confirma que el schema esté migrado. Consulte [Estado operativo](./estado-operativo.md).
 
 ## Ejecutar migraciones en startup
 
@@ -44,6 +56,8 @@ database.migrate().join();
 ```
 
 `migrate()` devuelve `CompletableFuture<Void>` porque se ejecuta en el executor DB. `join()` espera a que termine. En `onEnable` suele ser correcto esperar, porque las tablas deben existir antes de activar repositorios o features.
+
+Un estado `OPERATIONAL` solo confirma que el pool pudo adquirir y validar una conexión; la readiness del schema se obtiene del éxito de `migrate()`.
 
 No usar `join()` durante gameplay, eventos o comandos frecuentes.
 
@@ -89,7 +103,7 @@ public void onDisable() {
 }
 ```
 
-`close()` es idempotente: llamarlo más de una vez no repite el cierre.
+`close()` es idempotente: llamarlo más de una vez no repite el cierre. Publica `CLOSED` sincrónicamente en `operationalStatus()` y cancela el monitor; la notificación a observers se encola de forma asíncrona.
 
 ## Si se toca Paper API después de una query
 

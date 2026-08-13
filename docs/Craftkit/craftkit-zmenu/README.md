@@ -36,11 +36,13 @@ repositories {
         name = "groupez"
         url = uri("https://repo.groupez.dev/releases")
     }
+    maven("https://repo.opencollab.dev/maven-releases")
 }
 
 dependencies {
     compileOnly(libs.paper.api)
     compileOnlyApi(libs.zmenu.api)
+    compileOnly(libs.cumulus)
 }
 ```
 
@@ -48,10 +50,15 @@ Versiones actuales en `gradle/libs.versions.toml`:
 
 | Librería | Versión |
 | --- | --- |
-| zMenu API | `1.1.1.4` |
+| zMenu API | `1.1.1.7` |
+| Cumulus | `1.1.2` |
 | Paper API | `26.1.2.build.69-stable` |
 
 `zmenu-api` usa `compileOnlyApi` porque la API pública de `craftkit-zmenu` devuelve tipos de zMenu. El consumidor debe poder compilar contra esos tipos, pero zMenu sigue siendo una dependencia provista por el servidor.
+
+Cumulus se declara solo como `compileOnly`: zMenu `1.1.1.7` expone tipos Bedrock genéricos de Cumulus, pero su POM no declara esa dependencia. CraftKit no lo empaqueta ni lo publica como transitivo.
+
+zMenu `1.1.1.7` requiere Paper, un fork compatible de Paper o Folia. No es compatible con Spigot.
 
 ## Documentos de esta sección
 
@@ -94,12 +101,13 @@ CraftKit proporciona:
 public final class MyPlugin extends JavaPlugin {
 
     private ZMenuIntegration zmenu;
+    private ZMenuReloadPlan zmenuPlan;
 
     @Override
     public void onEnable() {
         this.zmenu = ZMenus.require(this);
 
-        this.zmenu.bootstrap()
+        this.zmenuPlan = this.zmenu.bootstrap()
             .buttons(registry -> {
                 registry.button(new NoneLoader(this, ProfileButton.class, "HERA_PROFILE"));
                 registry.button(new ShopCategoryButtonLoader(this));
@@ -112,6 +120,13 @@ public final class MyPlugin extends JavaPlugin {
             .dialogs("dialogs")
             .bedrock("bedrock")
             .load();
+    }
+
+    @Override
+    public void onDisable() {
+        if (this.zmenuPlan != null) {
+            this.zmenuPlan.close();
+        }
     }
 
     public void reloadPlugin() {
