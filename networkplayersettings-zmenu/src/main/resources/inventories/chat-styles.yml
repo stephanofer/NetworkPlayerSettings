@@ -1,4 +1,4 @@
-file-version: 2
+file-version: 4
 
 name:
   default: "#102018Chat Styles #8c8c8c(%page%/%max-page%)"
@@ -23,15 +23,15 @@ items:
           en: "#80ffdbChat Preview"
       lore:
         default:
-          - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_id%"
-          - "#8c8c8cActive#8c8c8c: #92ffff%playersettings_chat_preview%"
+          - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_name_or_none%"
+          - "#8c8c8cActive#8c8c8c: #92ffff%playersettings_chat_preview_or_none%"
         locales:
           es:
-            - "#8c8c8cActual#8c8c8c: #92ffff%playersettings_chat_style_id%"
-            - "#8c8c8cActivo#8c8c8c: #92ffff%playersettings_chat_preview%"
+            - "#8c8c8cActual#8c8c8c: #92ffff%playersettings_chat_style_name_or_none%"
+            - "#8c8c8cActivo#8c8c8c: #92ffff%playersettings_chat_preview_or_none%"
           en:
-            - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_id%"
-            - "#8c8c8cActive#8c8c8c: #92ffff%playersettings_chat_preview%"
+            - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_name_or_none%"
+            - "#8c8c8cActive#8c8c8c: #92ffff%playersettings_chat_preview_or_none%"
 
   styles:
     type: NPS_CHAT_STYLE
@@ -71,6 +71,7 @@ items:
   previous:
     type: PREVIOUS
     slot: 47
+    sound: UI_BUTTON_CLICK
     item:
       material: ARROW
       name:
@@ -80,15 +81,16 @@ items:
           en: "#92ffffPrevious Page"
       lore:
         default:
-          - "#8c8c8cGo to page #92ffff%player_previous_page%"
+          - "#8c8c8cGo to page #92ffff%zmenu_player_previous_page%"
         locales:
           es:
-            - "#8c8c8cIr a la pagina #92ffff%player_previous_page%"
+            - "#8c8c8cIr a la página #92ffff%zmenu_player_previous_page%"
           en:
-            - "#8c8c8cGo to page #92ffff%player_previous_page%"
+            - "#8c8c8cGo to page #92ffff%zmenu_player_previous_page%"
   clear:
     type: NPS_CLEAR_CHAT_STYLE
-    slot: 48
+    is-permanent: true
+    slot: 49
     item:
       material: BARRIER
       name:
@@ -114,7 +116,9 @@ items:
     type: INVENTORY
     inventory: "settings-main"
     plugin: "NetworkPlayerSettingsZMenu"
-    slot: 49
+    is-permanent: true
+    slot: 45
+    sound: UI_BUTTON_CLICK
     item:
       material: ARROW
       name:
@@ -124,7 +128,8 @@ items:
           en: "#92ffffBack"
   filter:
     type: NPS_CHAT_STYLE_FILTER
-    slot: 50
+    is-permanent: true
+    slot: 53
     item:
       material: HOPPER
       name:
@@ -134,15 +139,28 @@ items:
           en: "#92ffffFilter: #ffffff%style_filter%"
       lore:
         default:
-          - "#8c8c8cClick #92ffffto %style_filter_action%"
+          - "#8c8c8cAvailable filters:"
+          - "%filter_all_marker%#ffffffAll"
+          - "%filter_available_marker%#ffffffAvailable"
+          - ""
+          - "#2CCED2Click #92ffffto cycle filters"
         locales:
           es:
-            - "#8c8c8cClick #92ffffpara %style_filter_action%"
+            - "#8c8c8cFiltros disponibles:"
+            - "%filter_all_marker%#ffffffTodos"
+            - "%filter_available_marker%#ffffffDisponibles"
+            - ""
+            - "#2CCED2Click #92ffffpara cambiar de filtro"
           en:
-            - "#8c8c8cClick #92ffffto %style_filter_action%"
+            - "#8c8c8cAvailable filters:"
+            - "%filter_all_marker%#ffffffAll"
+            - "%filter_available_marker%#ffffffAvailable"
+            - ""
+            - "#2CCED2Click #92ffffto cycle filters"
   next:
     type: NEXT
     slot: 51
+    sound: UI_BUTTON_CLICK
     item:
       material: ARROW
       name:
@@ -152,9 +170,9 @@ items:
           en: "#92ffffNext Page"
       lore:
         default:
-          - "#8c8c8cGo to page #92ffff%player_next_page%"
+          - "#8c8c8cGo to page #92ffff%zmenu_player_next_page%"
         locales:
           es:
-            - "#8c8c8cIr a la pagina #92ffff%player_next_page%"
+            - "#8c8c8cIr a la página #92ffff%zmenu_player_next_page%"
           en:
-            - "#8c8c8cGo to page #92ffff%player_next_page%"
+            - "#8c8c8cGo to page #92ffff%zmenu_player_next_page%"

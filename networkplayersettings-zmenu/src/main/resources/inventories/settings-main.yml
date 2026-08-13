@@ -1,71 +1,81 @@
-file-version: 1
+file-version: 3
 
 name:
   default: "#101820Global Settings"
   locales:
     es: "#101820Ajustes globales"
     en: "#101820Global Settings"
-size: 27
+size: 36
 
 fillItem:
   material: BLACK_STAINED_GLASS_PANE
   name: " "
 
 items:
-  profile:
-    slot: 4
-    item:
-      material: "playerHead:%player%"
-      name:
-        default: "#92ffff%playersettings_nick_formatted%"
-        locales:
-          es: "#92ffff%playersettings_nick_formatted%"
-          en: "#92ffff%playersettings_nick_formatted%"
-      lore:
-        default:
-          - "#8c8c8cYour global preferences live here."
-          - "#8c8c8cChoose what you want to personalize."
-        locales:
-          es:
-            - "#8c8c8cTus preferencias globales viven acá."
-            - "#8c8c8cElegí qué querés personalizar."
-          en:
-            - "#8c8c8cYour global preferences live here."
-            - "#8c8c8cChoose what you want to personalize."
-
-  settings:
+  language:
     type: INVENTORY
     inventory: "language"
     plugin: "NetworkPlayerSettingsZMenu"
-    slot: 11
+    slot: 12
     sound: UI_BUTTON_CLICK
     item:
-      material: COMPASS
+      material: KNOWLEDGE_BOOK
       name:
-        default: "#f5d76eSettings"
+        default: "#f5d76eLanguage"
         locales:
-          es: "#f5d76eAjustes"
-          en: "#f5d76eSettings"
+          es: "#f5d76eIdioma"
+          en: "#f5d76eLanguage"
       lore:
         default:
-          - "#8c8c8cLanguage and country visibility."
+          - "#8c8c8cChoose the language used by menus"
+          - "#8c8c8cand plugin messages."
           - ""
-          - "#2CCED2Click #92ffffto open settings"
+          - "#2CCED2Click #92ffffto choose your language"
         locales:
           es:
-            - "#8c8c8cIdioma y visibilidad de país."
+            - "#8c8c8cElegí el idioma de los menús"
+            - "#8c8c8cy mensajes del plugin."
             - ""
-            - "#2CCED2Click #92ffffpara abrir ajustes"
+            - "#2CCED2Click #92ffffpara elegir tu idioma"
           en:
-            - "#8c8c8cLanguage and country visibility."
+            - "#8c8c8cChoose the language used by menus"
+            - "#8c8c8cand plugin messages."
             - ""
-            - "#2CCED2Click #92ffffto open settings"
+            - "#2CCED2Click #92ffffto choose your language"
+
+  settings:
+    type: INVENTORY
+    inventory: "general-settings"
+    plugin: "NetworkPlayerSettingsZMenu"
+    slot: 10
+    sound: UI_BUTTON_CLICK
+    item:
+      material: COMPARATOR
+      name:
+        default: "#92ffffSettings"
+        locales:
+          es: "#92ffffAjustes"
+          en: "#92ffffSettings"
+      lore:
+        default:
+          - "#8c8c8cControl gameplay and social preferences."
+          - ""
+          - "#2CCED2Click #92ffffto view your settings"
+        locales:
+          es:
+            - "#8c8c8cControlá tus preferencias sociales y de juego."
+            - ""
+            - "#2CCED2Click #92ffffpara ver tus ajustes"
+          en:
+            - "#8c8c8cControl gameplay and social preferences."
+            - ""
+            - "#2CCED2Click #92ffffto view your settings"
 
   nick:
     type: INVENTORY
     inventory: "nick-styles"
     plugin: "NetworkPlayerSettingsZMenu"
-    slot: 13
+    slot: 14
     sound: BLOCK_AMETHYST_BLOCK_CHIME
     item:
       material: NAME_TAG
@@ -76,18 +86,18 @@ items:
           en: "#ff7ad9Nick Style"
       lore:
         default:
-          - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_nick_style_id%"
+          - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_nick_style_name_or_none%"
           - "#8c8c8cPreview#8c8c8c: #92ffff%playersettings_nick_formatted%"
           - ""
           - "#2CCED2Click #92ffffto choose your nick style"
         locales:
           es:
-            - "#8c8c8cActual#8c8c8c: #92ffff%playersettings_nick_style_id%"
+            - "#8c8c8cActual#8c8c8c: #92ffff%playersettings_nick_style_name_or_none%"
             - "#8c8c8cVista previa#8c8c8c: #92ffff%playersettings_nick_formatted%"
             - ""
             - "#2CCED2Click #92ffffpara elegir tu estilo de nick"
           en:
-            - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_nick_style_id%"
+            - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_nick_style_name_or_none%"
             - "#8c8c8cPreview#8c8c8c: #92ffff%playersettings_nick_formatted%"
             - ""
             - "#2CCED2Click #92ffffto choose your nick style"
@@ -96,7 +106,7 @@ items:
     type: INVENTORY
     inventory: "chat-styles"
     plugin: "NetworkPlayerSettingsZMenu"
-    slot: 15
+    slot: 16
     sound: BLOCK_NOTE_BLOCK_CHIME
     item:
       material: WRITABLE_BOOK
@@ -107,24 +117,25 @@ items:
           en: "#80ffdbChat Style"
       lore:
         default:
-          - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_id%"
-          - "#8c8c8cActive preview#8c8c8c: #92ffff%playersettings_chat_preview%"
+          - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_name_or_none%"
+          - "#8c8c8cActive preview#8c8c8c: #92ffff%playersettings_chat_preview_or_none%"
           - ""
           - "#2CCED2Click #92ffffto choose your chat style"
         locales:
           es:
-            - "#8c8c8cActual#8c8c8c: #92ffff%playersettings_chat_style_id%"
-            - "#8c8c8cVista activa#8c8c8c: #92ffff%playersettings_chat_preview%"
+            - "#8c8c8cActual#8c8c8c: #92ffff%playersettings_chat_style_name_or_none%"
+            - "#8c8c8cVista activa#8c8c8c: #92ffff%playersettings_chat_preview_or_none%"
             - ""
             - "#2CCED2Click #92ffffpara elegir tu estilo de chat"
           en:
-            - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_id%"
-            - "#8c8c8cActive preview#8c8c8c: #92ffff%playersettings_chat_preview%"
+            - "#8c8c8cCurrent#8c8c8c: #92ffff%playersettings_chat_style_name_or_none%"
+            - "#8c8c8cActive preview#8c8c8c: #92ffff%playersettings_chat_preview_or_none%"
             - ""
             - "#2CCED2Click #92ffffto choose your chat style"
 
   close:
-    slot: 22
+    slot: 31
+    sound: UI_BUTTON_CLICK
     close-inventory: true
     item:
       material: BARRIER

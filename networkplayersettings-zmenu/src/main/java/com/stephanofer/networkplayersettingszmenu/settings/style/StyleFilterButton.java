@@ -3,6 +3,7 @@ package com.stephanofer.networkplayersettingszmenu.settings.style;
 import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsService;
 import com.stephanofer.networkplayersettings.settings.language.Language;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
+import com.stephanofer.networkplayersettingszmenu.settings.SettingFeedback;
 import fr.maxlego08.menu.api.Inventory;
 import fr.maxlego08.menu.api.button.Button;
 import fr.maxlego08.menu.api.engine.InventoryEngine;
@@ -41,6 +42,7 @@ public final class StyleFilterButton extends Button {
     ) {
         super.onClick(player, event, inventory, slot, placeholders);
         StylePatternFilterState.toggle(player.getUniqueId(), this.kind);
+        SettingFeedback.filter(player);
         final Inventory menuInventory = inventory.getMenuInventory();
         if (menuInventory == null) {
             inventory.getPlugin().getInventoryManager().updateInventory(player);
@@ -59,6 +61,8 @@ public final class StyleFilterButton extends Button {
         final Placeholders placeholders = new Placeholders();
         placeholders.register("style_filter", this.messages.get(language, filter == StylePatternFilter.ALL ? "menu.style.filter-all" : "menu.style.filter-available"));
         placeholders.register("style_filter_action", this.messages.get(language, filter == StylePatternFilter.ALL ? "menu.style.filter-action-available" : "menu.style.filter-action-all"));
+        placeholders.register("filter_all_marker", filter == StylePatternFilter.ALL ? "#92ffff> " : "#555555  ");
+        placeholders.register("filter_available_marker", filter == StylePatternFilter.AVAILABLE ? "#92ffff> " : "#555555  ");
         inventory.displayFinalButton(this, placeholders, this.getRealSlot(inventory.getInventory().getSize(), inventory.getPage()));
     }
 

@@ -31,6 +31,7 @@ public final class StyleFilterButtonLoader extends ButtonLoader {
 
     @Override
     public Button load(final YamlConfiguration configuration, final String path, final DefaultButtonValue defaultButtonValue) {
+        defaultButtonValue.setPermanent(true);
         return new StyleFilterButton(this.plugin, this.settingsService, this.messages, this.kind);
     }
 }

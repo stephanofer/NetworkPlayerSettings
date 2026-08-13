@@ -1,0 +1,74 @@
+file-version: 1
+
+name:
+  default: "#101820Settings"
+  locales:
+    es: "#101820Ajustes"
+    en: "#101820Settings"
+size: 27
+
+fillItem:
+  material: BLACK_STAINED_GLASS_PANE
+  name: " "
+
+items:
+  country_flag:
+    type: NPS_COUNTRY_FLAG
+    is-permanent: true
+    slot: 13
+    item:
+      material: NAME_TAG
+      name:
+        default: "%playersettings_country_head_tag%#ffd166%country_flag_marker%Country Flag"
+        locales:
+          es: "%playersettings_country_head_tag%#ffd166%country_flag_marker%Bandera de país"
+          en: "%playersettings_country_head_tag%#ffd166%country_flag_marker%Country Flag"
+      lore:
+        default:
+          - "#8c8c8cCountry#8c8c8c: #ffd166%country_code%"
+          - "#8c8c8cVisibility#8c8c8c: #92ffff%country_flag_state%"
+          - ""
+          - "#8c8c8cShow or hide your country beside"
+          - "#8c8c8cyour name across the network."
+          - ""
+          - "#2CCED2Click #92ffff%country_flag_action%"
+        locales:
+          es:
+            - "#8c8c8cPaís#8c8c8c: #ffd166%country_code%"
+            - "#8c8c8cVisibilidad#8c8c8c: #92ffff%country_flag_state%"
+            - ""
+            - "#8c8c8cMostrá u ocultá tu país junto"
+            - "#8c8c8ca tu nombre en toda la network."
+            - ""
+            - "#2CCED2Click #92ffff%country_flag_action%"
+          en:
+            - "#8c8c8cCountry#8c8c8c: #ffd166%country_code%"
+            - "#8c8c8cVisibility#8c8c8c: #92ffff%country_flag_state%"
+            - ""
+            - "#8c8c8cShow or hide your country beside"
+            - "#8c8c8cyour name across the network."
+            - ""
+            - "#2CCED2Click #92ffff%country_flag_action%"
+
+  back:
+    type: INVENTORY
+    inventory: "settings-main"
+    plugin: "NetworkPlayerSettingsZMenu"
+    is-permanent: true
+    slot: 18
+    sound: UI_BUTTON_CLICK
+    item:
+      material: ARROW
+      name:
+        default: "#92ffffBack"
+        locales:
+          es: "#92ffffVolver"
+          en: "#92ffffBack"
+      lore:
+        default:
+          - "#8c8c8cReturn to the main settings menu."
+        locales:
+          es:
+            - "#8c8c8cVolver al menú principal de ajustes."
+          en:
+            - "#8c8c8cReturn to the main settings menu."

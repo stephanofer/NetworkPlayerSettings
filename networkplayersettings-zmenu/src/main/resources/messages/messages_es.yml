@@ -1,4 +1,4 @@
-file-version: 2
+file-version: 3
 
 settings:
   loading: "<yellow>Tus ajustes globales todavía se están cargando. Intentá de nuevo en un instante."
@@ -42,6 +42,8 @@ menu:
     selected-state: "Seleccionado"
     available-state: "Disponible"
     locked-state: "Bloqueado"
+    selected-marker: "ACTIVO "
+    locked-marker: "BLOQUEADO "
     selected-action: "ya está activo"
     select-action: "para seleccionar"
     locked-action: "requiere permiso"
@@ -51,3 +53,13 @@ menu:
     filter-available: "Disponibles"
     filter-action-all: "mostrar todos"
     filter-action-available: "mostrar disponibles"
+    category-basic: "Básico"
+    category-clean: "Limpio"
+    category-professional: "Profesional"
+    category-competitive: "Competitivo"
+    category-dark: "Oscuro"
+    category-soft: "Suave"
+    category-luxury: "Lujo"
+    category-premium: "Premium"
+    category-special: "Especial"
+    category-pride: "Orgullo"

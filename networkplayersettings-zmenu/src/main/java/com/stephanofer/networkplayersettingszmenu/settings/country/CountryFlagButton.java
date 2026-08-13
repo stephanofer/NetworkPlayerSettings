@@ -5,6 +5,7 @@ import com.stephanofer.networkplayersettings.settings.api.PlayerSettingsSnapshot
 import com.stephanofer.networkplayersettings.settings.language.Language;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
+import com.stephanofer.networkplayersettingszmenu.settings.SettingFeedback;
 import com.stephanofer.networkplayersettingszmenu.settings.SettingMutationCooldowns;
 import fr.maxlego08.menu.api.button.Button;
 import fr.maxlego08.menu.api.engine.InventoryEngine;
@@ -48,6 +49,7 @@ public final class CountryFlagButton extends Button {
         super.onClick(player, event, inventory, slot, placeholders);
         if (!this.settingsService.isReady(player.getUniqueId())) {
             player.sendRichMessage(this.messages.get(this.settingsService.resolvedLanguage(player), "settings.loading"));
+            SettingFeedback.error(player);
             return;
         }
 
@@ -57,6 +59,7 @@ public final class CountryFlagButton extends Button {
             final Language viewerLanguage = this.settingsService.resolvedLanguage(player);
             final long seconds = Math.max(1L, (cooldown.expiresAtMillis() - System.currentTimeMillis() + 999L) / 1000L);
             player.sendRichMessage(this.messages.get(viewerLanguage, "settings.country-flag.cooldown", seconds));
+            SettingFeedback.error(player);
             return;
         }
 
@@ -74,6 +77,7 @@ public final class CountryFlagButton extends Button {
                         this.settingsService.resolvedLanguage(player),
                         "settings.country-flag.update-failed"
                     ));
+                    SettingFeedback.error(player);
                     return;
                 }
 
@@ -82,6 +86,7 @@ public final class CountryFlagButton extends Button {
                     viewerLanguage,
                     nextState ? "settings.country-flag.enabled" : "settings.country-flag.disabled"
                 ));
+                SettingFeedback.success(player);
                 onRender(player, inventory);
             }));
     }

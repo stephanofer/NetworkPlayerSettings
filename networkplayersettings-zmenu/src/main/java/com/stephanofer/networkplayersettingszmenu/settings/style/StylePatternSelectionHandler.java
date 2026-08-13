@@ -6,6 +6,7 @@ import com.stephanofer.networkplayersettings.settings.api.StylePatternInfo;
 import com.stephanofer.networkplayersettings.settings.language.Language;
 import com.stephanofer.networkplayersettingszmenu.config.ZMenuPluginConfig;
 import com.stephanofer.networkplayersettingszmenu.i18n.PluginMessages;
+import com.stephanofer.networkplayersettingszmenu.settings.SettingFeedback;
 import com.stephanofer.networkplayersettingszmenu.settings.SettingMutationCooldowns;
 import fr.maxlego08.menu.api.engine.InventoryEngine;
 import java.util.Objects;
@@ -40,6 +41,7 @@ public final class StylePatternSelectionHandler {
     public void select(final Player player, final InventoryEngine inventory, final StyleButtonKind kind, final StylePatternInfo pattern) {
         if (!this.settingsService.isReady(player.getUniqueId())) {
             player.sendRichMessage(this.messages.get(this.settingsService.resolvedLanguage(player), "settings.loading"));
+            SettingFeedback.error(player);
             return;
         }
         if (!canUse(player, kind, pattern.id())) {
@@ -48,6 +50,7 @@ public final class StylePatternSelectionHandler {
                 "settings.style.locked",
                 pattern.permission()
             ));
+            SettingFeedback.error(player);
             return;
         }
         if (isSelected(player, kind, pattern.id())) {
@@ -55,6 +58,7 @@ public final class StylePatternSelectionHandler {
                 this.settingsService.resolvedLanguage(player),
                 kind == StyleButtonKind.NICK ? "settings.nick.already-selected" : "settings.chat.already-selected"
             ));
+            SettingFeedback.error(player);
             return;
         }
 
@@ -63,6 +67,7 @@ public final class StylePatternSelectionHandler {
             final Language viewerLanguage = this.settingsService.resolvedLanguage(player);
             final long seconds = Math.max(1L, (cooldown.expiresAtMillis() - System.currentTimeMillis() + 999L) / 1000L);
             player.sendRichMessage(this.messages.get(viewerLanguage, "settings.style.cooldown", seconds));
+            SettingFeedback.error(player);
             return;
         }
 
@@ -74,12 +79,14 @@ public final class StylePatternSelectionHandler {
             if (throwable != null) {
                 SettingMutationCooldowns.clear(player.getUniqueId());
                 player.sendRichMessage(this.messages.get(this.settingsService.resolvedLanguage(player), "settings.style.update-failed"));
+                SettingFeedback.error(player);
                 return;
             }
             player.sendRichMessage(this.messages.get(
                 this.settingsService.resolvedLanguage(player),
                 kind == StyleButtonKind.NICK ? "settings.nick.updated" : "settings.chat.updated"
             ));
+            SettingFeedback.success(player);
             inventory.getPlugin().getInventoryManager().updateInventory(player);
         }));
     }

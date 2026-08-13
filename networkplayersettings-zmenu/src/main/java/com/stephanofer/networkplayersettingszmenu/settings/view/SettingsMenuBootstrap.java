@@ -109,6 +109,7 @@ public final class SettingsMenuBootstrap {
             .defaultInventories(
                 "inventories/settings-main.yml",
                 "inventories/language.yml",
+                "inventories/general-settings.yml",
                 "inventories/nick-styles.yml",
                 "inventories/chat-styles.yml"
             )

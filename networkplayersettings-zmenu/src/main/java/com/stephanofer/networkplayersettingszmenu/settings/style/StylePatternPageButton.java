@@ -13,7 +13,6 @@ import fr.maxlego08.menu.api.utils.Placeholders;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -86,10 +85,10 @@ public final class StylePatternPageButton extends PaginateButton {
         final Placeholders placeholders = new Placeholders();
         placeholders.register("style_id", pattern.id());
         placeholders.register("style_name", pattern.displayName());
-        placeholders.register("style_category", pattern.category());
+        placeholders.register("style_category", categoryName(language, pattern.category()));
         placeholders.register("style_permission", pattern.permission());
-        placeholders.register("style_selected_marker", active ? "ACTIVE " : "");
-        placeholders.register("style_lock_marker", unlocked ? "" : "LOCKED ");
+        placeholders.register("style_selected_marker", active ? this.messages.get(language, "menu.style.selected-marker") : "");
+        placeholders.register("style_lock_marker", unlocked ? "" : this.messages.get(language, "menu.style.locked-marker"));
         placeholders.register("style_state", !unlocked
             ? this.messages.get(language, "menu.style.locked-state")
             : active ? this.messages.get(language, "menu.style.selected-state") : this.messages.get(language, "menu.style.available-state"));
@@ -155,6 +154,15 @@ public final class StylePatternPageButton extends PaginateButton {
             case "special" -> Material.AMETHYST_SHARD;
             case "pride" -> Material.FIREWORK_STAR;
             default -> Material.NAME_TAG;
+        };
+    }
+
+    private String categoryName(final Language language, final String category) {
+        final String normalized = category.toLowerCase(java.util.Locale.ROOT);
+        return switch (normalized) {
+            case "basic", "clean", "professional", "competitive", "dark", "soft", "luxury", "premium", "special", "pride" ->
+                this.messages.get(language, "menu.style.category-" + normalized);
+            default -> normalized.isEmpty() ? category : Character.toUpperCase(normalized.charAt(0)) + normalized.substring(1);
         };
     }
 

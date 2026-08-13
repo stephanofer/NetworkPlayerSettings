@@ -1,4 +1,4 @@
-file-version: 2
+file-version: 3
 
 settings:
   loading: "<yellow>Your global settings are still loading. Please try again in a moment."
@@ -42,6 +42,8 @@ menu:
     selected-state: "Selected"
     available-state: "Available"
     locked-state: "Locked"
+    selected-marker: "ACTIVE "
+    locked-marker: "LOCKED "
     selected-action: "already active"
     select-action: "to select"
     locked-action: "requires permission"
@@ -51,3 +53,13 @@ menu:
     filter-available: "Available"
     filter-action-all: "show all"
     filter-action-available: "show available"
+    category-basic: "Basic"
+    category-clean: "Clean"
+    category-professional: "Professional"
+    category-competitive: "Competitive"
+    category-dark: "Dark"
+    category-soft: "Soft"
+    category-luxury: "Luxury"
+    category-premium: "Premium"
+    category-special: "Special"
+    category-pride: "Pride"

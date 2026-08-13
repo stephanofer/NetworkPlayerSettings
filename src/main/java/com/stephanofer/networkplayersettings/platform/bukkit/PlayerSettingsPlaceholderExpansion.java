@@ -149,11 +149,24 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
                 : this.styleService.nickStyleId(player.getUniqueId()).orElse("");
         }
 
+        if (normalizedParam.equals("nick_style_id_or_none")) {
+            return playerId(player)
+                .flatMap(this.styleService::nickStyleId)
+                .orElseGet(() -> noneLabel(player));
+        }
+
         if (normalizedParam.equals("nick_style_name")) {
             return playerId(player)
                 .flatMap(playerId -> this.styleService.nickStyleId(playerId).flatMap(this.styleService::nickPattern))
                 .map(StylePatternInfo::displayName)
                 .orElse("");
+        }
+
+        if (normalizedParam.equals("nick_style_name_or_none")) {
+            return playerId(player)
+                .flatMap(playerId -> this.styleService.nickStyleId(playerId).flatMap(this.styleService::nickPattern))
+                .map(StylePatternInfo::displayName)
+                .orElseGet(() -> noneLabel(player));
         }
 
         if (normalizedParam.equals("nick_style_category")) {
@@ -182,11 +195,24 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
                 : this.styleService.chatStyleId(player.getUniqueId()).orElse("");
         }
 
+        if (normalizedParam.equals("chat_style_id_or_none")) {
+            return playerId(player)
+                .flatMap(this.styleService::chatStyleId)
+                .orElseGet(() -> noneLabel(player));
+        }
+
         if (normalizedParam.equals("chat_style_name")) {
             return playerId(player)
                 .flatMap(playerId -> this.styleService.chatStyleId(playerId).flatMap(this.styleService::chatPattern))
                 .map(StylePatternInfo::displayName)
                 .orElse("");
+        }
+
+        if (normalizedParam.equals("chat_style_name_or_none")) {
+            return playerId(player)
+                .flatMap(playerId -> this.styleService.chatStyleId(playerId).flatMap(this.styleService::chatPattern))
+                .map(StylePatternInfo::displayName)
+                .orElseGet(() -> noneLabel(player));
         }
 
         if (normalizedParam.equals("chat_style_category")) {
@@ -207,6 +233,12 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
             return playerId(player)
                 .flatMap(playerId -> this.styleService.chatStyleId(playerId).map(this.styleService::chatPreviewMiniMessage))
                 .orElse("");
+        }
+
+        if (normalizedParam.equals("chat_preview_or_none")) {
+            return playerId(player)
+                .flatMap(playerId -> this.styleService.chatStyleId(playerId).map(this.styleService::chatPreviewMiniMessage))
+                .orElseGet(() -> noneLabel(player));
         }
 
         return null;
@@ -256,5 +288,9 @@ public final class PlayerSettingsPlaceholderExpansion extends PlaceholderExpansi
         return playerId(player)
             .flatMap(this.settingsService::cachedResolvedLanguage)
             .orElse(this.defaultLanguage);
+    }
+
+    private String noneLabel(final OfflinePlayer player) {
+        return cachedLanguage(player) == Language.SPANISH ? "Ninguno" : "None";
     }
 }

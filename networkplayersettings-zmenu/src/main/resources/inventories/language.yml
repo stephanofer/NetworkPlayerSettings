@@ -1,4 +1,4 @@
-file-version: 2
+file-version: 4
 
 name:
   default: "#0c1719Select your language"
@@ -14,7 +14,8 @@ items:
     is-permanent: true
     slot: 11
     item:
-      material: RED_BANNER
+      material: PLAYER_HEAD
+      url: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzJkNzMwYjZkZGExNmI1ODQ3ODNiNjNkMDgyYTgwMDQ5YjVmYTcwMjI4YWJhNGFlODg0YzJjMWZjMGMzYThiYyJ9fX0="
       name:
         default: "#ff6666%selected_marker%Spanish"
         locales:
@@ -44,7 +45,7 @@ items:
     is-permanent: true
     slot: 13
     item:
-      material: COMPASS
+      material: RECOVERY_COMPASS
       name:
         default: "#f5d76e%selected_marker%Auto"
         locales:
@@ -77,7 +78,8 @@ items:
     is-permanent: true
     slot: 15
     item:
-      material: BLUE_BANNER
+      material: PLAYER_HEAD
+      url: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGNhYzk3NzRkYTEyMTcyNDg1MzJjZTE0N2Y3ODMxZjY3YTEyZmRjY2ExY2YwY2I0YjM4NDhkZTZiYzk0YjQifX19"
       name:
         default: "#66a3ff%selected_marker%English"
         locales:
@@ -101,41 +103,13 @@ items:
             - ""
             - "#8c8c8c• #2CCED2Click #92ffffto use English"
 
-  country_flag:
-    type: NPS_COUNTRY_FLAG
-    is-permanent: true
-    slot: 22
-    item:
-      material: NAME_TAG
-      name:
-        default: "%playersettings_country_head_tag%#ffd166%country_flag_marker%Country Flag"
-        locales:
-          es: "%playersettings_country_head_tag%#ffd166%country_flag_marker%Bandera de país"
-          en: "%playersettings_country_head_tag%#ffd166%country_flag_marker%Country Flag"
-      lore:
-        default:
-          - "#8c8c8cCountry#8c8c8c: #ffd166%country_code%"
-          - "#8c8c8cState#8c8c8c: #92ffff%country_flag_state%"
-          - ""
-          - "#8c8c8c• #2CCED2Click #92ffff%country_flag_action%"
-        locales:
-          es:
-            - "#8c8c8cPaís#8c8c8c: #ffd166%country_code%"
-            - "#8c8c8cEstado#8c8c8c: #92ffff%country_flag_state%"
-            - ""
-            - "#8c8c8c• #2CCED2Click #92ffff%country_flag_action%"
-          en:
-            - "#8c8c8cCountry#8c8c8c: #ffd166%country_code%"
-            - "#8c8c8cState#8c8c8c: #92ffff%country_flag_state%"
-            - ""
-            - "#8c8c8c• #2CCED2Click #92ffff%country_flag_action%"
-
   back:
     type: INVENTORY
     inventory: "settings-main"
     plugin: "NetworkPlayerSettingsZMenu"
     is-permanent: true
     slot: 18
+    sound: UI_BUTTON_CLICK
     item:
       material: ARROW
       name:

@@ -39,6 +39,7 @@ public final class ClearStyleButtonLoader extends ButtonLoader {
 
     @Override
     public Button load(final YamlConfiguration configuration, final String path, final DefaultButtonValue defaultButtonValue) {
+        defaultButtonValue.setPermanent(true);
         return new ClearStyleButton(this.plugin, this.settingsService, this.styleService, this.messages, this.settingsConfig, this.kind);
     }
 }
