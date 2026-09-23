@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.stephanofer"
-version = "2.1.0"
+version = "2.1.1"
 
 repositories {
     mavenLocal()

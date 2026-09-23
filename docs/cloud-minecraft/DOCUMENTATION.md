@@ -13,7 +13,7 @@ Maven
 Gradle (Kotlin)
 Gradle (Groovy)
 
-implementation(platform("org.incendo:cloud-minecraft-bom:2.0.0"))
+implementation(platform("org.incendo:cloud-minecraft-bom:2.0.1"))
 implementation("org.incendo:cloud-paper")
 
 Usage#
